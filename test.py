@@ -5,7 +5,7 @@ def test_solvers():
     """test installed solvers
     """
     print("TESTING SOLVERS")
-    solvers = {"Cplex": pulp.CPLEX, "GLPK": pulp.COIN, "CBC": pulp.COIN, "Scip": pulp.SCIP, "Gurobi": pulp.GUROBI}
+    solvers = {"Cplex": pulp.CPLEX, "GLPK": pulp.GLPK, "CBC": pulp.COIN, "Scip": pulp.SCIP, "Gurobi": pulp.GUROBI}
     # definition of a test problem
     test_ILP = pulp.LpProblem("test", pulp.LpMinimize)
     dummy = pulp.LpVariable("dummy", lowBound=1, upBound=10)

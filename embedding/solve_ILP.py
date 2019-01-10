@@ -31,7 +31,7 @@ class EmbedILP(Embed):
         if solver_ILP == 'cplex':
             solver = pulp.CPLEX(msg=0, timeLimit=timelimit)
         elif solver_ILP == "glpk":
-            solver = pulp.PYGLPK(msg=0, options=["--tmlim", timelimit])
+            solver = pulp.GLPK(msg=0, options=["--tmlim", str(timelimit)])
         elif solver_ILP == 'coin-or':
             solver = pulp.COIN(msg=0, maxSeconds=timelimit)
         elif solver_ILP == 'scip':

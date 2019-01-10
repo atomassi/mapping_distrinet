@@ -54,16 +54,6 @@ class LogicalNetwork(object):
             g.node[node]['memory'] = memory
         for edge in g.edges():
             g.edges[edge]['bw'] = bw
-        # print(g.__dict__)
-        # import matplotlib.pyplot as plt
-        # from networkx.drawing.nx_agraph import graphviz_layout
-        # pos = graphviz_layout(g, prog='dot')
-        # nx.draw(g, pos, with_labels=False, arrows=False)
-        # plt.savefig('nx_test.png')
-        # import pygraphviz
-        # A = nx.nx_agraph.to_agraph(g)
-        # A.layout('dot', args='-Nfontsize=10 -Nwidth=".2" -Nheight=".2" -Nmargin=0 -Gfontsize=8')
-        # A.draw('test.png')
 
         return cls(g)
 

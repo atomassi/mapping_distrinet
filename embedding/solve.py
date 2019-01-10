@@ -43,5 +43,5 @@ class Embed(object, metaclass=ABCMeta):
         # link rate limit is not exceeded
         # delay requirements are respected
 
-        # @todo
-        # raise NotImplementedError
+        # @todo to be implemented
+        raise NotImplementedError

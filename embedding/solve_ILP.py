@@ -1,5 +1,6 @@
 import pulp
 
+from exceptions import InfeasibleError
 from .solve import Embed
 
 
@@ -47,13 +48,8 @@ class EmbedILP(Embed):
         elif obj == 'min_n_machines':
             usage_phy_machine = pulp.LpVariable.dicts("usage", [i for i in self.physical.nodes()], cat=pulp.LpBinary)
 
-            mapping_ILP += pulp.lpSum(usage_phy_machine[i] for i in self.physical.nodes()) + pow(10, -16) * pulp.lpSum(
-                self.logical[u][v]['bw'] * (
-                        link_mapping[u, v, i, j, device] + link_mapping[u, v, j, i, device]) if u < v else
-                self.logical[u][v]['bw'] * (
-                        link_mapping[v, u, i, j, device] + link_mapping[v, u, j, i, device])
-                for (u, v) in self.logical.edges() for (i, j, device) in
-                self.physical.edges(keys=True))
+            mapping_ILP += pulp.lpSum(usage_phy_machine[i] for i in self.physical.nodes())
+
             for i in self.physical.nodes():
                 for u in self.logical.nodes():
                     mapping_ILP += usage_phy_machine[i] >= node_mapping[(u, i)]
@@ -105,17 +101,8 @@ class EmbedILP(Embed):
         #    mapping_ILP += link_mapping[(u,v,i,j,device)] + link_mapping[(u,v,j,i,device)] <= 1
 
         status = mapping_ILP.solve()
-
-        # print(mapping_ILP.objective)
-        # print(pulp.value(mapping_ILP.objective))
-
-        # An 'Optimal' status means that an optimal solution exists and is found.
-        print(solver_ILP, pulp.LpStatus[status], pulp.value(mapping_ILP.objective))
-        # if (pulp.value(mapping_ILP.objective) <= 0 and pulp.LpStatus[status] != 'Optimal'):
-
-        # for v in mapping_ILP.variables():
-        #    if v.varValue != 0:
-        #        print(v.name, v.varValue)
+        if pulp.LpStatus[status] == "Infeasible":
+            raise InfeasibleError
 
         for logical_node in self.logical.nodes():
             for physical_node in self.physical.nodes():
@@ -123,22 +110,13 @@ class EmbedILP(Embed):
                     self.res_node_mapping[logical_node] = physical_node
 
         for (u, v) in self.logical.edges():
-            (u, v) = (v, u) if u > v else (u, v)
-            self.res_link_mapping[str((u, v))] = {}
+            self.res_link_mapping[(u, v)] = {}
             for (i, j, device) in self.physical.edges(keys=True):
                 flow_ratio_on_link = link_mapping[(u, v, i, j, device)].varValue + link_mapping[
-                    (u, v, j, i, device)].varValue
+                    (u, v, j, i, device)].varValue if u < v else link_mapping[(v, u, i, j, device)].varValue + \
+                                                                 link_mapping[(v, u, j, i, device)].varValue
                 if flow_ratio_on_link > 0:
-                    self.res_link_mapping[str((u, v))][str((i, j, device))] = flow_ratio_on_link
-
-        for k, v in self.res_node_mapping.items():
-            print(k, v)
-
-        for k1, v1 in self.res_link_mapping.items():
-            if not v1:
-                print(k1, "same physical machine")
-            else:
-                print(k1, v1)
+                    self.res_link_mapping[(u, v)][(i, j, device)] = flow_ratio_on_link
 
         self.verify_solution()
         return pulp.value(mapping_ILP.objective), self.res_node_mapping, self.res_link_mapping

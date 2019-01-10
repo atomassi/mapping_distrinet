@@ -30,12 +30,15 @@ class EmbedILP(Embed):
 
         if solver_ILP == 'cplex':
             solver = pulp.CPLEX(msg=0, timeLimit=timelimit)
+        elif solver_ILP == 'gurobi':
+            solver = pulp.GUROBI(msg=0, timeLimit=timelimit)
         elif solver_ILP == "glpk":
             solver = pulp.GLPK(msg=0, options=["--tmlim", str(timelimit)])
-        elif solver_ILP == 'coin-or':
+        elif solver_ILP == 'cbc':
             solver = pulp.COIN(msg=0, maxSeconds=timelimit)
         elif solver_ILP == 'scip':
             solver = pulp.SCIP(msg=0, options=['-c', f'set limits time {timelimit}'])
+
         else:
             raise ValueError("Invalid solver name")
 

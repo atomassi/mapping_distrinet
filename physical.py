@@ -29,7 +29,7 @@ class PhysicalNetwork(object):
             data = json.load(f)
 
             for node in data['items']:
-                g.add_node(node['uid'], nb_cores=node['architecture']['nb_cores'],
+                g.add_node(node['uid'], nb_cores=node['architecture']['nb_cores']*node['architecture']['nb_procs'],
                            ram_size=node['main_memory']['ram_size'])
 
                 for interface, link in enumerate(node['network_adapters']):

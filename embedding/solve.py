@@ -59,8 +59,6 @@ class Embed(object, metaclass=ABCMeta):
         for logical_link in self.logical.edges():
             if not logical_link in self.res_link_mapping:
                 raise AssignmentError(logical_link)
-            else:
-                self._log.info(f"Logical Link {logical_link} assigned to {self.res_link_mapping[logical_link]}")
 
         #
         # resource usage on nodes
@@ -95,9 +93,10 @@ class Embed(object, metaclass=ABCMeta):
 
         for logical_link, map_physical_links in self.res_link_mapping.items():
             (u, v) = logical_link
-            for physical_link, rate_on_it in map_physical_links.items():
-                (i, j, device) = physical_link
-                rate_used_link[(i, j, device)] += self.logical[u][v]['bw'] * rate_on_it
+            if self.res_node_mapping[u] != self.res_node_mapping[v]:
+                for physical_link, rate_on_it in map_physical_links.items():
+                    (i, j, device) = physical_link
+                    rate_used_link[(i, j, device)] += self.logical[u][v]['bw'] * rate_on_it
         # link rate limit is not exceeded
         self._log.info("\nLINK RATE")
         for physical_link, rate_used in rate_used_link.items():
@@ -122,21 +121,22 @@ class Embed(object, metaclass=ABCMeta):
                 self._log.info(f"Logical Link {logical_link} not mapped (endpoints in the same physical machines)")
             else:
                 source_node, dest_node = self.res_node_mapping[u], self.res_node_mapping[v]
-                source_path = dest_path = None
-                for (i, j, device) in map_physical_links:
+                source_path = []
+                dest_path = []
+
+                for (i, j, device),rate_on_it in map_physical_links.items():
                     if i == source_node:
-                        source_path = (i, device)
+                        source_path.append((i, device,rate_on_it))
                     elif j == source_node:
-                        source_path = (j, device)
+                        source_path.append((j, device,rate_on_it))
                     elif i == dest_node:
-                        dest_path = (i, device)
+                        dest_path.append((i, device,rate_on_it))
                     elif j == dest_node:
-                        dest_path = (j, device)
+                        dest_path.append((j, device,rate_on_it))
                 if not source_path or not dest_path:
-                    print(source_node, dest_node, map_physical_links)
                     raise AssignmentError(logical_link)
                 else:
-                    self._log.info(f"logical link {logical_link} from {u} to {v} assigned to {source_path, dest_path}")
+                    self._log.info(f"logical link {logical_link} from {u} ({source_node}) to {v} ({dest_node}) assigned to {source_path, dest_path}")
 
         # delay requirements are respected
         # @todo to be defined

@@ -10,7 +10,7 @@ class LogicalNetwork(object):
         self._log = logging.getLogger(__name__)
 
     @classmethod
-    def create_fat_tree(cls, k=4, density=2, cpu_cores=2, memory=1, bw=50000000):
+    def create_fat_tree(cls, k=4, density=2, cpu_cores=2, memory=1000000, bw=50000000):
         """create a K-ary FatTree
         """
         assert k > 1, "k should be greater than 1"

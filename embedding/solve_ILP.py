@@ -100,8 +100,17 @@ class EmbedILP(Embed):
                                               link_mapping[v, u, i, j, device] + link_mapping[v, u, j, i, device])
                                       for (u, v) in self.logical.edges()) <= self.physical[i][j][device]['rate']
 
-        # for (i, j, device) in self.physical.edges(keys=True):
-        #    mapping_ILP += link_mapping[(u,v,i,j,device)] + link_mapping[(u,v,j,i,device)] <= 1
+        # given a logical link a physical machine the rate that goes out from the physical machine to an interface
+        # or that comes in to the physical machine from an interface is at most 1
+        for (u, v) in self.logical.edges():
+            (u, v) = (v, u) if u > v else (u, v)
+            for i in self.physical.nodes():
+                mapping_ILP += pulp.lpSum(link_mapping[u, v, i, j, device] for j in self.physical.neighbors(i) for device in self.physical[i][j]) <= 1
+                mapping_ILP += pulp.lpSum(link_mapping[u, v, j, i, device] for j in self.physical.neighbors(i) for device in self.physical[i][j]) <= 1
+
+        # a link can be used only in a direction
+        for (i, j, device) in self.physical.edges(keys=True):
+            mapping_ILP += link_mapping[(u, v,i, j, device)] + link_mapping[(u,v, j,i, device)] <= 1
 
         status = mapping_ILP.solve()
         if pulp.LpStatus[status] == "Infeasible":

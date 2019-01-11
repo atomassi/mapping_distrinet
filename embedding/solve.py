@@ -57,8 +57,17 @@ class Embed(object, metaclass=ABCMeta):
         # each logical link is assigned
         #
         for logical_link in self.logical.edges():
-            if not logical_link in self.res_link_mapping:
+            (u,v) = logical_link
+            if not logical_link in self.res_link_mapping and self.res_node_mapping[u] != self.res_node_mapping[v]:
                 raise AssignmentError(logical_link)
+            elif self.res_node_mapping[u] != self.res_node_mapping[v]:
+                sum_rate = 0
+                for (source_node, source_interface, dest_node, dest_interface, rate_on_it) in self.res_link_mapping[(u,v)]:
+                    sum_rate += rate_on_it
+                    if source_node != self.res_node_mapping[u] or dest_node != self.res_node_mapping[v]:
+                        raise AssignmentError(logical_link)
+                if sum_rate != 1:
+                    raise AssignmentError(logical_link)
 
         #
         # resource usage on nodes
@@ -89,54 +98,7 @@ class Embed(object, metaclass=ABCMeta):
         # resource usage on links
         #
         # dict -> physical link: rate used on it
-        rate_used_link = defaultdict(int)
-
-        for logical_link, map_physical_links in self.res_link_mapping.items():
-            (u, v) = logical_link
-            if self.res_node_mapping[u] != self.res_node_mapping[v]:
-                for physical_link, rate_on_it in map_physical_links.items():
-                    (i, j, device) = physical_link
-                    rate_used_link[(i, j, device)] += self.logical[u][v]['bw'] * rate_on_it
-        # link rate limit is not exceeded
-        self._log.info("\nLINK RATE")
-        for physical_link, rate_used in rate_used_link.items():
-            (i, j, device) = physical_link
-            link_rate = self.physical[i][j][device]['rate']
-            self._log.info(
-                f"Physical Link {physical_link}: used {rate_used / 10 ** 6} Mbps capacity {link_rate / 10 ** 6} Mbps")
-            if rate_used > link_rate:
-                raise LinkCapacityError(physical_link, rate_used, link_rate)
-
-        #
-        # each logical link is mapped on a valid path
-        #
-        # N.B. a logical link may be splitted on multiple physical links, I assume for the moment that it cannot
-        # build a path
-        for logical_link in self.res_link_mapping:
-            (u, v) = logical_link
-            map_physical_links = self.res_link_mapping[logical_link]
-            if not self.res_link_mapping[logical_link].keys() and self.res_node_mapping[u] != self.res_node_mapping[v]:
-                raise AssignmentError(logical_link)
-            elif self.res_node_mapping[u] == self.res_node_mapping[v]:
-                self._log.info(f"Logical Link {logical_link} not mapped (endpoints in the same physical machines)")
-            else:
-                source_node, dest_node = self.res_node_mapping[u], self.res_node_mapping[v]
-                source_path = []
-                dest_path = []
-
-                for (i, j, device),rate_on_it in map_physical_links.items():
-                    if i == source_node:
-                        source_path.append((i, device,rate_on_it))
-                    elif j == source_node:
-                        source_path.append((j, device,rate_on_it))
-                    elif i == dest_node:
-                        dest_path.append((i, device,rate_on_it))
-                    elif j == dest_node:
-                        dest_path.append((j, device,rate_on_it))
-                if not source_path or not dest_path:
-                    raise AssignmentError(logical_link)
-                else:
-                    self._log.info(f"logical link {logical_link} from {u} ({source_node}) to {v} ({dest_node}) assigned to {source_path, dest_path}")
+        # @todo
 
         # delay requirements are respected
         # @todo to be defined

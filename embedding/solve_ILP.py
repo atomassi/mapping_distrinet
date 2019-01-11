@@ -122,13 +122,31 @@ class EmbedILP(Embed):
                     self.res_node_mapping[logical_node] = physical_node
 
         for (u, v) in self.logical.edges():
-            self.res_link_mapping[(u, v)] = {}
-            for (i, j, device) in self.physical.edges(keys=True):
-                flow_ratio_on_link = link_mapping[(u, v, i, j, device)].varValue + link_mapping[
-                    (u, v, j, i, device)].varValue if u < v else link_mapping[(v, u, i, j, device)].varValue + \
-                                                                 link_mapping[(v, u, j, i, device)].varValue
-                if flow_ratio_on_link > 0:
-                    self.res_link_mapping[(u, v)][(i, j, device)] = flow_ratio_on_link
+            if self.res_node_mapping[u] != self.res_node_mapping[v]:
+                # mapping for the source of the link
+                i = self.res_node_mapping[u]
+                for j in self.physical.neighbors(i):
+                    for device in self.physical[i][j]:
+                        flow_ratio_on_link = link_mapping[(u, v, i, j, device)].varValue + link_mapping[
+                            (u, v, j, i, device)].varValue if u < v else link_mapping[(v, u, i, j, device)].varValue + \
+                                                                   link_mapping[(v, u, j, i, device)].varValue
+                        if flow_ratio_on_link > 0.99:
+                            source = (i, device)
+                            break
 
+                # mapping for the destination of the link
+                i = self.res_node_mapping[v]
+                for j in self.physical.neighbors(i):
+                    for device in self.physical[i][j]:
+                        flow_ratio_on_link = link_mapping[(u, v, i, j, device)].varValue + link_mapping[
+                            (u, v, j, i, device)].varValue if u < v else link_mapping[(v, u, i, j, device)].varValue + \
+                                                                         link_mapping[(v, u, j, i, device)].varValue
+                        if flow_ratio_on_link > 0.99:
+                            dest = (i, device)
+                            break
+
+                self.res_link_mapping[(u, v)] = [source+dest+(1.0,)]
+
+        print(self.res_link_mapping)
         self.verify_solution()
         return pulp.value(mapping_ILP.objective), self.res_node_mapping, self.res_link_mapping

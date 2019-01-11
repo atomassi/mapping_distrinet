@@ -69,3 +69,17 @@ class PhysicalNetwork(object):
         """ from file
         """
         raise NotImplementedError
+
+    def group_interfaces(self):
+        """Creates a new multigraph g' from g whith all the interfaces towards the same node grouped into a single one
+        """
+        g_grouped = nx.MultiGraph()
+        g_grouped.add_nodes_from([(i, self.g.nodes[i]) for i in self.g.nodes()])
+        g_grouped.add_edges_from([(i, j, 'dummy_interface') for (i, j) in set(self.g.edges())], rate=0,
+                                 associated_interfaces={})
+
+        for (i, j, device) in self.g.edges(keys=True):
+            g_grouped[i][j]['dummy_interface']['rate'] += self.g[i][j][device]['rate']
+            g_grouped[i][j]['dummy_interface']['associated_interfaces'][device] = self.g[i][j][device]['rate']
+
+        return g_grouped

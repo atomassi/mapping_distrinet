@@ -24,13 +24,11 @@ class Solution:
         #
         # each logical node is assigned to a physical node
         #
-        self._log.info("\nLOGICAL NODES")
         for logical_node in logical.nodes():
             if not logical_node in self.res_node_mapping:
                 raise AssignmentError(logical_node)
             else:
                 self._log.info(f"Logical Node {logical_node} assigned to {self.res_node_mapping[logical_node]}")
-        self._log.info("\nLOGICAL LINKS")
         #
         # each logical link is assigned
         #
@@ -61,14 +59,12 @@ class Solution:
             cpu_used_node[physical_node] += logical.nodes[logical_node]['cpu_cores']
             memory_used_node[physical_node] += logical.nodes[logical_node]['memory']
         # cpu limit is not exceeded
-        self._log.info("\nCPU Cores")
         for physical_node, cpu_cores_used in cpu_used_node.items():
             node_cores = physical.nodes[physical_node]['nb_cores']
             self._log.info(f"Physical Node {physical_node}: cpu cores used {cpu_cores_used} capacity {node_cores}")
             if cpu_cores_used > physical.nodes[physical_node]['nb_cores']:
                 raise NodeResourceError(physical_node, "cpu cores", cpu_cores_used, node_cores)
         # memory limit is not exceeded
-        self._log.info("\nMEMORY")
         for physical_node, memory_used in memory_used_node.items():
             node_memory = physical.nodes[physical_node]['ram_size']
             self._log.info(f"Physical Node {physical_node}: memory used {memory_used} capacity {node_memory}")
@@ -99,7 +95,6 @@ class Solution:
                 res_link_mapping_multiple_interfaces[(u, v)] = []
                 # for each mapping in the physical network with grouped interfaces
                 # (even in this case a
-                print(res_link_mapping[(u, v)])
                 u_source, _, u_dest, v_source, _, v_dest, rate_mapped = res_link_mapping[(u, v)][0]
                 requested_rate = logical[u][v]['bw']
                 interfaces_u = rate_on_nodes_interfaces[(u_source, u_dest)] if (u_source,

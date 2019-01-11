@@ -40,10 +40,12 @@ class EmbedILP(Embed):
     @Embed.timeit
     def __call__(self, **kwargs):
 
+
         group_interfaces = kwargs.get('group_interfaces', False)
         obj = kwargs.get('obj', 'no_obj')
         solver_ILP = kwargs.get('solver', 'cplex').lower()
         timelimit = int(kwargs.get('timelimit', '3600'))
+        self._log.info(f"called solver ILP with the following parameters: {kwargs}")
 
         logical = self.logical_topo.g
         physical = self.physical_topo.group_interfaces() if group_interfaces else self.physical_topo.g
@@ -157,8 +159,10 @@ class EmbedILP(Embed):
         status = mapping_ILP.solve()
         if pulp.LpStatus[status] == "Infeasible":
             raise InfeasibleError
-        elif pulp.LpStatus[status] == "Undefined":
+        elif pulp.LpStatus[status] == "Undefined" and pulp.value(mapping_ILP.objective) == 0 or pulp.value(mapping_ILP.objective) == None:
             raise TimeLimitError
+        else:
+            self._log.info(f"The solution found uses {pulp.value(mapping_ILP.objective)} physical machines")
 
         res_node_mapping, res_link_mapping = self.build_solution(logical, physical, node_mapping, link_mapping)
         if group_interfaces:

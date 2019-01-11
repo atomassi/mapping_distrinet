@@ -32,6 +32,8 @@ class Solution:
         #
         # each logical link is assigned
         #
+        print(self.res_node_mapping)
+        print(self.res_link_mapping)
         for logical_link in logical.edges():
             (u, v) = logical_link
             if not logical_link in self.res_link_mapping and self.res_node_mapping[u] != self.res_node_mapping[v]:
@@ -104,7 +106,8 @@ class Solution:
                                                                                 v_dest) in rate_on_nodes_interfaces else \
                 rate_on_nodes_interfaces[(v_dest, v_source)]
                 # until we don't map all the requested rate
-                while requested_rate > 0:
+                to_be_mapped = requested_rate
+                while to_be_mapped > 0:
                     # take the interfaces with the highest available rate on the physical nodes
                     # where the endpoint of u and v are mapped
                     interface_u_highest_rate = max(interfaces_u, key=interfaces_u.get)
@@ -117,7 +120,7 @@ class Solution:
                                                                          v_source, interface_v_highest_rate, v_dest,
                                                                          mapped_rate / float(requested_rate)))
                     # update available rate
-                    requested_rate -= mapped_rate
+                    to_be_mapped -= mapped_rate
                     interfaces_u[interface_u_highest_rate] -= mapped_rate
                     interfaces_v[interface_v_highest_rate] -= mapped_rate
 

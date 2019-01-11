@@ -25,8 +25,8 @@ if __name__ == "__main__":
                 time_solution, solution = EmbedILP(virtual_topo, physical_topo)(solver=solver, obj="min_n_machines",
                                                                                 timelimit=30,
                                                                                 group_interfaces=group_interfaces)
+                solution.verify_solution(virtual_topo.g, physical_topo.g)
+                print(solution, end="\n\n\n")
+
             except TimeLimitError:
                 print(solver, "feasible solution not found")
-
-            solution.verify_solution(virtual_topo.g, physical_topo.g)
-            print(solution)

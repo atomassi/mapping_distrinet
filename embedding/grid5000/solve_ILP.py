@@ -60,10 +60,10 @@ class EmbedILP(Embed):
         # if traffic cannot be splitted over multiple interfaces, then the link assignment variables
         # have binary domain, otherwise this constraint can be relaxed
         link_mapping = pulp.LpVariable.dicts("link_mapping",
-                                            [f(u, v, i, j, device) for (u, v) in
-                                             sorted_logical_edges for (i, j, device) in physical.edges(keys=True)
-                                             for f in [f1, f2]], lowBound=0, upBound=1, cat='Binary' if not group_interfaces else 'Continuous')
-
+                                             [f(u, v, i, j, device) for (u, v) in
+                                              sorted_logical_edges for (i, j, device) in physical.edges(keys=True)
+                                              for f in [f1, f2]], lowBound=0, upBound=1,
+                                             cat='Binary' if not group_interfaces else 'Continuous')
 
         # node mapping variables
         node_mapping = pulp.LpVariable.dicts("node_mapping",
@@ -158,18 +158,22 @@ class EmbedILP(Embed):
             for (i, j, device) in physical.edges(keys=True):
                 mapping_ILP += link_mapping[(u, v, i, j, device)] + link_mapping[(u, v, j, i, device)] <= 1
 
-        status = mapping_ILP.solve()
-        print(pulp.LpStatus[status])
-        print(pulp.value(mapping_ILP.objective))
+        status = pulp.LpStatus[mapping_ILP.solve()]
 
-        if pulp.LpStatus[status] == "Infeasible":
+        if solver_ILP=="cplex":
+            print("lb cplex", mapping_ILP.solverModel.solution.MIP.get_best_objective())
+        elif solver_ILP=="gurobi":
+            print("lb gurobi", mapping_ILP.solverModel.ObjBound)
+
+        if status == "Infeasible":
             raise InfeasibleError
-        elif pulp.LpStatus[status] == 'Not Solved' or pulp.LpStatus[status] == "Undefined":
+        elif status == 'Not Solved' or status == "Undefined":
             max_cores_per_machine = max(physical.nodes[i]['nb_cores'] for i in physical.nodes())
             max_memory_per_machine = max(physical.nodes[i]['ram_size'] for i in physical.nodes())
             lowbound = math.ceil(
                 max(sum([logical.nodes[u]['cpu_cores'] for u in logical.nodes()]) / float(max_cores_per_machine),
                     sum([logical.nodes[u]['memory'] for u in logical.nodes()]) / float(max_memory_per_machine)))
+            print(f"lowbound = {lowbound}")
             if not pulp.value(mapping_ILP.objective) or pulp.value(mapping_ILP.objective) < lowbound:
                 raise TimeLimitError
         self._log.info(f"The solution found uses {pulp.value(mapping_ILP.objective)} physical machines")
@@ -179,4 +183,12 @@ class EmbedILP(Embed):
             solution = Solution.map_to_multiple_interfaces(logical, physical, res_node_mapping, res_link_mapping)
         else:
             solution = Solution(res_node_mapping, res_link_mapping)
-        return pulp.value(mapping_ILP.objective), solution
+
+        if obj == "min_n_machines":
+            return pulp.value(mapping_ILP.objective), solution
+        else:
+            n_used_machines = sum(next((1 for logical_node in logical.nodes() if
+                                        node_mapping[(logical_node, physical_node)].varValue > 0), 0) for physical_node
+                                  in physical.nodes())
+
+            return n_used_machines, solution

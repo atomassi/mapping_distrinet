@@ -1,7 +1,7 @@
 import logging.config
 
 from definitions import *
-from embedding import EmbedILP
+from embedding import EmbedILP_grid5000
 from exceptions import TimeLimitError
 from logical import LogicalNetwork
 from physical import PhysicalNetwork
@@ -22,7 +22,7 @@ if __name__ == "__main__":
         for group_interfaces in True, False:
 
             try:
-                time_solution, (value_solution, solution) = EmbedILP(virtual_topo, physical_topo)(solver=solver,
+                time_solution, (value_solution, solution) = EmbedILP_grid5000(virtual_topo, physical_topo)(solver=solver,
                                                                                                   obj="min_n_machines",
                                                                                                   timelimit=30,
                                                                                                   group_interfaces=group_interfaces)

@@ -28,8 +28,7 @@ class PhysicalNetwork(object):
         an instance of the PhysicalNetwork class
         """
         g = nx.MultiGraph()
-
-        # compute node
+        # compute nodes
         with open(os.path.join(basedir, "instances", "physical", name + ".json")) as f:
             data = json.load(f)
 

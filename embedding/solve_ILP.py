@@ -1,3 +1,5 @@
+import math
+
 import pulp
 
 from exceptions import InfeasibleError, TimeLimitError
@@ -8,7 +10,7 @@ from .solve import Embed
 class EmbedILP(Embed):
 
     @staticmethod
-    def build_solution(logical, physical, node_mapping, link_mapping):
+    def build_ILP_solution(logical, physical, node_mapping, link_mapping):
         """Build an assignment of virtual nodes and virtual links starting from the values of the variables in the ILP
         """
         res_node_mapping = {}
@@ -19,27 +21,26 @@ class EmbedILP(Embed):
                                                    node_mapping[(logical_node, physical_node)].varValue > 0), None)
 
         for (u, v) in logical.edges():
-            ordered_logical_link = (u, v) if u < v else (v, u)
+            sorted_logical_link = (u, v) if u < v else (v, u)
             if res_node_mapping[u] != res_node_mapping[v]:
                 # mapping for the source of the logical link
                 link_source = res_node_mapping[u]
                 source = next(((link_source, device, j) for j in physical.neighbors(link_source) for device in
                                physical[link_source][j] if
-                               link_mapping[(*ordered_logical_link, link_source, j, device)].varValue + link_mapping[
-                                   (*ordered_logical_link, j, link_source, device)].varValue > 0.99), None)
+                               link_mapping[(*sorted_logical_link, link_source, j, device)].varValue + link_mapping[
+                                   (*sorted_logical_link, j, link_source, device)].varValue > 0.99), None)
                 # mapping for the destination of the logical link
                 link_dest = res_node_mapping[v]
                 dest = next(((link_dest, device, j) for j in physical.neighbors(link_dest) for device in
                              physical[link_source][j] if
-                             link_mapping[(*ordered_logical_link, link_dest, j, device)].varValue + link_mapping[
-                                 (*ordered_logical_link, j, link_dest, device)].varValue > 0.99), None)
+                             link_mapping[(*sorted_logical_link, link_dest, j, device)].varValue + link_mapping[
+                                 (*sorted_logical_link, j, link_dest, device)].varValue > 0.99), None)
                 res_link_mapping[(u, v)] = [source + dest + (1.0,)]
 
         return res_node_mapping, res_link_mapping
 
     @Embed.timeit
     def __call__(self, **kwargs):
-
 
         group_interfaces = kwargs.get('group_interfaces', False)
         obj = kwargs.get('obj', 'no_obj')
@@ -53,10 +54,21 @@ class EmbedILP(Embed):
         # link mapping variables
         f1 = lambda u, v, i, j, device: (u, v, i, j, device)
         f2 = lambda u, v, i, j, device: (u, v, j, i, device)
-        link_mapping = pulp.LpVariable.dicts("link_mapping",
-                                             [f(u, v, i, j, device) if u < v else f(v, u, i, j, device) for (u, v) in
-                                              logical.edges() for (i, j, device) in physical.edges(keys=True)
-                                              for f in [f1, f2]], cat=pulp.LpBinary)
+        # each undirected link is considered in alphabetical order to be consinstent with variable names
+        sorted_logical_edges = set((u, v) if u < v else (v, u) for (u, v) in logical.edges())
+
+        # if traffic cannot be splitted over multiple interfaces, then the link assignment variables
+        # have binary domain, otherwise this constraint can be relaxed
+        if not group_interfaces:
+            link_mapping = pulp.LpVariable.dicts("link_mapping",
+                                                 [f(u, v, i, j, device) for (u, v) in
+                                                  sorted_logical_edges for (i, j, device) in physical.edges(keys=True)
+                                                  for f in [f1, f2]], cat=pulp.LpBinary)
+        else:
+            link_mapping = pulp.LpVariable.dicts("link_mapping",
+                                                 [f(u, v, i, j, device) for (u, v) in
+                                                  sorted_logical_edges for (i, j, device) in physical.edges(keys=True)
+                                                  for f in [f1, f2]], lowBound=0, upBound=1)
 
         # node mapping variables
         node_mapping = pulp.LpVariable.dicts("node_mapping",
@@ -99,10 +111,8 @@ class EmbedILP(Embed):
         # Case 3: minimize used bandwidth
         elif obj == 'min_bw':
             mapping_ILP += pulp.lpSum(logical[u][v]['bw'] * (
-                    link_mapping[u, v, i, j, device] + link_mapping[u, v, j, i, device]) if u < v else
-                                      logical[u][v]['bw'] * (
-                                              link_mapping[v, u, i, j, device] + link_mapping[v, u, j, i, device])
-                                      for (u, v) in logical.edges() for (i, j, device) in
+                    link_mapping[(u, v, i, j, device)] + link_mapping[(u, v, j, i, device)])
+                                      for (u, v) in sorted_logical_edges for (i, j, device) in
                                       physical.edges(keys=True))
 
         # Assignment of virtual nodes to physical nodes
@@ -124,8 +134,7 @@ class EmbedILP(Embed):
 
         # Bandwidth conservation
         # for each logical edge a flow conservation problem
-        for (u, v) in logical.edges():
-            (u, v) = (v, u) if u > v else (u, v)
+        for (u, v) in sorted_logical_edges:
             for i in physical.nodes():
                 mapping_ILP += pulp.lpSum(
                     (link_mapping[(u, v, i, j, device)] - link_mapping[(u, v, j, i, device)]) for j in
@@ -135,38 +144,44 @@ class EmbedILP(Embed):
         # Link capacity
         for (i, j, device) in physical.edges(keys=True):
             mapping_ILP += pulp.lpSum(logical[u][v]['bw'] * (
-                    link_mapping[u, v, i, j, device] + link_mapping[u, v, j, i, device]) if u < v else
-                                      logical[u][v]['bw'] * (
-                                              link_mapping[v, u, i, j, device] + link_mapping[v, u, j, i, device])
-                                      for (u, v) in logical.edges()) <= physical[i][j][device]['rate']
+                    link_mapping[(u, v, i, j, device)] + link_mapping[(u, v, j, i, device)])
+                                      for (u, v) in sorted_logical_edges) <= physical[i][j][device]['rate']
 
         # given a logical link a physical machine the rate that goes out from the physical machine to an interface
         # or that comes in to the physical machine from an interface is at most 1
-        for (u, v) in logical.edges():
-            (u, v) = (v, u) if u > v else (u, v)
+        for (u, v) in sorted_logical_edges:
             for i in physical.nodes():
                 mapping_ILP += pulp.lpSum(
-                    link_mapping[u, v, i, j, device] for j in physical.neighbors(i) for device in
+                    link_mapping[(u, v, i, j, device)] for j in physical.neighbors(i) for device in
                     physical[i][j]) <= 1
                 mapping_ILP += pulp.lpSum(
-                    link_mapping[u, v, j, i, device] for j in physical.neighbors(i) for device in
+                    link_mapping[(u, v, j, i, device)] for j in physical.neighbors(i) for device in
                     physical[i][j]) <= 1
 
         # a link can be used only in a direction
-        for (i, j, device) in physical.edges(keys=True):
-            mapping_ILP += link_mapping[(u, v, i, j, device)] + link_mapping[(u, v, j, i, device)] <= 1
+        for (u, v) in sorted_logical_edges:
+            for (i, j, device) in physical.edges(keys=True):
+                mapping_ILP += link_mapping[(u, v, i, j, device)] + link_mapping[(u, v, j, i, device)] <= 1
 
         status = mapping_ILP.solve()
+        print(pulp.LpStatus[status])
+        print(pulp.value(mapping_ILP.objective))
+
         if pulp.LpStatus[status] == "Infeasible":
             raise InfeasibleError
-        elif pulp.LpStatus[status] == "Undefined" and pulp.value(mapping_ILP.objective) == 0 or pulp.value(mapping_ILP.objective) == None:
-            raise TimeLimitError
-        else:
-            self._log.info(f"The solution found uses {pulp.value(mapping_ILP.objective)} physical machines")
+        elif pulp.LpStatus[status] == 'Not Solved' or pulp.LpStatus[status] == "Undefined":
+            max_cores_per_machine = max(physical.nodes[i]['nb_cores'] for i in physical.nodes())
+            max_memory_per_machine = max(physical.nodes[i]['ram_size'] for i in physical.nodes())
+            lowbound = math.ceil(
+                max(sum([logical.nodes[u]['cpu_cores'] for u in logical.nodes()]) / float(max_cores_per_machine),
+                    sum([logical.nodes[u]['memory'] for u in logical.nodes()]) / float(max_memory_per_machine)))
+            if not pulp.value(mapping_ILP.objective) or pulp.value(mapping_ILP.objective) < lowbound:
+                raise TimeLimitError
+        self._log.info(f"The solution found uses {pulp.value(mapping_ILP.objective)} physical machines")
 
-        res_node_mapping, res_link_mapping = self.build_solution(logical, physical, node_mapping, link_mapping)
+        res_node_mapping, res_link_mapping = self.build_ILP_solution(logical, physical, node_mapping, link_mapping)
         if group_interfaces:
             solution = Solution.map_to_multiple_interfaces(logical, physical, res_node_mapping, res_link_mapping)
         else:
             solution = Solution(res_node_mapping, res_link_mapping)
-        return solution
+        return pulp.value(mapping_ILP.objective), solution

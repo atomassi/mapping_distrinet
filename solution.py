@@ -19,7 +19,7 @@ class Solution:
         #
         # empty solution or invalid solution
         #
-        if not self.res_node_mapping or not self.res_link_mapping:
+        if not self.res_node_mapping or (not self.res_link_mapping and len(set(self.res_node_mapping.values())) > 1):
             raise EmptySolutionError
         #
         # each logical node is assigned to a physical node
@@ -32,8 +32,6 @@ class Solution:
         #
         # each logical link is assigned
         #
-        print(self.res_node_mapping)
-        print(self.res_link_mapping)
         for logical_link in logical.edges():
             (u, v) = logical_link
             if not logical_link in self.res_link_mapping and self.res_node_mapping[u] != self.res_node_mapping[v]:
@@ -41,8 +39,8 @@ class Solution:
             elif self.res_node_mapping[u] != self.res_node_mapping[v]:
                 sum_rate = 0
                 for (source_node, source_interface, _, dest_node, dest_interface, _, rate_on_it) in \
-                self.res_link_mapping[
-                    (u, v)]:
+                        self.res_link_mapping[
+                            (u, v)]:
                     sum_rate += rate_on_it
                     if source_node != self.res_node_mapping[u] or dest_node != self.res_node_mapping[v]:
                         raise AssignmentError(logical_link)
@@ -101,10 +99,10 @@ class Solution:
                 requested_rate = logical[u][v]['bw']
                 interfaces_u = rate_on_nodes_interfaces[(u_source, u_dest)] if (u_source,
                                                                                 u_dest) in rate_on_nodes_interfaces else \
-                rate_on_nodes_interfaces[(u_dest, u_source)]
+                    rate_on_nodes_interfaces[(u_dest, u_source)]
                 interfaces_v = rate_on_nodes_interfaces[(v_source, v_dest)] if (v_source,
                                                                                 v_dest) in rate_on_nodes_interfaces else \
-                rate_on_nodes_interfaces[(v_dest, v_source)]
+                    rate_on_nodes_interfaces[(v_dest, v_source)]
                 # until we don't map all the requested rate
                 to_be_mapped = requested_rate
                 while to_be_mapped > 0:

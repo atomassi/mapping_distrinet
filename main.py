@@ -22,9 +22,10 @@ if __name__ == "__main__":
         for group_interfaces in True, False:
 
             try:
-                time_solution, solution = EmbedILP(virtual_topo, physical_topo)(solver=solver, obj="min_n_machines",
-                                                                                timelimit=30,
-                                                                                group_interfaces=group_interfaces)
+                time_solution, (value_solution, solution) = EmbedILP(virtual_topo, physical_topo)(solver=solver,
+                                                                                                  obj="min_n_machines",
+                                                                                                  timelimit=30,
+                                                                                                  group_interfaces=group_interfaces)
                 solution.verify_solution(virtual_topo.g, physical_topo.g)
                 print(solution, end="\n\n\n")
 

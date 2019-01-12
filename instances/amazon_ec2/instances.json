@@ -1,0 +1,132 @@
+{
+  "t3.nano": {
+    "vCPU": 2,
+    "memory": 0.5,
+    "hourly_cost": 0.0059
+  },
+  "t3.micro": {
+    "vCPU": 2,
+    "memory": 1.0,
+    "hourly_cost": 0.0118
+  },
+  "t3.small": {
+    "vCPU": 2,
+    "memory": 2.0,
+    "hourly_cost": 0.0236
+  },
+  "t3.medium": {
+    "vCPU": 2,
+    "memory": 4.0,
+    "hourly_cost": 0.0472
+  },
+  "t3.large": {
+    "vCPU": 2,
+    "memory": 8.0,
+    "hourly_cost": 0.0944
+  },
+  "t3.xlarge": {
+    "vCPU": 4,
+    "memory": 16.0,
+    "hourly_cost": 0.1888
+  },
+  "t3.2xlarge": {
+    "vCPU": 8,
+    "memory": 32.0,
+    "hourly_cost": 0.3776
+  },
+  "t2.nano": {
+    "vCPU": 1,
+    "memory": 0.5,
+    "hourly_cost": 0.0066
+  },
+  "t2.micro": {
+    "vCPU": 1,
+    "memory": 1.0,
+    "hourly_cost": 0.0132
+  },
+  "t2.small": {
+    "vCPU": 1,
+    "memory": 2.0,
+    "hourly_cost": 0.0264
+  },
+  "t2.medium": {
+    "vCPU": 2,
+    "memory": 4.0,
+    "hourly_cost": 0.0528
+  },
+  "t2.large": {
+    "vCPU": 2,
+    "memory": 8.0,
+    "hourly_cost": 0.1056
+  },
+  "t2.xlarge": {
+    "vCPU": 4,
+    "memory": 16.0,
+    "hourly_cost": 0.2112
+  },
+  "t2.2xlarge": {
+    "vCPU": 8,
+    "memory": 32.0,
+    "hourly_cost": 0.4224
+  },
+  "m5.large": {
+    "vCPU": 2,
+    "memory": 8.0,
+    "hourly_cost": 0.112
+  },
+  "m5.xlarge": {
+    "vCPU": 4,
+    "memory": 16.0,
+    "hourly_cost": 0.224
+  },
+  "m5.2xlarge": {
+    "vCPU": 8,
+    "memory": 32.0,
+    "hourly_cost": 0.448
+  },
+  "m5.4xlarge": {
+    "vCPU": 16,
+    "memory": 64.0,
+    "hourly_cost": 0.896
+  },
+  "m5.12xlarge": {
+    "vCPU": 48,
+    "memory": 192.0,
+    "hourly_cost": 2.688
+  },
+  "m5.24xlarge": {
+    "vCPU": 96,
+    "memory": 384.0,
+    "hourly_cost": 5.376
+  },
+  "m5d.large": {
+    "vCPU": 2,
+    "memory": 8.0,
+    "hourly_cost": 0.132
+  },
+  "m5d.xlarge": {
+    "vCPU": 4,
+    "memory": 16.0,
+    "hourly_cost": 0.264
+  },
+  "m5d.2xlarge": {
+    "vCPU": 8,
+    "memory": 32.0,
+    "hourly_cost": 0.528
+  },
+  "m5d.4xlarge": {
+    "vCPU": 16,
+    "memory": 64.0,
+    "hourly_cost": 1.056
+  },
+  "m5d.12xlarge": {
+    "vCPU": 48,
+    "memory": 192.0,
+    "hourly_cost": 3.168
+  },
+  "m5d.24xlarge": {
+    "vCPU": 96,
+    "memory": 384.0,
+    "hourly_cost": 6.336
+  }
+}

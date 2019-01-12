@@ -25,13 +25,13 @@ class EmbedILP(Embed):
             if res_node_mapping[u] != res_node_mapping[v]:
                 # mapping for the source of the logical link
                 link_source = res_node_mapping[u]
-                source = next(((link_source, device, j) for j in physical.neighbors(link_source) for device in
+                source = next(((link_source, device, j) for j in physical[link_source] for device in
                                physical[link_source][j] if
                                link_mapping[(*sorted_logical_link, link_source, j, device)].varValue + link_mapping[
                                    (*sorted_logical_link, j, link_source, device)].varValue > 0.99), None)
                 # mapping for the destination of the logical link
                 link_dest = res_node_mapping[v]
-                dest = next(((link_dest, device, j) for j in physical.neighbors(link_dest) for device in
+                dest = next(((link_dest, device, j) for j in physical[link_dest] for device in
                              physical[link_source][j] if
                              link_mapping[(*sorted_logical_link, link_dest, j, device)].varValue + link_mapping[
                                  (*sorted_logical_link, j, link_dest, device)].varValue > 0.99), None)
@@ -59,16 +59,11 @@ class EmbedILP(Embed):
 
         # if traffic cannot be splitted over multiple interfaces, then the link assignment variables
         # have binary domain, otherwise this constraint can be relaxed
-        if not group_interfaces:
-            link_mapping = pulp.LpVariable.dicts("link_mapping",
-                                                 [f(u, v, i, j, device) for (u, v) in
-                                                  sorted_logical_edges for (i, j, device) in physical.edges(keys=True)
-                                                  for f in [f1, f2]], cat=pulp.LpBinary)
-        else:
-            link_mapping = pulp.LpVariable.dicts("link_mapping",
-                                                 [f(u, v, i, j, device) for (u, v) in
-                                                  sorted_logical_edges for (i, j, device) in physical.edges(keys=True)
-                                                  for f in [f1, f2]], lowBound=0, upBound=1)
+        link_mapping = pulp.LpVariable.dicts("link_mapping",
+                                            [f(u, v, i, j, device) for (u, v) in
+                                             sorted_logical_edges for (i, j, device) in physical.edges(keys=True)
+                                             for f in [f1, f2]], lowBound=0, upBound=1, cat='Binary' if not group_interfaces else 'Continuous')
+
 
         # node mapping variables
         node_mapping = pulp.LpVariable.dicts("node_mapping",
@@ -138,7 +133,7 @@ class EmbedILP(Embed):
             for i in physical.nodes():
                 mapping_ILP += pulp.lpSum(
                     (link_mapping[(u, v, i, j, device)] - link_mapping[(u, v, j, i, device)]) for j in
-                    physical.neighbors(i) for device in physical[i][j]) == (
+                    physical[i] for device in physical[i][j]) == (
                                        node_mapping[(u, i)] - node_mapping[(v, i)])
 
         # Link capacity
@@ -152,10 +147,10 @@ class EmbedILP(Embed):
         for (u, v) in sorted_logical_edges:
             for i in physical.nodes():
                 mapping_ILP += pulp.lpSum(
-                    link_mapping[(u, v, i, j, device)] for j in physical.neighbors(i) for device in
+                    link_mapping[(u, v, i, j, device)] for j in physical[i] for device in
                     physical[i][j]) <= 1
                 mapping_ILP += pulp.lpSum(
-                    link_mapping[(u, v, j, i, device)] for j in physical.neighbors(i) for device in
+                    link_mapping[(u, v, j, i, device)] for j in physical[i] for device in
                     physical[i][j]) <= 1
 
         # a link can be used only in a direction

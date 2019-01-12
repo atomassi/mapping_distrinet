@@ -20,8 +20,9 @@ def time_comparison():
 
     physical_topo = PhysicalNetwork.grid5000("grisou")
 
-    for group_interfaces in (True, False):
-        for k in range(2, 13, 2):
+
+    for k in range(2, 13, 2):
+        for group_interfaces in (True, False):
             virtual_topo = LogicalNetwork.create_fat_tree(k=k, density=int(k / 2))
             print(
                 f"\n\n{k}-ary fat-tree has {len(virtual_topo.g.nodes())} nodes and {len(virtual_topo.g.edges())} edges")

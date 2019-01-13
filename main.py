@@ -1,6 +1,6 @@
 import logging.config
+import os
 
-from definitions import *
 from embedding.grid5000 import EmbedILP_grid5000
 from embedding.grid5000 import PhysicalNetwork
 from exceptions import TimeLimitError
@@ -12,7 +12,8 @@ except:
     pass
 
 if __name__ == "__main__":
-    logging.config.fileConfig(os.path.join(basedir, 'logging.conf'), disable_existing_loggers=False)
+    logging.config.fileConfig(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'logging.conf'),
+                              disable_existing_loggers=False)
     log = logging.getLogger(__name__)
 
     physical_topo = PhysicalNetwork.grid5000("grisou", group_interfaces=False)

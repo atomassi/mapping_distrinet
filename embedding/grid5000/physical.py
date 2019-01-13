@@ -1,10 +1,9 @@
 import json
 import logging
+import os
 import warnings
 
 import networkx as nx
-
-from definitions import *
 
 
 class PhysicalNetwork(object):
@@ -30,10 +29,14 @@ class PhysicalNetwork(object):
         return self._g.nodes()
 
     def cores(self, node):
-        return self._g.nodes[node]['nb_cores']
+        if 'nb_cores' in self._g.nodes[node]:
+            return self._g.nodes[node]['nb_cores']
+        return 0
 
     def memory(self, node):
-        return self._g.nodes[node]['ram_size']
+        if 'ram_size' in self._g.nodes[node]:
+            return self._g.nodes[node]['ram_size']
+        return 0
 
     def link_rate(self, i, j, device='dummy_interface'):
         return self._g[i][j][device]['rate']
@@ -60,24 +63,28 @@ class PhysicalNetwork(object):
 
         n_interfaces_to_consider : the maximum number of network interfaces to be considered per node (optional, default: all)
 
+        group_interfaces : True if the interfaces towards the same destination node should be considered as a single one (optional, default: False)
+            This option allow traffic from a Node i to a Node j to be splitted between different interfaces. E.g., 50% on eth0 and 50% on eth1
+
         Returns
         -------
         an instance of the PhysicalNetwork class
         """
         g = nx.MultiGraph()
         # compute nodes
-        with open(os.path.join(basedir, "embedding", "grid5000", "topo", name + ".json")) as f:
+        with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "physical_topo", name + ".json")) as f:
             data = json.load(f)
 
             for node in data['items']:
+                # from byte to mebibyte
                 g.add_node(node['uid'], nb_cores=node['architecture']['nb_cores'] * node['architecture']['nb_procs'],
-                           ram_size=node['main_memory']['ram_size'])
+                           ram_size=node['main_memory']['ram_size'] / (1024 ** 2))
 
                 n_added_interfaces = 0
                 for interface, link in enumerate(node['network_adapters']):
                     if link['device'].startswith("eth") and link['enabled'] and link['driver'] == "ixgbe":
                         source, dest, device_name, device_rate = node['uid'], link['switch'], link['device'], link[
-                            'rate']
+                            'rate'] / 10 ** 6
                         if not group_interfaces:
                             g.add_edge(source, dest, key=device_name, rate=device_rate)
                         else:
@@ -92,11 +99,6 @@ class PhysicalNetwork(object):
                         if n_added_interfaces == n_interfaces_to_consider:
                             break
 
-        # all non-compute nodes have number of cores and memory size set to 0
-        for u in g.nodes():
-            if 'nb_cores' not in g.nodes[u] or 'ram_size' not in g.nodes[u]:
-                g.nodes[u]['nb_cores'] = 0
-                g.nodes[u]['ram_size'] = 0
         return cls(g, group_interfaces)
 
     @classmethod

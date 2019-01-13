@@ -37,14 +37,11 @@ class LogicalNetwork(object):
     def requested_link_rate(self, i, j):
         return self._g[i][j]['rate']
 
-    def get_nw_interfaces(self, i, j):
-        return self._g[i][j]
-
     def get_neighbors(self, i):
         return self._g[i]
 
     @classmethod
-    def create_fat_tree(cls, k=2, density=2, node_req_cores=2, node_req_memory=1000000, link_req_rate=50000000):
+    def create_fat_tree(cls, k=2, density=2, node_req_cores=2, node_req_memory=10000, link_req_rate=100):
         """create a K-ary FatTree
         """
         assert k > 1, "k should be greater than 1"

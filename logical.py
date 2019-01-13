@@ -1,4 +1,5 @@
 import logging
+import warnings
 
 import networkx as nx
 
@@ -6,11 +7,44 @@ import networkx as nx
 class LogicalNetwork(object):
 
     def __init__(self, g):
-        self.g = g
+        self._g = g
         self._log = logging.getLogger(__name__)
 
+    @property
+    def g(self):
+        return self._g
+
+    @g.setter
+    def g(self, g_new):
+        warnings.warn("original logical network has been modified")
+        self._g = g_new
+
+    def edges(self):
+        return self._g.edges()
+
+    def sorted_edges(self):
+        return set((u, v) if u < v else (v, u) for (u, v) in self.edges())
+
+    def nodes(self):
+        return self._g.nodes()
+
+    def requested_cores(self, node):
+        return self._g.nodes[node]['cores']
+
+    def requested_memory(self, node):
+        return self._g.nodes[node]['memory']
+
+    def requested_link_rate(self, i, j):
+        return self._g[i][j]['rate']
+
+    def get_nw_interfaces(self, i, j):
+        return self._g[i][j]
+
+    def get_neighbors(self, i):
+        return self._g[i]
+
     @classmethod
-    def create_fat_tree(cls, k=2, density=2, cpu_cores=2, memory=1000000, bw=50000000):
+    def create_fat_tree(cls, k=2, density=2, node_req_cores=2, node_req_memory=1000000, link_req_rate=50000000):
         """create a K-ary FatTree
         """
         assert k > 1, "k should be greater than 1"
@@ -50,10 +84,10 @@ class LogicalNetwork(object):
                 g.add_edge(edge_switches[x], hosts[density * x + i])
 
         for node in g.nodes():
-            g.node[node]['cpu_cores'] = cpu_cores
-            g.node[node]['memory'] = memory
+            g.node[node]['cores'] = node_req_cores
+            g.node[node]['memory'] = node_req_memory
         for edge in g.edges():
-            g.edges[edge]['bw'] = bw
+            g.edges[edge]['rate'] = link_req_rate
 
         return cls(g)
 

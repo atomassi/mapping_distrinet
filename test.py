@@ -31,6 +31,7 @@ class TestInstalledSolvers(unittest.TestCase):
         self.test_ILP.setSolver(pulp.SCIP(msg=0))
         self.test_ILP.solve()
 
+
 @unittest.skip("Not implemented")
 class TestSolution(unittest.TestCase):
     def test_empty_solution(self):
@@ -50,6 +51,7 @@ class TestSolution(unittest.TestCase):
 
     def test_invalid_mapping(self):
         pass
+
 
 @unittest.skip("Not implemented")
 class TestProblemInstances(unittest.TestCase):

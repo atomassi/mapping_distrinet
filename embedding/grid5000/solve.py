@@ -8,9 +8,9 @@ from abc import abstractmethod, ABCMeta
 
 class Embed(object, metaclass=ABCMeta):
 
-    def __init__(self, logical_topo, physical_topo):
-        self.logical_topo = logical_topo
-        self.physical_topo = physical_topo
+    def __init__(self, logical, physical):
+        self.logical = logical
+        self.physical = physical
         self._log = logging.getLogger(__name__)
 
     @staticmethod

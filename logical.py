@@ -1,3 +1,4 @@
+import itertools
 import logging
 import warnings
 
@@ -52,6 +53,7 @@ class LogicalNetwork(object):
         assert node_req_cores >= 0, "node CPU cores cannot be negative"
         assert node_req_memory >= 0, "node memory cannot be negative"
         assert link_req_rate >= 0, "link rate cannot be negative"
+
         nb_pods = k
         nb_core_switches = int((k / 2) ** 2)
         nb_aggr_switches = nb_edge_switches = int(k * k / 2)
@@ -63,7 +65,7 @@ class LogicalNetwork(object):
         edge_switches = [f'edge_{i}' for i in range(1, nb_edge_switches + 1)]
 
         g = nx.Graph()
-        g.add_nodes_from(hosts + core_switches + aggr_switches + edge_switches, cores=node_req_cores,
+        g.add_nodes_from(itertools.chain(hosts, core_switches, aggr_switches, edge_switches), cores=node_req_cores,
                          memory=node_req_memory)
 
         # Core to Aggr

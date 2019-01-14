@@ -53,7 +53,7 @@ class PhysicalNetwork(object):
         return self._g[i][j]['dummy_interface']['associated_interfaces']
 
     @classmethod
-    def grid5000(cls, name, n_interfaces_to_consider=float('inf'), group_interfaces=False, ):
+    def grid5000(cls, name, n_interfaces_to_consider=float('inf'), group_interfaces=False):
         """Import the physical network topology from a Grid5000 cluster.
 
         Parameters

@@ -1,5 +1,6 @@
 import itertools
 import logging
+import random
 import warnings
 
 import networkx as nx
@@ -86,6 +87,16 @@ class LogicalNetwork(object):
             for i in range(density):
                 g.add_edge(edge_switches[x], hosts[density * x + i], rate=link_req_rate)
 
+        return cls(g)
+
+    @classmethod
+    def create_random_EC2(cls, n_nodes=100):
+        range_cores = list(range(1, 11))
+        range_memory = list(range(512, 4096, 512))
+
+        g = nx.Graph()
+        g.add_nodes_from(
+            ((n, dict(cores=random.choice(range_cores), memory=random.choice(range_memory))) for n in range(n_nodes)))
         return cls(g)
 
     @classmethod

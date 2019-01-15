@@ -1,36 +1,47 @@
 import json
+import logging
 import os
 import warnings
 
 
 class InstanceEC2(object):
-    def __init__(self, instances):
-        self._instances = instances
+    def __init__(self, vm_options):
+        self._log = logging.getLogger(__name__)
+        self._vm_options = vm_options
 
     @property
-    def instances(self):
-        return self._instances
+    def vm_options(self):
+        return self._vm_options
 
-    @instances.setter
-    def instances(self, instances_new):
+    @vm_options.setter
+    def instances(self, new_vm_options):
         warnings.warn("original VMs instances have been modified")
-        self._instances = instances_new
+        self._vm_options = new_vm_options
 
     def get_memory(self, vm):
-        return self._instances[vm]['memory']
+        return self._vm_options[vm]['memory']
 
     def get_cores(self, vm):
-        return self._instances[vm]['vCPU']
+        return self._vm_options[vm]['vCPU']
 
     def get_hourly_cost(self, vm):
-        return self._instances[vm]['hourly_cost']
+        return self._vm_options[vm]['hourly_cost']
 
     @classmethod
     def get_EC2_vritual_machines(cls, vm_type='general_purpose'):
         with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "instances", vm_type + ".json")) as f:
-            instances = json.load(f)
+            vm_options = json.load(f)
         # gibibyte to mebibyte conversion
-        for instance_name in instances:
-            instances[instance_name]['memory'] *= 1024
+        for vm in vm_options:
+            vm_options[vm]['memory'] *= 1024
 
-        return cls(instances)
+        return cls(vm_options)
+
+
+if __name__ == "__main__":
+    vm_options = InstanceEC2.get_EC2_vritual_machines()
+    # print(inst.instances)
+
+    for k, v in vm_options.instances.items():
+        print(k, v)
+    print(len(vm_options.instances))

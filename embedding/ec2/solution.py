@@ -18,8 +18,10 @@ class Solution(object):
         """check if the solution is correct
         """
         # every node is mapped
-        if len(list(itertools.chain(*self.assignment_ec2_instances.values()))) != len(self.logical.nodes()):
-            raise AssignmentError
+        nodes_assigned = set(itertools.chain(*self.assignment_ec2_instances.values()))
+        if len(nodes_assigned) != len(self.logical.nodes()):
+            not_assigned_nodes = self.logical.nodes() - nodes_assigned
+            raise AssignmentError(not_assigned_nodes)
         # EC2 instance resources are not exceeded
         for vm_type, vm_id in self.assignment_ec2_instances:
             used_cores = sum(self.logical.requested_cores(u) for u in self.assignment_ec2_instances[(vm_type, vm_id)])

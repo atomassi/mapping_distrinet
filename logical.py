@@ -91,6 +91,7 @@ class LogicalNetwork(object):
 
     @classmethod
     def create_random_EC2(cls, n_nodes=100):
+        random.seed(99)
         range_cores = list(range(1, 11))
         range_memory = list(range(512, 4096, 512))
 

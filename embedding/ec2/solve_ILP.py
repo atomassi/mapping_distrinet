@@ -2,7 +2,7 @@ from collections import defaultdict
 
 import pulp
 
-from exceptions import InfeasibleError
+from exceptions import InfeasibleError, TimeLimitError
 from .solution import Solution
 from .solve import Embed
 
@@ -12,13 +12,13 @@ class EmbedILP(Embed):
     @staticmethod
     def solver(solver_name, timelimit):
         if solver_name == 'cplex':
-            return pulp.CPLEX(msg=0, timeLimit=timelimit)
+            return pulp.CPLEX(msg=1, timeLimit=timelimit)
         elif solver_name == 'gurobi':
-            return pulp.GUROBI(msg=0, timeLimit=timelimit)
+            return pulp.GUROBI(msg=1, timeLimit=timelimit)
         elif solver_name == "glpk":
-            return pulp.GLPK(msg=0, options=["--tmlim", str(timelimit)])
+            return pulp.GLPK(msg=1, options=["--tmlim", str(timelimit)])
         elif solver_name == 'cbc':
-            return pulp.COIN(msg=0, maxSeconds=timelimit)
+            return pulp.COIN(msg=1, maxSeconds=timelimit)
         elif solver_name == 'scip':
             return pulp.SCIP(msg=0, options=['-c', f'set limits time {timelimit}'])
         else:
@@ -86,10 +86,13 @@ class EmbedILP(Embed):
         status = pulp.LpStatus[mapping_ILP.solve()]
         if status == "Infeasible":
             raise InfeasibleError
+        elif (status == 'Not Solved' or status == "Undefined") and (
+                not pulp.value(mapping_ILP.objective) or sum(node_mapping[(u, vm_type, vm_id)].varValue for (u, vm_type, vm_id) in node_mapping) == 0):
+            raise TimeLimitError
 
         assignment_ec2_instances = self.build_ILP_solution(node_mapping)
         solution = Solution(self.physical, self.logical, assignment_ec2_instances)
-        return pulp.value(mapping_ILP.objective), solution
+        return round(pulp.value(mapping_ILP.objective),2), solution
 
     def build_ILP_solution(self, node_mapping):
         """Build an assignment of virtual nodes and virtual links starting from the values of the variables in the ILP
@@ -100,6 +103,7 @@ class EmbedILP(Embed):
         # dict: key = virtual node, value = vm assigned
         assignment_nodes = defaultdict()
         for (u, vm_type, vm_id) in node_mapping:
+            # print(node_mapping[(u, vm_type, vm_id)],node_mapping[(u, vm_type, vm_id)].varValue)
             if node_mapping[(u, vm_type, vm_id)].varValue > 0:
                 assignment_ec2_instances[(vm_type, vm_id)].append(u)
                 # assignment_nodes[u] = (vm_type, vm_id)

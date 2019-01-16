@@ -12,13 +12,13 @@ class EmbedILP(Embed):
     @staticmethod
     def solver(solver_name, timelimit):
         if solver_name == 'cplex':
-            return pulp.CPLEX(msg=1, timeLimit=timelimit)
+            return pulp.CPLEX(msg=0, timeLimit=timelimit)
         elif solver_name == 'gurobi':
-            return pulp.GUROBI(msg=1, timeLimit=timelimit)
+            return pulp.GUROBI(msg=0, timeLimit=timelimit)
         elif solver_name == "glpk":
-            return pulp.GLPK(msg=1, options=["--tmlim", str(timelimit)])
+            return pulp.GLPK(msg=0, options=["--tmlim", str(timelimit)])
         elif solver_name == 'cbc':
-            return pulp.COIN(msg=1, maxSeconds=timelimit)
+            return pulp.COIN(msg=0, maxSeconds=timelimit)
         elif solver_name == 'scip':
             return pulp.SCIP(msg=0, options=['-c', f'set limits time {timelimit}'])
         else:
@@ -40,19 +40,30 @@ class EmbedILP(Embed):
                 n_instances_needed += 1
         return n_instances_needed
 
+    def get_feasible_instances(self, u):
+        """Return a set with the instances types feasible for node u
+        """
+        return set(vm_type for vm_type in self.physical.vm_options if
+                   self.logical.requested_cores(u) <= self.physical.get_cores(
+                       vm_type) and self.logical.requested_memory(u) <= self.physical.get_memory(vm_type))
+
     @Embed.timeit
     def __call__(self, **kwargs):
 
         solver_name = kwargs.get('solver', 'cplex').lower()
         timelimit = int(kwargs.get('timelimit', '3600'))
         self._log.info(f"called ILP solver with the following parameters: {kwargs}")
-
+        # UB on the number of instances of a certain type
+        instances_UB = {vm_type: self.get_UB(vm_type) for vm_type in self.physical.vm_options}
+        # instances on which a logical node u may be placed
+        feasible_instances = {u: self.get_feasible_instances(u) for u in self.logical.nodes()}
         vm_used = pulp.LpVariable.dicts("vm_used",
                                         ((vm_type, vm_id) for vm_type in self.physical.vm_options for vm_id in
-                                         range(self.get_UB(vm_type))), cat=pulp.LpBinary)
+                                         range(instances_UB[vm_type])), cat=pulp.LpBinary)
         node_mapping = pulp.LpVariable.dicts("node_mapping",
-                                             ((u, vm_type, vm_id) for u in self.logical.nodes() for (vm_type, vm_id) in
-                                              vm_used), cat=pulp.LpBinary)
+                                             ((u, vm_type, vm_id) for u in self.logical.nodes() for vm_type in
+                                              feasible_instances[u] for vm_id in range(instances_UB[vm_type])),
+                                             cat=pulp.LpBinary)
         # problem definition
         mapping_ILP = pulp.LpProblem("Mapping ILP", pulp.LpMinimize)
 
@@ -63,36 +74,40 @@ class EmbedILP(Embed):
         # Assignment of a virtual node to an EC2 instance
         for u in self.logical.nodes():
             mapping_ILP += pulp.lpSum(
-                (node_mapping[(u, vm_type, vm_id)] for (vm_type, vm_id) in vm_used)) >= 1, f"assignment of node {u}"
+                (node_mapping[(u, vm_type, vm_id)] for vm_type in feasible_instances[u] for vm_id in
+                 range(instances_UB[vm_type]))) >= 1, f"assignment of node {u}"
 
         for (vm_type, vm_id) in vm_used:
             # CPU cores capacity constraints
             mapping_ILP += pulp.lpSum(
                 (self.logical.requested_cores(u) * node_mapping[(u, vm_type, vm_id)] for u in
-                 self.logical.nodes())) <= self.physical.get_cores(vm_type) * \
+                 self.logical.nodes() if vm_type in feasible_instances[u])) <= self.physical.get_cores(vm_type) * \
                            vm_used[vm_type, vm_id], f"core capacity of instance {vm_type, vm_id}"
             # memory capacity constraints
             mapping_ILP += pulp.lpSum(
                 (self.logical.requested_memory(u) * node_mapping[(u, vm_type, vm_id)] for u in
-                 self.logical.nodes())) <= self.physical.get_memory(
+                 self.logical.nodes() if vm_type in feasible_instances[u])) <= self.physical.get_memory(
                 vm_type) * \
                            vm_used[vm_type, vm_id], f"memory capacity of instance {vm_type, vm_id}"
 
         solver = self.solver(solver_name, timelimit)
-        # set solver
         mapping_ILP.setSolver(solver)
 
         # solve the ILP
         status = pulp.LpStatus[mapping_ILP.solve()]
+        obj_value = pulp.value(mapping_ILP.objective)
+
         if status == "Infeasible":
             raise InfeasibleError
         elif (status == 'Not Solved' or status == "Undefined") and (
-                not pulp.value(mapping_ILP.objective) or sum(node_mapping[(u, vm_type, vm_id)].varValue for (u, vm_type, vm_id) in node_mapping) == 0):
+                not obj_value or sum(
+            round(node_mapping[(u, vm_type, vm_id)].varValue) for (u, vm_type, vm_id) in
+            node_mapping) != self.logical.number_of_nodes()):
             raise TimeLimitError
 
         assignment_ec2_instances = self.build_ILP_solution(node_mapping)
         solution = Solution(self.physical, self.logical, assignment_ec2_instances)
-        return round(pulp.value(mapping_ILP.objective),2), solution
+        return round(obj_value, 2), solution
 
     def build_ILP_solution(self, node_mapping):
         """Build an assignment of virtual nodes and virtual links starting from the values of the variables in the ILP
@@ -104,7 +119,7 @@ class EmbedILP(Embed):
         assignment_nodes = defaultdict()
         for (u, vm_type, vm_id) in node_mapping:
             # print(node_mapping[(u, vm_type, vm_id)],node_mapping[(u, vm_type, vm_id)].varValue)
-            if node_mapping[(u, vm_type, vm_id)].varValue > 0:
+            if round(node_mapping[(u, vm_type, vm_id)].varValue) == 1:
                 assignment_ec2_instances[(vm_type, vm_id)].append(u)
                 # assignment_nodes[u] = (vm_type, vm_id)
         return assignment_ec2_instances

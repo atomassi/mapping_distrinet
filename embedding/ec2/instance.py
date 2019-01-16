@@ -14,7 +14,7 @@ class InstanceEC2(object):
         return self._vm_options
 
     @vm_options.setter
-    def instances(self, new_vm_options):
+    def vm_options(self, new_vm_options):
         warnings.warn("original VMs instances have been modified")
         self._vm_options = new_vm_options
 

@@ -30,12 +30,12 @@ class PhysicalNetwork(object):
 
     def cores(self, node):
         if 'nb_cores' in self._g.nodes[node]:
-            return self._g.nodes[node]['nb_cores']
+            return self._g.node[node]['nb_cores']
         return 0
 
     def memory(self, node):
         if 'ram_size' in self._g.nodes[node]:
-            return self._g.nodes[node]['ram_size']
+            return self._g.node[node]['ram_size']
         return 0
 
     def link_rate(self, i, j, device='dummy_interface'):

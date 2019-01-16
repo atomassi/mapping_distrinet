@@ -30,11 +30,14 @@ class LogicalNetwork(object):
     def nodes(self):
         return self._g.nodes()
 
+    def number_of_nodes(self):
+        return self._g.number_of_nodes()
+
     def requested_cores(self, node):
-        return self._g.nodes[node]['cores']
+        return self._g.node[node]['cores']
 
     def requested_memory(self, node):
-        return self._g.nodes[node]['memory']
+        return self._g.node[node]['memory']
 
     def requested_link_rate(self, i, j):
         return self._g[i][j]['rate']
@@ -89,7 +92,6 @@ class LogicalNetwork(object):
 
         return cls(g)
 
-    
     @classmethod
     def create_random_EC2(cls, n_nodes=100, seed=99):
         random.seed(seed)

@@ -1,7 +1,7 @@
 from functools import lru_cache
 
+from embedding import Embed
 from .solution import Solution
-from .solve import Embed
 
 
 class Bin(object):

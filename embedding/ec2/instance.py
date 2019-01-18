@@ -36,12 +36,3 @@ class InstanceEC2(object):
             vm_options[vm]['memory'] *= 1024
 
         return cls(vm_options)
-
-
-if __name__ == "__main__":
-    vm_options = InstanceEC2.get_EC2_vritual_machines()
-    # print(inst.instances)
-
-    for k, v in vm_options.instances.items():
-        print(k, v)
-    print(len(vm_options.instances))

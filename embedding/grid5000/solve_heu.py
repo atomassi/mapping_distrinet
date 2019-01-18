@@ -1,4 +1,4 @@
-from .solve import Embed
+from embedding import Embed
 
 
 class EmbedHeu(Embed):

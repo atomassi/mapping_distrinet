@@ -2,9 +2,9 @@ from collections import defaultdict
 
 import pulp
 
+from embedding import Embed
 from exceptions import InfeasibleError, TimeLimitError
 from .solution import Solution
-from .solve import Embed
 
 
 class EmbedILP(Embed):
@@ -13,6 +13,7 @@ class EmbedILP(Embed):
     def solver(solver_name, timelimit):
         if solver_name == 'cplex':
             return pulp.CPLEX(msg=0, timeLimit=timelimit)
+            # return pulp.CPLEX_CMD(msg=1,path="/Applications/CPLEX_Studio128/cplex/bin/x86-64_osx/cplex", options=['set timelimit 30'])
         elif solver_name == 'gurobi':
             return pulp.GUROBI(msg=0, timeLimit=timelimit)
         elif solver_name == "glpk":
@@ -75,7 +76,7 @@ class EmbedILP(Embed):
         for u in self.logical.nodes():
             mapping_ILP += pulp.lpSum(
                 (node_mapping[(u, vm_type, vm_id)] for vm_type in feasible_instances[u] for vm_id in
-                 range(instances_UB[vm_type]))) >= 1, f"assignment of node {u}"
+                 range(instances_UB[vm_type]))) == 1, f"assignment of node {u}"
 
         for (vm_type, vm_id) in vm_used:
             # CPU cores capacity constraints

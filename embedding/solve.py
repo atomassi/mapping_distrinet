@@ -8,8 +8,8 @@ from abc import abstractmethod, ABCMeta
 
 class Embed(object, metaclass=ABCMeta):
 
-    def __init__(self, logical, physical):
-        self.logical = logical
+    def __init__(self, virtual, physical):
+        self.virtual = virtual
         self.physical = physical
         self._log = logging.getLogger(__name__)
 

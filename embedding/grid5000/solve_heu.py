@@ -16,7 +16,7 @@ def get_partitions(g, n_partitions):
        returns a list with k sets of nodes
     """
 
-    def iterative_cutting(g, k, restart_from):
+    def iterative_cutting(g, k, restart_from=None):
         """helper function
         """
 
@@ -35,27 +35,26 @@ def get_partitions(g, n_partitions):
             p0 = to_be_processed.pop()
             if len(p0) < k:
                 partitions.append(p0)
-                continue
-
-            for partition in kernighan_lin_bisection(g.subgraph(p0), weight='rate'):
-                if len(partition) > k:
-                    to_be_processed.append(g.subgraph(partition))
-                else:
-                    partitions.append(partition)
+            else:
+                for partition in kernighan_lin_bisection(g.subgraph(p0), weight='rate'):
+                    if len(partition) > k:
+                        to_be_processed.append(g.subgraph(partition))
+                    else:
+                        partitions.append(partition)
 
         return partitions
 
     k = len(g.nodes()) / n_partitions
 
-    # when computing a paritioning for the graph nodes,
+    # when computing a partitioning for the graph nodes,
     # if result is known for a smaller value of n_partitions
-    # don't restart from scracth but use it as a start value
+    # don't restart from scratch but use it as a start value
     if g not in _memo:
         _memo.clear()
     partitions = iterative_cutting(g, k, _memo.get(g, None))
     _memo[g] = partitions
 
-    # merge small partitions to return the required number of parititions
+    # merge small partitions to return the required number of partitions
     if len(partitions) > n_partitions:
         while len(partitions) > n_partitions:
             partitions.sort(key=len)
@@ -69,7 +68,7 @@ class EmbedHeu(Embed):
 
     @Embed.timeit
     def __call__(self, **kwargs):
-        """Heuristic based on computing a k-balanced partitions of logical nodes for then mapping the partition
+        """Heuristic based on computing a k-balanced partitions of virtual nodes for then mapping the partition
            on a subset of the physical nodes.
         """
 
@@ -77,11 +76,11 @@ class EmbedHeu(Embed):
         compute_nodes = self.physical.compute_nodes()
 
         tot_req_cores = tot_req_memory = 0
-        for logical_node in self.logical.nodes():
+        for virtual_node in self.virtual.nodes():
             # the total number of cores to be mapped
-            tot_req_cores += self.logical.req_cores(logical_node)
+            tot_req_cores += self.virtual.req_cores(virtual_node)
             # the total required memory to be mapped
-            tot_req_memory += self.logical.req_memory(logical_node)
+            tot_req_memory += self.virtual.req_memory(virtual_node)
 
         max_phy_memory = max_phy_cores = 0
         for physical_node in compute_nodes:
@@ -97,61 +96,74 @@ class EmbedHeu(Embed):
 
         for n_partitions in range(lower_bound, len(compute_nodes) + 1):
 
-            # partitioning of logical nodes in n_partitions partitions
-            k_partition = get_partitions(self.logical.g, n_partitions=n_partitions)
+            # partitioning of virtual nodes in n_partitions partitions
+            k_partition = get_partitions(self.virtual.g, n_partitions=n_partitions)
             # random subset of hosts of size n_partitions
             phy_subset = random.sample(compute_nodes, k=n_partitions)
 
             # check if the partitioning is feasible
             try:
                 #
-                # logical nodes to physical nodes assignment
+                # virtual nodes to physical nodes assignment
                 #
                 res_node_mapping = {}
                 cores_used = defaultdict(int)
                 memory_used = defaultdict(int)
 
-                # iterate over each pair (physical_node i, logical nodes assigned to i)
-                for physical_node, logical_nodes_assigned in zip(phy_subset, k_partition):
+                # iterate over each pair (physical_node i, virtual nodes assigned to i)
+                for physical_node, assigned_virtual_nodes in zip(phy_subset, k_partition):
                     # check if node resources are not exceeded:
-                    for logical_node in logical_nodes_assigned:
+                    for virtual_node in assigned_virtual_nodes:
                         # cpu cores
-                        cores_used[physical_node] += self.logical.req_cores(logical_node)
+                        cores_used[physical_node] += self.virtual.req_cores(virtual_node)
                         if self.physical.cores(physical_node) < cores_used[physical_node]:
                             raise NodeResourceError(physical_node, "cpu cores")
                         # memory
-                        memory_used[physical_node] += self.logical.req_memory(logical_node)
+                        memory_used[physical_node] += self.virtual.req_memory(virtual_node)
                         if self.physical.memory(physical_node) < memory_used[physical_node]:
                             raise NodeResourceError(physical_node, "memory")
-                        # assign the logical nodes to a physical node
-                        res_node_mapping[logical_node] = physical_node
+                        # assign the virtual nodes to a physical node
+                        res_node_mapping[virtual_node] = physical_node
 
                 #
-                # logical links to physical links assignment
+                # virtual links to physical links assignment
                 #
                 res_link_mapping = {}
                 rate_used = defaultdict(int)
 
-                # iterate over each logical link
-                for (u, v) in self.logical.edges():
-                    phy_u, phy_v = res_node_mapping[u], res_node_mapping[v]
+                # to keep track of the paths between 2 physical nodes
+                computed_paths = {}
 
+                # iterate over each virtual link
+                for (u, v) in self.virtual.edges():
+                    # physical nodes on which u and v have been placed
+                    phy_u, phy_v = res_node_mapping[u], res_node_mapping[v]
                     # if u and v have been placed on the same physical machine go next
                     if phy_u == phy_v:
                         continue
-                    # else, for each link in the physical path
-                    for (i, j) in self.physical.find_path(phy_u, phy_v):
+
+                    # if a physical path between phy_u and phy_v has not been computed yet
+                    # check if a path between phy_v and phy_u has been computed and reverse it
+                    # otherwise compute it and store it
+                    if (phy_u, phy_v) not in computed_paths:
+                        if (phy_v, phy_u) in computed_paths:
+                            computed_paths[(phy_u, phy_v)] = list(reversed(computed_paths[(phy_v, phy_u)]))
+                        else:
+                            computed_paths[(phy_u, phy_v)] = list(self.physical.find_path(phy_u, phy_v))
+
+                    # for each link in the physical path
+                    for (i, j) in computed_paths[(phy_u, phy_v)]:
 
                         # get an interface with enough available rate
                         chosen_interface = next((interface for interface in self.physical.nw_interfaces(i, j) if
                                                  self.physical.rate(i, j, interface) - rate_used[
-                                                     (i, j, interface)] >= self.logical.req_rate(u, v)), None)
+                                                     (i, j, interface)] >= self.virtual.req_rate(u, v)), None)
 
                         # if such an interface does not exist raise an Exception
                         if not chosen_interface:
                             raise LinkCapacityError((i, j))
                         # else update the rate
-                        rate_used[(i, j, chosen_interface)] += self.logical.req_rate(u, v)
+                        rate_used[(i, j, chosen_interface)] += self.virtual.req_rate(u, v)
 
                         if i == phy_u or j == phy_u:
                             source = (i, chosen_interface, j) if i == phy_u else (j, chosen_interface, i)
@@ -161,10 +173,10 @@ class EmbedHeu(Embed):
                     res_link_mapping[(u, v)] = [(source + dest + (1,))]
 
                 if self.physical.grouped_interfaces:
-                    solution = Solution.map_to_multiple_interfaces(self.logical, self.physical, res_node_mapping,
+                    solution = Solution.map_to_multiple_interfaces(self.virtual, self.physical, res_node_mapping,
                                                                    res_link_mapping)
                 else:
-                    solution = Solution(self.logical, self.physical, res_node_mapping, res_link_mapping)
+                    solution = Solution(self.virtual, self.physical, res_node_mapping, res_link_mapping)
 
                 return n_partitions, solution
 

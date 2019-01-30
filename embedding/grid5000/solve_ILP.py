@@ -35,19 +35,19 @@ class EmbedILP(Embed):
         f1 = lambda u, v, i, j, device: (u, v, i, j, device)
         f2 = lambda u, v, i, j, device: (u, v, j, i, device)
         # each undirected link is considered in alphabetical order to be consistent with variable names
-        sorted_logical_edges = self.logical.sorted_edges()
+        sorted_virtual_links = self.virtual.sorted_edges()
 
         # if traffic cannot be splitted over multiple interfaces, then the link assignment variables
         # have binary domain, otherwise this constraint can be relaxed
         link_mapping = pulp.LpVariable.dicts("link_mapping",
                                              [f(u, v, i, j, device) for (u, v) in
-                                              sorted_logical_edges for (i, j, device) in self.physical.edges(keys=True)
+                                              sorted_virtual_links for (i, j, device) in self.physical.edges(keys=True)
                                               for f in [f1, f2]], lowBound=0, upBound=1,
                                              cat='Binary' if not self.physical.grouped_interfaces else 'Continuous')
 
         # node mapping variables
         node_mapping = pulp.LpVariable.dicts("node_mapping",
-                                             [(u, i) for u in self.logical.nodes() for i in self.physical.nodes()],
+                                             [(u, i) for u in self.virtual.nodes() for i in self.physical.nodes()],
                                              cat=pulp.LpBinary)
 
         # problem definition
@@ -67,67 +67,67 @@ class EmbedILP(Embed):
             usage_phy_machine = pulp.LpVariable.dicts("usage", [i for i in self.physical.nodes()], cat=pulp.LpBinary)
             # set objective
             mapping_ILP += pulp.lpSum(usage_phy_machine[i] for i in self.physical.nodes())
-            # a machine is used if at least a logical node is mapped on it
+            # a machine is used if at least a virtual node is mapped on it
             for i in self.physical.nodes():
-                for u in self.logical.nodes():
+                for u in self.virtual.nodes():
                     mapping_ILP += usage_phy_machine[i] >= node_mapping[(u, i)]
 
         # Case 3: minimize used bandwidth
         elif obj == 'min_bw':
-            mapping_ILP += pulp.lpSum(self.logical.req_rate(u, v) * (
+            mapping_ILP += pulp.lpSum(self.virtual.req_rate(u, v) * (
                     link_mapping[(u, v, i, j, device)] + link_mapping[(u, v, j, i, device)])
-                                      for (u, v) in sorted_logical_edges for (i, j, device) in
+                                      for (u, v) in sorted_virtual_links for (i, j, device) in
                                       self.physical.edges(keys=True))
 
         # Assignment of virtual nodes to physical nodes
-        for u in self.logical.nodes():
+        for u in self.virtual.nodes():
             mapping_ILP += pulp.lpSum(
                 node_mapping[(u, i)] for i in self.physical.nodes()) == 1, f"assignment of {u} to a physical node"
 
         for i in self.physical.nodes():
             # CPU limit
             mapping_ILP += pulp.lpSum(
-                self.logical.req_cores(u) * node_mapping[(u, i)] for u in self.logical.nodes()) <= \
+                self.virtual.req_cores(u) * node_mapping[(u, i)] for u in self.virtual.nodes()) <= \
                            self.physical.cores(i), f"CPU capacity for physical node {i}"
             # Memory limit
             mapping_ILP += pulp.lpSum(
-                self.logical.req_memory(u) * node_mapping[(u, i)] for u in self.logical.nodes()) <= \
+                self.virtual.req_memory(u) * node_mapping[(u, i)] for u in self.virtual.nodes()) <= \
                            self.physical.memory(i), f"memory capacity for physical node {i}"
 
-        # Max latency for a logical link in the substrate network
+        # Max latency for a virtual link in the substrate network
         # @todo to be added
 
         # Bandwidth conservation
-        # for each logical edge a flow conservation problem
-        for (u, v) in sorted_logical_edges:
+        # for each virtual edge a flow conservation problem
+        for (u, v) in sorted_virtual_links:
             for i in self.physical.nodes():
                 mapping_ILP += pulp.lpSum(
                     (link_mapping[(u, v, i, j, device)] - link_mapping[(u, v, j, i, device)]) for j in
                     self.physical.neighbors(i) for device in self.physical.nw_interfaces(i, j)) == (
                                        node_mapping[(u, i)] - node_mapping[
-                                   (v, i)]), f"flow conservation on physical node {i} for logical link {u, v}"
+                                   (v, i)]), f"flow conservation on physical node {i} for virtual link {u, v}"
 
         # Link capacity
         for (i, j, device) in self.physical.edges(keys=True):
-            mapping_ILP += pulp.lpSum(self.logical.req_rate(u, v) * (
+            mapping_ILP += pulp.lpSum(self.virtual.req_rate(u, v) * (
                     link_mapping[(u, v, i, j, device)] + link_mapping[(u, v, j, i, device)])
-                                      for (u, v) in sorted_logical_edges) <= self.physical.rate(i, j,
+                                      for (u, v) in sorted_virtual_links) <= self.physical.rate(i, j,
                                                                                                 device), f"link capacity for physical link {i, j, device}"
-        # given a logical link a physical machine the rate that goes out from the physical machine to an interface
+        # given a virtual link a physical machine the rate that goes out from the physical machine to an interface
         # or that comes in to the physical machine from an interface is at most 1
-        for (u, v) in sorted_logical_edges:
+        for (u, v) in sorted_virtual_links:
             for i in self.physical.nodes():
                 mapping_ILP += pulp.lpSum(
                     link_mapping[(u, v, i, j, device)] for j in self.physical.neighbors(i) for device in
                     self.physical.nw_interfaces(i,
-                                                j)) <= 1, f"logical link {u, v} can use only a network interface to going out from physical node {i}"
+                                                j)) <= 1, f"virtual link {u, v} can use only a network interface to going out from physical node {i}"
                 mapping_ILP += pulp.lpSum(
                     link_mapping[(u, v, j, i, device)] for j in self.physical.neighbors(i) for device in
                     self.physical.nw_interfaces(i,
-                                                j)) <= 1, f"logical link {u, v} can use only a network interface to reach physical node {i}"
+                                                j)) <= 1, f"virtual link {u, v} can use only a network interface to reach physical node {i}"
 
         # a link can be used only in a direction
-        for (u, v) in sorted_logical_edges:
+        for (u, v) in sorted_virtual_links:
             for (i, j, device) in self.physical.edges(keys=True):
                 mapping_ILP += link_mapping[(u, v, i, j, device)] + link_mapping[(
                     u, v, j, i,
@@ -149,16 +149,16 @@ class EmbedILP(Embed):
         res_node_mapping, res_link_mapping = self.build_ILP_solution(node_mapping, link_mapping)
         # if interfaces have been grouped, map to solution to the original network
         if self.physical.grouped_interfaces:
-            solution = Solution.map_to_multiple_interfaces(self.logical, self.physical, res_node_mapping,
+            solution = Solution.map_to_multiple_interfaces(self.virtual, self.physical, res_node_mapping,
                                                            res_link_mapping)
         else:
-            solution = Solution(self.logical, self.physical, res_node_mapping, res_link_mapping)
+            solution = Solution(self.virtual, self.physical, res_node_mapping, res_link_mapping)
 
         if obj == "min_n_machines":
             return pulp.value(mapping_ILP.objective), solution
         else:
-            n_used_machines = sum(next((1 for logical_node in self.logical.nodes() if
-                                        node_mapping[(logical_node, physical_node)].varValue > 0), 0) for physical_node
+            n_used_machines = sum(next((1 for virtual_node in self.virtual.nodes() if
+                                        node_mapping[(virtual_node, physical_node)].varValue > 0), 0) for physical_node
                                   in self.physical.nodes())
 
             return n_used_machines, solution
@@ -168,26 +168,26 @@ class EmbedILP(Embed):
         """
         res_node_mapping = {}
         res_link_mapping = {}
-        # mapping of the logical nodes
-        for logical_node in self.logical.nodes():
-            res_node_mapping[logical_node] = next((physical_node for physical_node in self.physical.nodes() if
-                                                   node_mapping[(logical_node, physical_node)].varValue > 0), None)
+        # mapping of the virtual nodes
+        for virtual_node in self.virtual.nodes():
+            res_node_mapping[virtual_node] = next((physical_node for physical_node in self.physical.nodes() if
+                                                   node_mapping[(virtual_node, physical_node)].varValue > 0), None)
 
-        for (u, v) in self.logical.edges():
-            sorted_logical_link = (u, v) if u < v else (v, u)
+        for (u, v) in self.virtual.edges():
+            sorted_virtual_link = (u, v) if u < v else (v, u)
             if res_node_mapping[u] != res_node_mapping[v]:
-                # mapping for the source of the logical link
+                # mapping for the source of the virtual link
                 link_source = res_node_mapping[u]
                 source = next(((link_source, device, j) for j in self.physical.neighbors(link_source) for device in
                                self.physical.nw_interfaces(link_source, j) if
-                               link_mapping[(*sorted_logical_link, link_source, j, device)].varValue + link_mapping[
-                                   (*sorted_logical_link, j, link_source, device)].varValue > 0.99), None)
-                # mapping for the destination of the logical link
+                               link_mapping[(*sorted_virtual_link, link_source, j, device)].varValue + link_mapping[
+                                   (*sorted_virtual_link, j, link_source, device)].varValue > 0.99), None)
+                # mapping for the destination of the virtual link
                 link_dest = res_node_mapping[v]
                 dest = next(((link_dest, device, j) for j in self.physical.neighbors(link_dest) for device in
                              self.physical.nw_interfaces(link_dest, j) if
-                             link_mapping[(*sorted_logical_link, link_dest, j, device)].varValue + link_mapping[
-                                 (*sorted_logical_link, j, link_dest, device)].varValue > 0.99), None)
+                             link_mapping[(*sorted_virtual_link, link_dest, j, device)].varValue + link_mapping[
+                                 (*sorted_virtual_link, j, link_dest, device)].varValue > 0.99), None)
                 res_link_mapping[(u, v)] = [source + dest + (1.0,)]
 
         return res_node_mapping, res_link_mapping

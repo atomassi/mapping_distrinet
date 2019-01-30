@@ -30,8 +30,8 @@ class EmbedILP(Embed):
         """
         cpu_cores_instance, memory_instance = self.physical.cores(vm_type), self.physical.memory(vm_type)
         n_instances_needed = remaining_cpu_cores = remaining_memory = 0
-        for u in self.logical.nodes():
-            req_cores, req_memory = self.logical.req_cores(u), self.logical.req_memory(u)
+        for u in self.virtual.nodes():
+            req_cores, req_memory = self.virtual.req_cores(u), self.virtual.req_memory(u)
             if req_cores <= remaining_cpu_cores and req_memory <= remaining_memory:
                 remaining_cpu_cores -= req_cores
                 remaining_memory -= req_memory
@@ -45,7 +45,7 @@ class EmbedILP(Embed):
         """Return a set with the instances types feasible for node u
         """
         return set(vm_type for vm_type in self.physical.vm_options if
-                   self.logical.req_cores(u) <= self.physical.cores(vm_type) and self.logical.req_memory(
+                   self.virtual.req_cores(u) <= self.physical.cores(vm_type) and self.virtual.req_memory(
                        u) <= self.physical.memory(vm_type))
 
     @Embed.timeit
@@ -56,13 +56,13 @@ class EmbedILP(Embed):
         self._log.info(f"called ILP solver with the following parameters: {kwargs}")
         # UB on the number of instances of a certain type
         instances_UB = {vm_type: self.get_UB(vm_type) for vm_type in self.physical.vm_options}
-        # instances on which a logical node u may be placed
-        feasible_instances = {u: self.get_feasible_instances(u) for u in self.logical.nodes()}
+        # instances on which a virtual node u may be placed
+        feasible_instances = {u: self.get_feasible_instances(u) for u in self.virtual.nodes()}
         vm_used = pulp.LpVariable.dicts("vm_used",
                                         ((vm_type, vm_id) for vm_type in self.physical.vm_options for vm_id in
                                          range(instances_UB[vm_type])), cat=pulp.LpBinary)
         node_mapping = pulp.LpVariable.dicts("node_mapping",
-                                             ((u, vm_type, vm_id) for u in self.logical.nodes() for vm_type in
+                                             ((u, vm_type, vm_id) for u in self.virtual.nodes() for vm_type in
                                               feasible_instances[u] for vm_id in range(instances_UB[vm_type])),
                                              cat=pulp.LpBinary)
         # problem definition
@@ -73,7 +73,7 @@ class EmbedILP(Embed):
             (self.physical.get_hourly_cost(vm_type) * vm_used[(vm_type, vm_id)] for (vm_type, vm_id) in vm_used))
 
         # Assignment of a virtual node to an EC2 instance
-        for u in self.logical.nodes():
+        for u in self.virtual.nodes():
             mapping_ILP += pulp.lpSum(
                 (node_mapping[(u, vm_type, vm_id)] for vm_type in feasible_instances[u] for vm_id in
                  range(instances_UB[vm_type]))) == 1, f"assignment of node {u}"
@@ -81,13 +81,13 @@ class EmbedILP(Embed):
         for (vm_type, vm_id) in vm_used:
             # CPU cores capacity constraints
             mapping_ILP += pulp.lpSum(
-                (self.logical.req_cores(u) * node_mapping[(u, vm_type, vm_id)] for u in
-                 self.logical.nodes() if vm_type in feasible_instances[u])) <= self.physical.cores(vm_type) * \
+                (self.virtual.req_cores(u) * node_mapping[(u, vm_type, vm_id)] for u in
+                 self.virtual.nodes() if vm_type in feasible_instances[u])) <= self.physical.cores(vm_type) * \
                            vm_used[vm_type, vm_id], f"core capacity of instance {vm_type, vm_id}"
             # memory capacity constraints
             mapping_ILP += pulp.lpSum(
-                (self.logical.req_memory(u) * node_mapping[(u, vm_type, vm_id)] for u in
-                 self.logical.nodes() if vm_type in feasible_instances[u])) <= self.physical.memory(vm_type) * \
+                (self.virtual.req_memory(u) * node_mapping[(u, vm_type, vm_id)] for u in
+                 self.virtual.nodes() if vm_type in feasible_instances[u])) <= self.physical.memory(vm_type) * \
                            vm_used[vm_type, vm_id], f"memory capacity of instance {vm_type, vm_id}"
 
         solver = self.solver(solver_name, timelimit)
@@ -102,11 +102,11 @@ class EmbedILP(Embed):
         elif (status == 'Not Solved' or status == "Undefined") and (
                 not obj_value or sum(
             round(node_mapping[(u, vm_type, vm_id)].varValue) for (u, vm_type, vm_id) in
-            node_mapping) != self.logical.number_of_nodes()):
+            node_mapping) != self.virtual.number_of_nodes()):
             raise TimeLimitError
 
         assignment_ec2_instances = self.build_ILP_solution(node_mapping)
-        solution = Solution(self.physical, self.logical, assignment_ec2_instances)
+        solution = Solution(self.physical, self.virtual, assignment_ec2_instances)
         return round(obj_value, 2), solution
 
     def build_ILP_solution(self, node_mapping):

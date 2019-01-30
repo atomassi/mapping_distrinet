@@ -5,7 +5,7 @@ from .solution import Solution
 
 
 class Bin(object):
-    """ Container for logical nodes mapped on the Bin associated to a VM """
+    """ Container for virtual nodes mapped on the Bin associated to a VM """
 
     def __init__(self, vm_type):
         self.vm_type = vm_type
@@ -45,10 +45,10 @@ class EmbedHeu(Embed):
         self.vm_max_memory = max(self.physical.vm_options, key=lambda vm: self.physical.memory(vm))
 
         bins = []
-        for u in self.logical.nodes():
-            req_cores, req_memory = self.logical.req_cores(u), self.logical.req_memory(u)
+        for u in self.virtual.nodes():
+            req_cores, req_memory = self.virtual.req_cores(u), self.virtual.req_memory(u)
             # Check if the item fits in an already opened bin.
-            # In such a case, it adds the logical node to the item list and update resources usage.
+            # In such a case, it adds the virtual node to the item list and update resources usage.
             for bin in bins:
                 if bin.used_cores + req_cores <= self.physical.cores(
                         bin.vm_type) and bin.used_memory + req_memory <= self.physical.memory(bin.vm_type):
@@ -75,4 +75,4 @@ class EmbedHeu(Embed):
                     bins.append(new_bin)
         # print(self.get_cheapest_feasible.cache_info())
         return round(sum(self.physical.get_hourly_cost(bin.vm_type) for bin in bins), 2), \
-               Solution(self.physical, self.logical, {(bin.vm_type, i): bin.items for i, bin in enumerate(bins)})
+               Solution(self.physical, self.virtual, {(bin.vm_type, i): bin.items for i, bin in enumerate(bins)})

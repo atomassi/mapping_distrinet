@@ -6,7 +6,7 @@ import warnings
 import networkx as nx
 
 
-class LogicalNetwork(object):
+class VirtualNetwork(object):
 
     def __init__(self, g):
         self._g = g
@@ -18,7 +18,7 @@ class LogicalNetwork(object):
 
     @g.setter
     def g(self, g_new):
-        warnings.warn("original logical network has been modified")
+        warnings.warn("original virtual network has been modified")
         self._g = g_new
 
     def edges(self):

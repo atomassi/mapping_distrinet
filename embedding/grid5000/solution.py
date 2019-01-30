@@ -1,7 +1,7 @@
 import logging
 from collections import defaultdict
 
-from exceptions import EmptySolutionError, AssignmentError, NodeResourceError
+from embedding.exceptions import EmptySolutionError, AssignmentError, NodeResourceError, LinkCapacityError
 
 
 class Solution(object):
@@ -21,7 +21,7 @@ class Solution(object):
         #
         # empty solution or invalid solution
         #
-        if not self.res_node_mapping or (not self.res_link_mapping and len(set(self.res_node_mapping.values())) > 1):
+        if not self.res_node_mapping:
             raise EmptySolutionError
         #
         # each logical node is assigned to a physical node
@@ -58,8 +58,8 @@ class Solution(object):
         memory_used_node = defaultdict(int)
         # compute resources used
         for logical_node, physical_node in self.res_node_mapping.items():
-            cpu_used_node[physical_node] += self.logical.requested_cores(logical_node)
-            memory_used_node[physical_node] += self.logical.requested_memory(logical_node)
+            cpu_used_node[physical_node] += self.logical.req_cores(logical_node)
+            memory_used_node[physical_node] += self.logical.req_memory(logical_node)
         # cpu limit is not exceeded
         for physical_node, cpu_cores_used in cpu_used_node.items():
             node_cores = self.physical.cores(physical_node)
@@ -76,7 +76,38 @@ class Solution(object):
         # resource usage on links
         #
         # dict -> physical link: rate used on it
-        # @todo
+        #
+        if not self.physical.grouped_interfaces:
+            used_link_resources = {(i, j): {interface: 0 for interface in self.physical.nw_interfaces(i, j)} for
+                                   (i, j)
+                                   in self.physical.edges()}
+        else:
+            used_link_resources = {(i, j): {interface: 0 for interface in self.physical.associated_nw_interfaces(i, j)}
+                                   for
+                                   (i, j) in self.physical.edges()}
+        for (u, v) in self.res_link_mapping:
+            for (s1, i1, t1, s2, i2, t2, rate_on_it) in self.res_link_mapping[(u, v)]:
+                try:
+                    used_link_resources[(s1, t1)][i1] += rate_on_it * self.logical.req_rate(u, v)
+                except KeyError:
+                    used_link_resources[(t1, s1)][i1] += rate_on_it * self.logical.req_rate(u, v)
+
+                try:
+                    used_link_resources[(s2, t2)][i2] += rate_on_it * self.logical.req_rate(u, v)
+                except KeyError:
+                    used_link_resources[(t2, s2)][i2] += rate_on_it * self.logical.req_rate(u, v)
+
+        for (i, j) in self.physical.edges():
+            nw_interfaces = self.physical.nw_interfaces(i, j) \
+                if not self.physical.grouped_interfaces else self.physical.associated_nw_interfaces(i, j)
+            for interface in nw_interfaces:
+                link_rate = self.physical.rate(i, j, interface) \
+                    if not self.physical.grouped_interfaces else self.physical.rate_associated_nw_interface(i, j,
+                                                                                                            interface)
+
+                if used_link_resources[(i, j)][interface] > link_rate:
+                    print(used_link_resources)
+                    raise LinkCapacityError((i, j, interface), used_link_resources[(i, j)][interface], link_rate)
 
         # delay requirements are respected
         # @todo to be defined
@@ -87,7 +118,9 @@ class Solution(object):
            grouped into a single one, it finds a solution for the original physical network.
         """
         res_link_mapping_multiple_interfaces = {}
-        rate_on_nodes_interfaces = {(i, j): physical.get_associated_interfaces(i, j) for (i, j) in physical.edges()}
+        rate_on_nodes_interfaces = {
+            (i, j): {interface: physical.rate_associated_nw_interface(i, j, interface) for interface in
+                     physical.associated_nw_interfaces(i, j)} for (i, j) in physical.edges()}
         for (u, v) in logical.edges():
             physical_u, physical_v = res_node_mapping[u], res_node_mapping[v]
             # if logical nodes are mapped on two different physical nodes
@@ -103,7 +136,7 @@ class Solution(object):
                                                                                 v_dest) in rate_on_nodes_interfaces else \
                     rate_on_nodes_interfaces[(v_dest, v_source)]
                 # until we don't map all the requested rate
-                requested_rate = logical.requested_link_rate(u, v)
+                requested_rate = logical.req_rate(u, v)
                 to_be_mapped = requested_rate
                 while to_be_mapped > 0:
                     # take the interfaces with the highest available rate on the physical nodes
@@ -121,7 +154,6 @@ class Solution(object):
                     to_be_mapped -= mapped_rate
                     interfaces_u[interface_u_highest_rate] -= mapped_rate
                     interfaces_v[interface_v_highest_rate] -= mapped_rate
-
         return cls(logical, physical, res_node_mapping, res_link_mapping_multiple_interfaces)
 
     def __str__(self):

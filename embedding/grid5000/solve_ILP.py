@@ -1,8 +1,8 @@
 import pulp
 
-from exceptions import InfeasibleError, TimeLimitError
+from embedding import Embed
+from embedding.exceptions import InfeasibleError, TimeLimitError
 from .solution import Solution
-from .solve import Embed
 
 
 class EmbedILP(Embed):
@@ -28,7 +28,8 @@ class EmbedILP(Embed):
         obj = kwargs.get('obj', 'no_obj')
         solver_name = kwargs.get('solver', 'cplex').lower()
         timelimit = int(kwargs.get('timelimit', '3600'))
-        self._log.info(f"called ILP solver with the following parameters: {kwargs}")
+        if __debug__:
+            self._log.debug(f"called ILP solver with the following parameters: {kwargs}")
 
         # link mapping variables
         f1 = lambda u, v, i, j, device: (u, v, i, j, device)
@@ -73,7 +74,7 @@ class EmbedILP(Embed):
 
         # Case 3: minimize used bandwidth
         elif obj == 'min_bw':
-            mapping_ILP += pulp.lpSum(self.logical.requested_link_rate(u, v) * (
+            mapping_ILP += pulp.lpSum(self.logical.req_rate(u, v) * (
                     link_mapping[(u, v, i, j, device)] + link_mapping[(u, v, j, i, device)])
                                       for (u, v) in sorted_logical_edges for (i, j, device) in
                                       self.physical.edges(keys=True))
@@ -86,11 +87,11 @@ class EmbedILP(Embed):
         for i in self.physical.nodes():
             # CPU limit
             mapping_ILP += pulp.lpSum(
-                self.logical.requested_cores(u) * node_mapping[(u, i)] for u in self.logical.nodes()) <= \
+                self.logical.req_cores(u) * node_mapping[(u, i)] for u in self.logical.nodes()) <= \
                            self.physical.cores(i), f"CPU capacity for physical node {i}"
             # Memory limit
             mapping_ILP += pulp.lpSum(
-                self.logical.requested_memory(u) * node_mapping[(u, i)] for u in self.logical.nodes()) <= \
+                self.logical.req_memory(u) * node_mapping[(u, i)] for u in self.logical.nodes()) <= \
                            self.physical.memory(i), f"memory capacity for physical node {i}"
 
         # Max latency for a logical link in the substrate network
@@ -102,28 +103,28 @@ class EmbedILP(Embed):
             for i in self.physical.nodes():
                 mapping_ILP += pulp.lpSum(
                     (link_mapping[(u, v, i, j, device)] - link_mapping[(u, v, j, i, device)]) for j in
-                    self.physical.get_neighbors(i) for device in self.physical.get_nw_interfaces(i, j)) == (
+                    self.physical.neighbors(i) for device in self.physical.nw_interfaces(i, j)) == (
                                        node_mapping[(u, i)] - node_mapping[
                                    (v, i)]), f"flow conservation on physical node {i} for logical link {u, v}"
 
         # Link capacity
         for (i, j, device) in self.physical.edges(keys=True):
-            mapping_ILP += pulp.lpSum(self.logical.requested_link_rate(u, v) * (
+            mapping_ILP += pulp.lpSum(self.logical.req_rate(u, v) * (
                     link_mapping[(u, v, i, j, device)] + link_mapping[(u, v, j, i, device)])
-                                      for (u, v) in sorted_logical_edges) <= self.physical.link_rate(i, j,
-                                                                                                     device), f"link capacity for physical link {i, j, device}"
+                                      for (u, v) in sorted_logical_edges) <= self.physical.rate(i, j,
+                                                                                                device), f"link capacity for physical link {i, j, device}"
         # given a logical link a physical machine the rate that goes out from the physical machine to an interface
         # or that comes in to the physical machine from an interface is at most 1
         for (u, v) in sorted_logical_edges:
             for i in self.physical.nodes():
                 mapping_ILP += pulp.lpSum(
-                    link_mapping[(u, v, i, j, device)] for j in self.physical.get_neighbors(i) for device in
-                    self.physical.get_nw_interfaces(i,
-                                                    j)) <= 1, f"logical link {u, v} can use only a network interface to going out from physical node {i}"
+                    link_mapping[(u, v, i, j, device)] for j in self.physical.neighbors(i) for device in
+                    self.physical.nw_interfaces(i,
+                                                j)) <= 1, f"logical link {u, v} can use only a network interface to going out from physical node {i}"
                 mapping_ILP += pulp.lpSum(
-                    link_mapping[(u, v, j, i, device)] for j in self.physical.get_neighbors(i) for device in
-                    self.physical.get_nw_interfaces(i,
-                                                    j)) <= 1, f"logical link {u, v} can use only a network interface to reach physical node {i}"
+                    link_mapping[(u, v, j, i, device)] for j in self.physical.neighbors(i) for device in
+                    self.physical.nw_interfaces(i,
+                                                j)) <= 1, f"logical link {u, v} can use only a network interface to reach physical node {i}"
 
         # a link can be used only in a direction
         for (u, v) in sorted_logical_edges:
@@ -140,7 +141,7 @@ class EmbedILP(Embed):
             raise InfeasibleError
         elif (status == 'Not Solved' or status == "Undefined") and (
                 not pulp.value(mapping_ILP.objective) or pulp.value(mapping_ILP.objective) < 1.1):
-            # @todo check specific solver status 
+            # @todo check specific solver status
             raise TimeLimitError
         self._log.info(f"The solution found uses {pulp.value(mapping_ILP.objective)} physical machines")
 
@@ -177,14 +178,14 @@ class EmbedILP(Embed):
             if res_node_mapping[u] != res_node_mapping[v]:
                 # mapping for the source of the logical link
                 link_source = res_node_mapping[u]
-                source = next(((link_source, device, j) for j in self.physical.get_neighbors(link_source) for device in
-                               self.physical.get_nw_interfaces(link_source, j) if
+                source = next(((link_source, device, j) for j in self.physical.neighbors(link_source) for device in
+                               self.physical.nw_interfaces(link_source, j) if
                                link_mapping[(*sorted_logical_link, link_source, j, device)].varValue + link_mapping[
                                    (*sorted_logical_link, j, link_source, device)].varValue > 0.99), None)
                 # mapping for the destination of the logical link
                 link_dest = res_node_mapping[v]
-                dest = next(((link_dest, device, j) for j in self.physical.get_neighbors(link_dest) for device in
-                             self.physical.get_nw_interfaces(link_dest, j) if
+                dest = next(((link_dest, device, j) for j in self.physical.neighbors(link_dest) for device in
+                             self.physical.nw_interfaces(link_dest, j) if
                              link_mapping[(*sorted_logical_link, link_dest, j, device)].varValue + link_mapping[
                                  (*sorted_logical_link, j, link_dest, device)].varValue > 0.99), None)
                 res_link_mapping[(u, v)] = [source + dest + (1.0,)]

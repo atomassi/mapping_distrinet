@@ -4,14 +4,20 @@ class EmptySolutionError(Exception):
 
 
 class LinkCapacityError(Exception):
-    def __init__(self, link, used, maximum):
-        message = f"capacity exeeded on Physical Link {link}, used {used} capacity {maximum}"
+    def __init__(self, link, used=None, maximum=None):
+        if used and maximum:
+            message = f"capacity exeeded on Physical Link {link}, used {used} capacity {maximum}"
+        else:
+            message = f"capacity exeeded on Physical Link {link}"
         super().__init__(message)
 
 
 class NodeResourceError(Exception):
-    def __init__(self, node, resource_type, used, maximum):
-        message = f"{resource_type} exeeded on Physical Node {node}, used {used} capacity {maximum}"
+    def __init__(self, node, resource_type, used=None, maximum=None):
+        if used and maximum:
+            message = f"{resource_type} exeeded on Physical Node {node}, used {used} capacity {maximum}"
+        else:
+            message = f"{resource_type} exeeded on Physical Node {node}"
         super().__init__(message)
 
 

@@ -38,19 +38,53 @@ class PhysicalNetwork(object):
             return self._g.node[node]['ram_size']
         return 0
 
-    def link_rate(self, i, j, device='dummy_interface'):
+    def rate(self, i, j, device='dummy_interface'):
         return self._g[i][j][device]['rate']
 
-    def get_nw_interfaces(self, i, j):
+    def nw_interfaces(self, i, j):
         return self._g[i][j]
 
-    def get_neighbors(self, i):
+    def neighbors(self, i):
         return self._g[i]
 
-    def get_associated_interfaces(self, i, j):
+    def associated_nw_interfaces(self, i, j):
+        # return the real interfaces of the link
         if not self.grouped_interfaces:
-            raise ValueError("not defined")
+            raise ValueError("Undefined")
         return self._g[i][j]['dummy_interface']['associated_interfaces']
+
+    def rate_associated_nw_interface(self, i, j, device):
+        # return the rate of a real link interface
+        if not self.grouped_interfaces:
+            raise ValueError("Undefined")
+        return self._g[i][j]['dummy_interface']['associated_interfaces'][device]
+
+    def number_of_nodes(self):
+        return self._g.number_of_nodes()
+
+    def compute_nodes(self):
+        return set(u for u in self.nodes() if self.cores(u) > 0 and self.memory(u) > 0)
+
+    def find_path(self, source, target):
+        """Given the physical network, return the path between the source and the target nodes
+        """
+        path = [source]
+        stack = [(u for u in self.neighbors(source))]
+        while stack:
+            children = stack[-1]
+            child = next(children, None)
+            if child is None:
+                stack.pop()
+                path.pop()
+            else:
+                if child == target:
+                    path.append(target)
+                    # return a generator with links sorted in lexicographic way
+                    return ((path[i], path[i + 1]) if path[i] < path[i + 1] else (path[i + 1], path[i]) for i in
+                            range(len(path) - 1))
+                elif child not in path:
+                    path.append(child)
+                    stack.append((u for u in self.neighbors(child)))
 
     @classmethod
     def grid5000(cls, name, n_interfaces_to_consider=float('inf'), group_interfaces=False):

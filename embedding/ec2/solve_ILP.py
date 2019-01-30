@@ -3,7 +3,7 @@ from collections import defaultdict
 import pulp
 
 from embedding import Embed
-from exceptions import InfeasibleError, TimeLimitError
+from embedding.exceptions import InfeasibleError, TimeLimitError
 from .solution import Solution
 
 
@@ -28,10 +28,10 @@ class EmbedILP(Embed):
     def get_UB(self, vm_type):
         """Return an upper bound on the maximum number of EC2 instances of type vm_type neede to pack all the nodes
         """
-        cpu_cores_instance, memory_instance = self.physical.get_cores(vm_type), self.physical.get_memory(vm_type)
+        cpu_cores_instance, memory_instance = self.physical.cores(vm_type), self.physical.memory(vm_type)
         n_instances_needed = remaining_cpu_cores = remaining_memory = 0
         for u in self.logical.nodes():
-            req_cores, req_memory = self.logical.requested_cores(u), self.logical.requested_memory(u)
+            req_cores, req_memory = self.logical.req_cores(u), self.logical.req_memory(u)
             if req_cores <= remaining_cpu_cores and req_memory <= remaining_memory:
                 remaining_cpu_cores -= req_cores
                 remaining_memory -= req_memory
@@ -45,8 +45,8 @@ class EmbedILP(Embed):
         """Return a set with the instances types feasible for node u
         """
         return set(vm_type for vm_type in self.physical.vm_options if
-                   self.logical.requested_cores(u) <= self.physical.get_cores(
-                       vm_type) and self.logical.requested_memory(u) <= self.physical.get_memory(vm_type))
+                   self.logical.req_cores(u) <= self.physical.cores(vm_type) and self.logical.req_memory(
+                       u) <= self.physical.memory(vm_type))
 
     @Embed.timeit
     def __call__(self, **kwargs):
@@ -81,14 +81,13 @@ class EmbedILP(Embed):
         for (vm_type, vm_id) in vm_used:
             # CPU cores capacity constraints
             mapping_ILP += pulp.lpSum(
-                (self.logical.requested_cores(u) * node_mapping[(u, vm_type, vm_id)] for u in
-                 self.logical.nodes() if vm_type in feasible_instances[u])) <= self.physical.get_cores(vm_type) * \
+                (self.logical.req_cores(u) * node_mapping[(u, vm_type, vm_id)] for u in
+                 self.logical.nodes() if vm_type in feasible_instances[u])) <= self.physical.cores(vm_type) * \
                            vm_used[vm_type, vm_id], f"core capacity of instance {vm_type, vm_id}"
             # memory capacity constraints
             mapping_ILP += pulp.lpSum(
-                (self.logical.requested_memory(u) * node_mapping[(u, vm_type, vm_id)] for u in
-                 self.logical.nodes() if vm_type in feasible_instances[u])) <= self.physical.get_memory(
-                vm_type) * \
+                (self.logical.req_memory(u) * node_mapping[(u, vm_type, vm_id)] for u in
+                 self.logical.nodes() if vm_type in feasible_instances[u])) <= self.physical.memory(vm_type) * \
                            vm_used[vm_type, vm_id], f"memory capacity of instance {vm_type, vm_id}"
 
         solver = self.solver(solver_name, timelimit)

@@ -1,7 +1,7 @@
 import itertools
 import logging
 
-from exceptions import AssignmentError, NodeResourceError
+from embedding.exceptions import AssignmentError, NodeResourceError
 
 
 class Solution(object):
@@ -24,10 +24,10 @@ class Solution(object):
             raise AssignmentError(not_assigned_nodes)
         # EC2 instance resources are not exceeded
         for vm_type, vm_id in self.assignment_ec2_instances:
-            used_cores = sum(self.logical.requested_cores(u) for u in self.assignment_ec2_instances[(vm_type, vm_id)])
-            vm_cores = self.physical.get_cores(vm_type)
-            used_memory = sum(self.logical.requested_memory(u) for u in self.assignment_ec2_instances[(vm_type, vm_id)])
-            vm_memory = self.physical.get_memory(vm_type)
+            used_cores = sum(self.logical.req_cores(u) for u in self.assignment_ec2_instances[(vm_type, vm_id)])
+            vm_cores = self.physical.cores(vm_type)
+            used_memory = sum(self.logical.req_memory(u) for u in self.assignment_ec2_instances[(vm_type, vm_id)])
+            vm_memory = self.physical.memory(vm_type)
             # cpu cores
             if used_cores > vm_cores:
                 raise NodeResourceError(vm_type, "CPU cores", used_cores, vm_cores)
@@ -36,7 +36,11 @@ class Solution(object):
                 raise NodeResourceError(vm_type, "memory", used_memory, vm_memory)
 
     def __str__(self):
-        return "\n".join(
-            [f"EC2 instance {vm_type} runs logical nodes "
-             f"{', '.join(str(node) for node in self.assignment_ec2_instances[(vm_type, vm_id)])}" for vm_type, vm_id in
-             self.assignment_ec2_instances])
+        res = ""
+        for vm_type, vm_id in self.assignment_ec2_instances:
+            res += f"EC2 instance {vm_type} ({self.physical.cores(vm_type)} cores, {self.physical.memory(
+                vm_type)} mem) runs logical nodes:\t"
+            for node in self.assignment_ec2_instances[(vm_type, vm_id)]:
+                res += f"id: {node} (cores: {self.logical.req_cores(node)}, memory: {self.logical.req_memory(node)})\t"
+            res += "\n"
+        return res

@@ -18,10 +18,10 @@ class InstanceEC2(object):
         warnings.warn("original VMs instances have been modified")
         self._vm_options = new_vm_options
 
-    def get_memory(self, vm):
+    def memory(self, vm):
         return self._vm_options[vm]['memory']
 
-    def get_cores(self, vm):
+    def cores(self, vm):
         return self._vm_options[vm]['vCPU']
 
     def get_hourly_cost(self, vm):

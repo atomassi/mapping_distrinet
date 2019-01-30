@@ -28,31 +28,30 @@ class EmbedHeu(Embed):
     def get_cheapest_feasible(self, cores, memory):
         """Given a demand in terms of number of cores and memory return the cheapest EC2 instance with enough resources.
         """
-        if (cores > self.physical.get_cores(self.vm_max_cores) or memory > self.physical.get_memory(
-                self.vm_max_cores)) and (
-                cores > self.physical.get_cores(self.vm_max_memory) or memory > self.physical.get_memory(
+        if (cores > self.physical.cores(self.vm_max_cores) or memory > self.physical.memory(self.vm_max_cores)) and (
+                cores > self.physical.cores(self.vm_max_memory) or memory > self.physical.memory(
             self.vm_max_memory)):
             return None
 
         return min(((vm, self.physical.get_hourly_cost(vm)) for vm in self.physical.vm_options if
-                    cores <= self.physical.get_cores(vm) and memory <= self.physical.get_memory(vm)),
+                    cores <= self.physical.cores(vm) and memory <= self.physical.memory(vm)),
                    key=lambda x: x[1])[0]
 
     @Embed.timeit
     def __call__(self, **kwargs):
         """
         """
-        self.vm_max_cores = max(self.physical.vm_options, key=lambda vm: self.physical.get_cores(vm))
-        self.vm_max_memory = max(self.physical.vm_options, key=lambda vm: self.physical.get_memory(vm))
+        self.vm_max_cores = max(self.physical.vm_options, key=lambda vm: self.physical.cores(vm))
+        self.vm_max_memory = max(self.physical.vm_options, key=lambda vm: self.physical.memory(vm))
 
         bins = []
         for u in self.logical.nodes():
-            req_cores, req_memory = self.logical.requested_cores(u), self.logical.requested_memory(u)
+            req_cores, req_memory = self.logical.req_cores(u), self.logical.req_memory(u)
             # Check if the item fits in an already opened bin.
             # In such a case, it adds the logical node to the item list and update resources usage.
             for bin in bins:
-                if bin.used_cores + req_cores <= self.physical.get_cores(
-                        bin.vm_type) and bin.used_memory + req_memory <= self.physical.get_memory(bin.vm_type):
+                if bin.used_cores + req_cores <= self.physical.cores(
+                        bin.vm_type) and bin.used_memory + req_memory <= self.physical.memory(bin.vm_type):
                     bin.add_item(u, req_cores, req_memory)
                     break
             else:

@@ -38,8 +38,7 @@ class Solution(object):
     def __str__(self):
         res = ""
         for vm_type, vm_id in self.assignment_ec2_instances:
-            res += f"EC2 instance {vm_type} ({self.physical.cores(vm_type)} cores, {self.physical.memory(
-                vm_type)} mem) runs logical nodes:\t"
+            res += f"EC2 instance {vm_type} ({self.physical.cores(vm_type)} cores, {self.physical.memory(vm_type)} mem) runs logical nodes:\t"
             for node in self.assignment_ec2_instances[(vm_type, vm_id)]:
                 res += f"id: {node} (cores: {self.logical.req_cores(node)}, memory: {self.logical.req_memory(node)})\t"
             res += "\n"

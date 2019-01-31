@@ -17,6 +17,12 @@ class PhysicalNetwork(object):
     def g(self):
         return self._g
 
+    @property
+    def compute_nodes(self):
+        if not hasattr(self, '_compute'):
+            self._compute = set(u for u in self.nodes() if self.cores(u) > 0 and self.memory(u) > 0)
+        return self._compute
+
     @g.setter
     def g(self, g_new):
         warnings.warn("original physical network has been modified")
@@ -61,9 +67,6 @@ class PhysicalNetwork(object):
 
     def number_of_nodes(self):
         return self._g.number_of_nodes()
-
-    def compute_nodes(self):
-        return set(u for u in self.nodes() if self.cores(u) > 0 and self.memory(u) > 0)
 
     def find_path(self, source, target):
         """Given the physical network, return the path between the source and the target nodes

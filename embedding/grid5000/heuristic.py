@@ -98,11 +98,11 @@ class EmbedHeu(Embed):
             max_phy_memory = self.physical.memory(physical_node) if self.physical.memory(
                 physical_node) > max_phy_memory else max_phy_memory
 
-        # LB, any feasible mapping requires at least this number of physical machines
+        # lower bound, any feasible mapping requires at least this number of physical machines
         return max(math.ceil(tot_req_cores / max_phy_cores), math.ceil(tot_req_memory / max_phy_memory))
 
     @Embed.timeit
-    def __call__(self, **kwargs):
+    def __call__(self, *args, **kwargs):
         """Heuristic based on computing a k-balanced partitions of virtual nodes for then mapping the partition
            on a subset of the physical nodes.
         """
@@ -176,7 +176,7 @@ class EmbedHeu(Embed):
                         # else update the rate
                         rate_used[(i, j, chosen_interface)] += self.virtual.req_rate(u, v)
 
-                        # get physical source and destination for the virtual link
+                        # get physical source and destination nodes and interfaces for the virtual link
                         if i == phy_u or j == phy_u:
                             source = (i, chosen_interface, j) if i == phy_u else (j, chosen_interface, i)
                         elif i == phy_v or j == phy_v:
@@ -195,7 +195,7 @@ class EmbedHeu(Embed):
                 # return the number of partitions used and the solution found
                 return n_partitions_to_try, solution
 
-            except (NodeResourceError, LinkCapacityError, InfeasibleError):
+            except (NodeResourceError, LinkCapacityError):
                 # unfeasible, increase the number of partitions to be used
                 pass
         else:

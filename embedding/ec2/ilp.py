@@ -13,7 +13,6 @@ class EmbedILP(Embed):
     def solver(solver_name, timelimit):
         if solver_name == 'cplex':
             return pulp.CPLEX(msg=0, timeLimit=timelimit)
-            # return pulp.CPLEX_CMD(msg=1,path="/Applications/CPLEX_Studio128/cplex/bin/x86-64_osx/cplex", options=['set timelimit 30'])
         elif solver_name == 'gurobi':
             return pulp.GUROBI(msg=0, timeLimit=timelimit)
         elif solver_name == "glpk":
@@ -26,8 +25,8 @@ class EmbedILP(Embed):
             raise ValueError("Invalid solver name")
 
     def get_UB(self, vm_type):
-        """Return an upper bound on the maximum number of EC2 instances of type vm_type neede to pack all the nodes
-        """
+        """Return an upper bound on the maximum number of EC2 instances of type vm_type neede to pack all the nodes"""
+
         cpu_cores_instance, memory_instance = self.physical.cores(vm_type), self.physical.memory(vm_type)
         n_instances_needed = remaining_cpu_cores = remaining_memory = 0
         for u in self.virtual.nodes():

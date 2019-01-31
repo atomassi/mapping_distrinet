@@ -9,6 +9,11 @@ import networkx as nx
 class PhysicalNetwork(object):
 
     def __init__(self, g, grouped_interfaces=False):
+        """Initialize the physical network with the graph g.
+
+        grouped_interfaces is set to True if all the network interfaces between two physical nodes
+        have been grouped into a single one
+        """
         self._g = g
         self.grouped_interfaces = grouped_interfaces
         self._log = logging.getLogger(__name__)
@@ -19,6 +24,7 @@ class PhysicalNetwork(object):
 
     @property
     def compute_nodes(self):
+        """Physical nodes able to run virtual nodes"""
         if not hasattr(self, '_compute'):
             self._compute = set(u for u in self.nodes() if self.cores(u) > 0 and self.memory(u) > 0)
         return self._compute
@@ -29,38 +35,45 @@ class PhysicalNetwork(object):
         self._g = g_new
 
     def edges(self, keys=False):
+        """Return the edges of the graph."""
         return self._g.edges(keys=keys)
 
     def nodes(self):
+        """Return the nodes of the graph."""
         return self._g.nodes()
 
     def cores(self, node):
+        """Return the number of physical cores for a physical node."""
         if 'nb_cores' in self._g.nodes[node]:
             return self._g.node[node]['nb_cores']
         return 0
 
     def memory(self, node):
+        """Return the amount of memory for a physical node."""
         if 'ram_size' in self._g.nodes[node]:
             return self._g.node[node]['ram_size']
         return 0
 
     def rate(self, i, j, device='dummy_interface'):
+        """Return the maximum allowed rate for a physical link."""
         return self._g[i][j][device]['rate']
 
     def nw_interfaces(self, i, j):
+        """Return the network interfaces for a link (i,j)."""
         return self._g[i][j]
 
     def neighbors(self, i):
+        """Return the neighbors of a node."""
         return self._g[i]
 
     def associated_nw_interfaces(self, i, j):
-        # return the real interfaces of the link
+        """Return the real interfaces associated with the link."""
         if not self.grouped_interfaces:
             raise ValueError("Undefined")
         return self._g[i][j]['dummy_interface']['associated_interfaces']
 
     def rate_associated_nw_interface(self, i, j, device):
-        # return the rate of a real link interface
+        """Return the rate of a real link interface."""
         if not self.grouped_interfaces:
             raise ValueError("Undefined")
         return self._g[i][j]['dummy_interface']['associated_interfaces'][device]
@@ -69,8 +82,7 @@ class PhysicalNetwork(object):
         return self._g.number_of_nodes()
 
     def find_path(self, source, target):
-        """Given the physical network, return the path between the source and the target nodes
-        """
+        """Given the physical network, return the path between the source and the target nodes"""
         path = [source]
         stack = [(u for u in self.neighbors(source))]
         while stack:
@@ -140,6 +152,5 @@ class PhysicalNetwork(object):
 
     @classmethod
     def crete_test_nw(cls):
-        """ small network to run tests
-        """
+        """Create a test network to run tests"""
         raise NotImplementedError

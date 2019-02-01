@@ -16,8 +16,8 @@ class Solution(object):
         raise NotImplementedError
 
     def verify_solution(self):
-        """check if the solution is correct
-        """
+        """check if the solution is correct"""
+        
         #
         # empty solution or invalid solution
         #
@@ -106,7 +106,6 @@ class Solution(object):
                                                                                                             interface)
 
                 if used_link_resources[(i, j)][interface] > link_rate:
-                    print(used_link_resources)
                     raise LinkCapacityError((i, j, interface), used_link_resources[(i, j)][interface], link_rate)
 
         # delay requirements are respected
@@ -144,8 +143,9 @@ class Solution(object):
                     interface_u_highest_rate = max(interfaces_u, key=interfaces_u.get)
                     interface_v_highest_rate = max(interfaces_v, key=interfaces_v.get)
                     # the amount of rate that can be mapped is the mininum between rate to be mapped and the available one
-                    mapped_rate = min(requested_rate, interfaces_u[interface_u_highest_rate],
+                    mapped_rate = min(to_be_mapped, interfaces_u[interface_u_highest_rate],
                                       interfaces_v[interface_v_highest_rate])
+
                     # update the mapping
                     res_link_mapping_multiple_interfaces[(u, v)].append((u_source, interface_u_highest_rate, u_dest,
                                                                          v_source, interface_v_highest_rate, v_dest,

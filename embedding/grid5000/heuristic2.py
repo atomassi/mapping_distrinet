@@ -2,82 +2,47 @@ import math
 import random
 from collections import defaultdict
 
-from networkx.algorithms.community.kernighan_lin import kernighan_lin_bisection
-
 from embedding.exceptions import NodeResourceError, LinkCapacityError, InfeasibleError
 from embedding.grid5000.solution import Solution
 from embedding.solve import Embed
 
 
-class GetPartition(object):
-    """callable object
+def get_partitions(virtual, n_partitions, n_tries=100):
+    """ Divide the nodes in n_partitions bins and then tries to swap nodes to reduce the cut weight
     """
 
-    def __init__(self):
-        # to keep track of the already computed partitions
-        self._memo = {}
+    nodes = list(virtual.nodes())
+    random.shuffle(nodes)
+    # node -> id of the partition in which it is contained
+    nodes_partition = {node: id_node % n_partitions for id_node, node in enumerate(nodes)}
 
-    def __call__(self, g, n_partitions):
-        """Given the graph G and the number of partitions k,
-           returns a list with k sets of nodes
-        """
+    # current cost for the partition
+    old_cost = sum(virtual.req_rate(u, v) for (u, v) in virtual.edges() if nodes_partition[u] != nodes_partition[v])
 
-        def iterative_cutting(g, p):
-            """helper function (iterative version)"""
+    for _ in range(n_tries):
+        # take two random nodes
+        u1, u2 = random.sample(nodes, k=2)
+        # if the partitions ids of u1 and u2 are the same continue
+        if nodes_partition[u1] == nodes_partition[u2]:
+            continue
+        # store the old partition ids of u1 and u2
+        old_u1, old_u2 = nodes_partition[u1], nodes_partition[u2]
+        # swap the partitions
+        nodes_partition[u1], nodes_partition[u2] = nodes_partition[u2], nodes_partition[u1]
+        # compute the new cost
+        new_cost = sum(virtual.req_rate(u, v) for (u, v) in virtual.edges() if nodes_partition[u] != nodes_partition[v])
 
-            to_be_processed = [g]
-            K = len(g.nodes()) / p
-
-            res = []
-            while len(to_be_processed) > 0:
-
-                g = to_be_processed.pop()
-                g_l, g_r = kernighan_lin_bisection(g, weight='rate')
-
-                for partition in g_l, g_r:
-                    if len(partition) > K:
-                        to_be_processed.append(g.subgraph(partition))
-                    else:
-                        res.append(partition)
-            return res
-
-        def recursive_cutting(g, p, res=[]):
-            """helper function"""
-            K = len(g.nodes()) / p
-
-            g_l, g_r = kernighan_lin_bisection(g, weight='rate')
-
-            for partition in g_l, g_r:
-                if len(partition) > K:
-                    recursive_cutting(g.subgraph(partition), p / 2, res)
-                else:
-                    res.append(partition)
-
-            return res
-
-        # when computing a partitioning for the graph nodes,
-        # if result is known for a smaller value of n_partitions
-        # don't restart from scratch but use it as an initial value
-
-        if g not in self._memo or len(self._memo[g]) < n_partitions:
-            self._memo.clear()
-            partitions = recursive_cutting(g, p=n_partitions)
-            self._memo[g] = partitions[:]
+        if new_cost < old_cost:
+            # update the current cost
+            old_cost = new_cost
         else:
-            partitions = self._memo[g][:]
+            # go back to the previous solution
+            nodes_partition[u1], nodes_partition[u2] = old_u1, old_u2
 
-        # merge small partitions to return the required number of partitions
-        while len(partitions) > n_partitions:
-            partitions.sort(key=len)
-            e1 = partitions.pop(0)
-            e2 = partitions.pop(0)
-            partitions.append(e1.union(e2))
-        #print(n_partitions)
-        #print(*partitions,sep="\n")
-        return partitions
-
-
-get_partitions = GetPartition()
+    partitions = defaultdict(list)
+    for node, id_partition in nodes_partition.items():
+        partitions[id_partition].append(node)
+    return partitions.values()
 
 
 class EmbedHeu(Embed):
@@ -118,7 +83,7 @@ class EmbedHeu(Embed):
 
         for n_partitions_to_try in range(self.get_LB(), len(compute_nodes) + 1):
             # partitioning of virtual nodes in n_partitions_to_try partitions
-            k_partition = get_partitions(self.virtual.g, n_partitions=n_partitions_to_try)
+            k_partition = get_partitions(self.virtual, n_partitions=n_partitions_to_try)
             # random subset of hosts of size n_partitions_to_try
             chosen_physical = random.sample(compute_nodes, k=n_partitions_to_try)
 

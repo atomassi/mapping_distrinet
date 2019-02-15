@@ -82,7 +82,20 @@ class PhysicalNetwork(object):
         return self._g.number_of_nodes()
 
     def find_path(self, source, target):
-        """Given the physical network, return the path between the source and the target nodes"""
+        """Given the physical network, return the path between the source and the target nodes."""
+
+        if not hasattr(self, '_computed_paths'):
+            self._computed_paths = {}
+
+        # if the path has already been computed
+        if (source, target) in self._computed_paths:
+            return self._computed_paths[(source, target)]
+        # check if the path from the destination to the source already exists
+        elif (target, source) in self._computed_paths:
+            self._computed_paths[(source, target)] = self._computed_paths[(target, source)][::-1]
+            return self._computed_paths[(source, target)]
+
+        # otherwise compute a path and cache it
         path = [source]
         stack = [(u for u in self.neighbors(source))]
         while stack:
@@ -95,8 +108,10 @@ class PhysicalNetwork(object):
                 if child == target:
                     path.append(target)
                     # return a generator with links sorted in lexicographic way
-                    return ((path[i], path[i + 1]) if path[i] < path[i + 1] else (path[i + 1], path[i]) for i in
-                            range(len(path) - 1))
+                    self._computed_paths[(source, target)] = [
+                        (path[i], path[i + 1]) if path[i] < path[i + 1] else (path[i + 1], path[i]) for i in
+                        range(len(path) - 1)]
+                    return self._computed_paths[(source, target)]
                 elif child not in path:
                     path.append(child)
                     stack.append((u for u in self.neighbors(child)))

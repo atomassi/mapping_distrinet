@@ -17,7 +17,7 @@ class Solution(object):
 
     def verify_solution(self):
         """check if the solution is correct"""
-        
+
         #
         # empty solution or invalid solution
         #
@@ -98,12 +98,14 @@ class Solution(object):
                     used_link_resources[(t2, s2)][i2] += rate_on_it * self.virtual.req_rate(u, v)
 
         for (i, j) in self.physical.edges():
-            nw_interfaces = self.physical.nw_interfaces(i, j) \
-                if not self.physical.grouped_interfaces else self.physical.associated_nw_interfaces(i, j)
+            nw_interfaces = self.physical.nw_interfaces(i,
+                                                        j) if not self.physical.grouped_interfaces else self.physical.associated_nw_interfaces(
+                i, j)
+
             for interface in nw_interfaces:
-                link_rate = self.physical.rate(i, j, interface) \
-                    if not self.physical.grouped_interfaces else self.physical.rate_associated_nw_interface(i, j,
-                                                                                                            interface)
+                link_rate = self.physical.rate(i, j,
+                                               interface) if not self.physical.grouped_interfaces else self.physical.rate_associated_nw_interface(
+                    i, j, interface)
 
                 if used_link_resources[(i, j)][interface] > link_rate:
                     raise LinkCapacityError((i, j, interface), used_link_resources[(i, j)][interface], link_rate)

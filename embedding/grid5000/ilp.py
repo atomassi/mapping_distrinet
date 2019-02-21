@@ -2,6 +2,7 @@ import pulp
 
 from embedding import Embed
 from embedding.exceptions import InfeasibleError, TimeLimitError
+from embedding.utils import timeit
 from .solution import Solution
 
 
@@ -22,7 +23,7 @@ class EmbedILP(Embed):
         else:
             raise ValueError("Invalid solver name")
 
-    @Embed.timeit
+    @timeit
     def __call__(self, **kwargs):
 
         obj = kwargs.get('obj', 'no_obj')
@@ -136,6 +137,7 @@ class EmbedILP(Embed):
         # solve the ILP
         status = pulp.LpStatus[mapping_ILP.solve()]
 
+
         # check status
         if status == "Infeasible":
             raise InfeasibleError
@@ -153,6 +155,15 @@ class EmbedILP(Embed):
                                                            res_link_mapping)
         else:
             solution = Solution(self.virtual, self.physical, res_node_mapping, res_link_mapping)
+
+
+        if solver_name=="cplex":
+            print("lb cplex", solver.solverModel.solution.MIP.get_best_objective())
+            solution.lb = solver.solverModel.solution.MIP.get_best_objective()
+        elif solver_name =="gurobi":
+            print("lb gurobi", mapping_ILP.solverModel.ObjBound)
+            solution.lb = mapping_ILP.solverModel.ObjBound
+
 
         if obj == "min_n_machines":
             return pulp.value(mapping_ILP.objective), solution

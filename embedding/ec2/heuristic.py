@@ -1,6 +1,7 @@
 from functools import lru_cache
 
 from embedding import Embed
+from embedding.utils import timeit
 from .solution import Solution
 
 
@@ -37,7 +38,7 @@ class EmbedHeu(Embed):
                     cores <= self.physical.cores(vm) and memory <= self.physical.memory(vm)),
                    key=lambda x: x[1])[0]
 
-    @Embed.timeit
+    @timeit
     def __call__(self, **kwargs):
         """
         """

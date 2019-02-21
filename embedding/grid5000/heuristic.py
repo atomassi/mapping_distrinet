@@ -7,7 +7,7 @@ from networkx.algorithms.community.kernighan_lin import kernighan_lin_bisection
 from embedding.exceptions import NodeResourceError, LinkCapacityError, InfeasibleError
 from embedding.grid5000.solution import Solution
 from embedding.solve import Embed
-
+from embedding.utils import timeit
 
 class GetPartition(object):
     """callable object
@@ -22,7 +22,7 @@ class GetPartition(object):
            returns a list with k sets of nodes
         """
 
-        def iterative_cutting(g, p):
+        def _iterative_cutting(g, p):
             """helper function (iterative version)"""
 
             to_be_processed = [g]
@@ -41,7 +41,7 @@ class GetPartition(object):
                         res.append(partition)
             return res
 
-        def recursive_cutting(g, p, res=[]):
+        def _recursive_cutting(g, p, res=[]):
             """helper function"""
             K = len(g.nodes()) / p
 
@@ -49,7 +49,7 @@ class GetPartition(object):
 
             for partition in g_l, g_r:
                 if len(partition) > K:
-                    recursive_cutting(g.subgraph(partition), p / 2, res)
+                    _recursive_cutting(g.subgraph(partition), p / 2, res)
                 else:
                     res.append(partition)
 
@@ -61,7 +61,7 @@ class GetPartition(object):
 
         if g not in self._memo or len(self._memo[g]) < n_partitions:
             self._memo.clear()
-            partitions = recursive_cutting(g, p=n_partitions)
+            partitions = _recursive_cutting(g, p=n_partitions)
             self._memo[g] = partitions[:]
         else:
             partitions = self._memo[g][:]
@@ -72,8 +72,6 @@ class GetPartition(object):
             e1 = partitions.pop(0)
             e2 = partitions.pop(0)
             partitions.append(e1.union(e2))
-        #print(n_partitions)
-        #print(*partitions,sep="\n")
         return partitions
 
 
@@ -108,7 +106,7 @@ class EmbedHeu(Embed):
         # lower bound, any feasible mapping requires at least this number of physical machines
         return max(math.ceil(tot_req_cores / max_phy_cores), math.ceil(tot_req_memory / max_phy_memory))
 
-    @Embed.timeit
+    @timeit
     def __call__(self, *args, **kwargs):
         """Heuristic based on computing a k-balanced partitions of virtual nodes for then mapping the partition
            on a subset of the physical nodes.
@@ -214,7 +212,7 @@ if __name__ == "__main__":
 
     physical_topo = PhysicalNetwork.grid5000("grisou", group_interfaces=False)
     # virtual_topo = VirtualNetwork.create_random_nw(n_nodes=80)
-    virtual_topo = VirtualNetwork.create_fat_tree(k=12)
+    virtual_topo = VirtualNetwork.create_fat_tree(k=4)
 
     time_solution, (value_solution, solution) = EmbedHeu(virtual_topo, physical_topo)()
     print(time_solution, value_solution)

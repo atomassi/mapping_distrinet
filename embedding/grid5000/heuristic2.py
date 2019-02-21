@@ -5,7 +5,7 @@ from collections import defaultdict
 from embedding.exceptions import NodeResourceError, LinkCapacityError, InfeasibleError
 from embedding.grid5000.solution import Solution
 from embedding.solve import Embed
-
+from embedding.utils import timeit
 
 def get_partitions(virtual, n_partitions, n_tries=100):
     """ Divide the nodes in n_partitions bins and then tries to swap nodes to reduce the cut weight
@@ -73,7 +73,7 @@ class EmbedHeu(Embed):
         # lower bound, any feasible mapping requires at least this number of physical machines
         return max(math.ceil(tot_req_cores / max_phy_cores), math.ceil(tot_req_memory / max_phy_memory))
 
-    @Embed.timeit
+    @timeit
     def __call__(self, *args, **kwargs):
         """Heuristic based on computing a k-balanced partitions of virtual nodes for then mapping the partition
            on a subset of the physical nodes.

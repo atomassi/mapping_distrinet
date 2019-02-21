@@ -4,6 +4,7 @@ import pulp
 
 from embedding import Embed
 from embedding.exceptions import InfeasibleError, TimeLimitError
+from embedding.utils import timeit
 from .solution import Solution
 
 
@@ -47,7 +48,7 @@ class EmbedILP(Embed):
                    self.virtual.req_cores(u) <= self.physical.cores(vm_type) and self.virtual.req_memory(
                        u) <= self.physical.memory(vm_type))
 
-    @Embed.timeit
+    @timeit
     def __call__(self, **kwargs):
 
         solver_name = kwargs.get('solver', 'cplex').lower()

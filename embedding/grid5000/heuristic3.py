@@ -4,11 +4,11 @@ from collections import defaultdict, Counter, deque
 from embedding.exceptions import InfeasibleError
 from embedding.grid5000.solution import Solution
 from embedding.solve import Embed
-
+from embedding.utils import timeit
 
 class EmbedHeu(Embed):
 
-    @Embed.timeit
+    @timeit
     def __call__(self, *args, **kwargs):
         """2 phases:
            - first assign virtual nodes to physical nodes
@@ -106,10 +106,10 @@ class EmbedHeu(Embed):
                         used_resources['memory'][phy_node] + self.virtual.req_memory(
                     node_to_move) <= self.physical.memory(phy_node):
 
-                    # physical node to which it was assigned
+                    # physical node to which it was previously assigned
                     prev_phy_node = res_node_mapping[node_to_move]
 
-                    # assign phy node to the virtual_node
+                    # assign virtual_node to the physical node
                     res_node_mapping[node_to_move] = phy_node
 
                     # temporary data structures to keep track of the changes wrt the current solution

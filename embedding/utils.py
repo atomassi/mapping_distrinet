@@ -8,3 +8,16 @@ def timeit(f):
         return end - start, result
 
     return timed
+
+
+class CachedFunction:
+    def __init__(self, f):
+        self.f = f
+        self._cache = {}
+
+    def __call__(self, *args):
+        try:
+            return self._cache[args]
+        except KeyError:
+            res = self._cache[args] = self.f(*args)
+            return res

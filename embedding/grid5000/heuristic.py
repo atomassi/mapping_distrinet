@@ -7,7 +7,8 @@ from networkx.algorithms.community.kernighan_lin import kernighan_lin_bisection
 from embedding.exceptions import NodeResourceError, LinkCapacityError, InfeasibleError
 from embedding.grid5000.solution import Solution
 from embedding.solve import Embed
-from embedding.utils import timeit
+from embedding.utils import timeit, CachedFunction
+
 
 class GetPartition(object):
     """callable object
@@ -15,7 +16,7 @@ class GetPartition(object):
 
     def __init__(self):
         # to keep track of the already computed partitions
-        self._memo = {}
+        self._cache = {}
 
     def __call__(self, g, n_partitions):
         """Given the graph G and the number of partitions k,
@@ -58,13 +59,12 @@ class GetPartition(object):
         # when computing a partitioning for the graph nodes,
         # if result is known for a smaller value of n_partitions
         # don't restart from scratch but use it as an initial value
-
-        if g not in self._memo or len(self._memo[g]) < n_partitions:
-            self._memo.clear()
+        if g not in self._cache or len(self._cache[g]) < n_partitions:
+            self._cache.clear()
             partitions = _recursive_cutting(g, p=n_partitions)
-            self._memo[g] = partitions[:]
+            self._cache[g] = partitions[:]
         else:
-            partitions = self._memo[g][:]
+            partitions = self._cache[g][:]
 
         # merge small partitions to return the required number of partitions
         while len(partitions) > n_partitions:
@@ -80,32 +80,6 @@ get_partitions = GetPartition()
 
 class EmbedHeu(Embed):
 
-    def get_LB(self):
-        """Return a lower bound on the minimum number of physical machines needed to map all the virtual nodes
-        """
-
-        # nodes able to host VMs
-        compute_nodes = self.physical.compute_nodes
-
-        tot_req_cores = tot_req_memory = 0
-        for virtual_node in self.virtual.nodes():
-            # the total number of cores to be mapped
-            tot_req_cores += self.virtual.req_cores(virtual_node)
-            # the total required memory to be mapped
-            tot_req_memory += self.virtual.req_memory(virtual_node)
-
-        max_phy_memory = max_phy_cores = 0
-        for physical_node in compute_nodes:
-            # the maximum capacity in terms of cores for a physical machine
-            max_phy_cores = self.physical.cores(physical_node) if self.physical.cores(
-                physical_node) > max_phy_cores else max_phy_cores
-            # the maximum capacity in terms of memory for a physical machine
-            max_phy_memory = self.physical.memory(physical_node) if self.physical.memory(
-                physical_node) > max_phy_memory else max_phy_memory
-
-        # lower bound, any feasible mapping requires at least this number of physical machines
-        return max(math.ceil(tot_req_cores / max_phy_cores), math.ceil(tot_req_memory / max_phy_memory))
-
     @timeit
     def __call__(self, *args, **kwargs):
         """Heuristic based on computing a k-balanced partitions of virtual nodes for then mapping the partition
@@ -114,7 +88,7 @@ class EmbedHeu(Embed):
 
         compute_nodes = self.physical.compute_nodes
 
-        for n_partitions_to_try in range(self.get_LB(), len(compute_nodes) + 1):
+        for n_partitions_to_try in range(self._get_LB(), len(compute_nodes) + 1):
             # partitioning of virtual nodes in n_partitions_to_try partitions
             k_partition = get_partitions(self.virtual.g, n_partitions=n_partitions_to_try)
             # random subset of hosts of size n_partitions_to_try
@@ -214,6 +188,8 @@ if __name__ == "__main__":
     # virtual_topo = VirtualNetwork.create_random_nw(n_nodes=80)
     virtual_topo = VirtualNetwork.create_fat_tree(k=4)
 
-    time_solution, (value_solution, solution) = EmbedHeu(virtual_topo, physical_topo)()
+    heu = EmbedHeu(virtual_topo, physical_topo)
+
+    time_solution, (value_solution, solution) = heu()
     print(time_solution, value_solution)
     solution.verify_solution()

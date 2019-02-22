@@ -57,7 +57,7 @@ class Solution(object):
         try:
             return self.link_mapping[(u, v)]
         except KeyError:
-            return self.link_mapping[(v, u)]
+            return self.link_mapping[(v, u)][::-1]
 
     def output(self):
         raise NotImplementedError

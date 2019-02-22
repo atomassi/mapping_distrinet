@@ -121,9 +121,6 @@ class EmbedHeu(Embed):
                 res_link_mapping = {}
                 rate_used = defaultdict(int)
 
-                # to keep track of the paths between 2 physical nodes
-                computed_paths = {}
-
                 # iterate over each virtual link between two virtual nodes not mapped on the same physical machine
                 for (u, v) in ((u, v) for (u, v) in self.virtual.sorted_edges() if
                                res_node_mapping[u] != res_node_mapping[v]):
@@ -133,18 +130,9 @@ class EmbedHeu(Embed):
                     # physical nodes on which u and v have been placed
                     phy_u, phy_v = res_node_mapping[u], res_node_mapping[v]
 
-                    # if a physical path between phy_u and phy_v has not been computed yet
-                    # check if a path between phy_v and phy_u has been computed and reverse it
-                    # otherwise compute it and store it
-                    if (phy_u, phy_v) not in computed_paths:
-                        if (phy_v, phy_u) in computed_paths:
-                            computed_paths[(phy_u, phy_v)] = list(reversed(computed_paths[(phy_v, phy_u)]))
-                        else:
-                            computed_paths[(phy_u, phy_v)] = list(self.physical.find_path(phy_u, phy_v))
-
                     next_node = phy_u
                     # for each link in the physical path
-                    for (i, j) in computed_paths[(phy_u, phy_v)]:
+                    for (i, j) in self.physical.find_path(phy_u, phy_v):
 
                         # get an interface with enough available rate
                         chosen_interface = next((interface for interface in self.physical.nw_interfaces(i, j) if

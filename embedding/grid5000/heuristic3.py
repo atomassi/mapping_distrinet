@@ -17,13 +17,12 @@ class EmbedHeu(Embed):
         """
 
         selected, not_selected = deque(), set(self.physical.compute_nodes)
-
         used_resources = {'cores': defaultdict(int), 'memory': defaultdict(int)}
 
-        res_node_mapping = {}
         #
         # place virtual nodes and give priority to already selected nodes
         #
+        res_node_mapping = {}
         for virtual_node in self.virtual.nodes():
 
             # required cores and memory
@@ -39,9 +38,11 @@ class EmbedHeu(Embed):
                     res_node_mapping[virtual_node] = phy_node
 
                     # update selected and not_selected sets
-                    if phy_node in not_selected:
+                    try:
                         not_selected.remove(phy_node)
                         selected.appendleft(phy_node)
+                    except KeyError:
+                        pass
 
                     # update the resources used on the selected node
                     used_resources['cores'][phy_node] += req_cores
@@ -63,7 +64,7 @@ class EmbedHeu(Embed):
             # physical nodes on which u and v have been placed
             phy_u, phy_v = res_node_mapping[u], res_node_mapping[v]
 
-            # for each link in the physical path
+            # find the physical path
             next_node = phy_u
             for (i, j) in self.physical.find_path(phy_u, phy_v):
                 # get the interface with the maximum available rate
@@ -76,8 +77,8 @@ class EmbedHeu(Embed):
                 # add the virtual link in the list of virtual links that the physical link
                 use_link[(i, j, chosen_interface)].add((u, v))
                 # add to the path
-                res_link_mapping[(u, v)].append(
-                    (i, chosen_interface, j) if i == next_node else (j, chosen_interface, i))
+                res_link_mapping[(u, v)].append((i, chosen_interface, j) if i == next_node else (j, chosen_interface, i))
+                # update the next node in the path
                 next_node = j if i == next_node else i
 
         # move nodes until link rate is not anymore exceeded
@@ -90,8 +91,8 @@ class EmbedHeu(Embed):
 
             # take the violated links and the rate in excess on them
             violated_links = {(i, j, interface): rate_used[(i, j, interface)] - self.physical.rate(i, j, interface) for
-                              (i, j, interface) in rate_used if
-                              rate_used[(i, j, interface)] - self.physical.rate(i, j, interface) > 0}
+                              (i, j, interface) in rate_used
+                              if rate_used[(i, j, interface)] - self.physical.rate(i, j, interface) > 0}
 
             # take the link with the highest exceeded rate
             most_violated_link = max(violated_links, key=violated_links.get)

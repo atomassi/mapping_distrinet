@@ -19,9 +19,7 @@ class GetPartition(object):
         self._cache = {}
 
     def __call__(self, g, n_partitions):
-        """Given the graph G and the number of partitions k,
-           returns a list with k sets of nodes
-        """
+        """Given the graph G and the number of partitions k, returns a list with k sets of nodes."""
 
         def _iterative_cutting(g, p):
             """helper function (iterative version)"""
@@ -43,13 +41,13 @@ class GetPartition(object):
             return res
 
         def _recursive_cutting(g, p, res=[]):
-            """helper function"""
-            K = len(g.nodes()) / p
+            """helper function (recursive version)"""
+            k = len(g.nodes()) / p
 
             g_l, g_r = kernighan_lin_bisection(g, weight='rate')
 
             for partition in g_l, g_r:
-                if len(partition) > K:
+                if len(partition) > k:
                     _recursive_cutting(g.subgraph(partition), p / 2, res)
                 else:
                     res.append(partition)

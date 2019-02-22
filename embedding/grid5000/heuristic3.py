@@ -210,8 +210,11 @@ if __name__ == "__main__":
     from embedding.virtual import VirtualNetwork
 
     physical_topo = PhysicalNetwork.grid5000("grisou", group_interfaces=False)
-    virtual_topo = VirtualNetwork.create_random_nw(n_nodes=170)
-    # virtual_topo = VirtualNetwork.create_fat_tree(k=12)
+    virtual_topo = VirtualNetwork.create_random_nw(n_nodes=200)
+    #virtual_topo = VirtualNetwork.create_fat_tree(k=12)
+
+    print(len(virtual_topo.nodes()),len(virtual_topo.edges()))
+    exit(1)
 
     time_solution, (value_solution, solution) = EmbedHeu(virtual_topo, physical_topo)()
     print(time_solution, value_solution)

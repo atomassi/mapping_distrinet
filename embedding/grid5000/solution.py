@@ -1,7 +1,10 @@
 import logging
-from collections import defaultdict
+from collections import defaultdict, namedtuple
 
 from embedding.exceptions import EmptySolutionError, AssignmentError, NodeResourceError, LinkCapacityError
+
+
+LinkMap = namedtuple('LinkMap', ['source', 'dest', 'device', 'f_rate'])
 
 
 class Solution(object):
@@ -34,7 +37,7 @@ class Solution(object):
         #
         # each virtual link is assigned
         #
-        for virtual_link in self.virtual.edges():
+        for virtual_link in self.virtual.sorted_edges():
             (u, v) = virtual_link
             if not virtual_link in self.res_link_mapping and self.res_node_mapping[u] != self.res_node_mapping[v]:
                 raise AssignmentError(virtual_link)
@@ -78,13 +81,12 @@ class Solution(object):
         # dict -> physical link: rate used on it
         #
         if not self.physical.grouped_interfaces:
-            used_link_resources = {(i, j): {interface: 0 for interface in self.physical.nw_interfaces(i, j)} for
-                                   (i, j)
-                                   in self.physical.edges()}
+            used_link_resources = {(i, j): {interface: 0 for interface in self.physical.nw_interfaces(i, j)}
+                                   for (i, j) in self.physical.edges()}
         else:
             used_link_resources = {(i, j): {interface: 0 for interface in self.physical.associated_nw_interfaces(i, j)}
-                                   for
-                                   (i, j) in self.physical.edges()}
+                                   for (i, j) in self.physical.edges()}
+
         for (u, v) in self.res_link_mapping:
             for (s1, i1, t1, s2, i2, t2, rate_on_it) in self.res_link_mapping[(u, v)]:
                 try:
@@ -98,20 +100,33 @@ class Solution(object):
                     used_link_resources[(t2, s2)][i2] += rate_on_it * self.virtual.req_rate(u, v)
 
         for (i, j) in self.physical.edges():
-            nw_interfaces = self.physical.nw_interfaces(i,
-                                                        j) if not self.physical.grouped_interfaces else self.physical.associated_nw_interfaces(
-                i, j)
+            nw_interfaces = self.physical.nw_interfaces(i,j) \
+                if not self.physical.grouped_interfaces else self.physical.associated_nw_interfaces(i, j)
 
             for interface in nw_interfaces:
-                link_rate = self.physical.rate(i, j,
-                                               interface) if not self.physical.grouped_interfaces else self.physical.rate_associated_nw_interface(
-                    i, j, interface)
+                link_rate = self.physical.rate(i, j, interface) \
+                    if not self.physical.grouped_interfaces else self.physical.rate_associated_nw_interface(i, j, interface)
 
                 if used_link_resources[(i, j)][interface] > link_rate:
                     raise LinkCapacityError((i, j, interface), used_link_resources[(i, j)][interface], link_rate)
 
         # delay requirements are respected
         # @todo to be defined
+
+
+    @classmethod
+    def build_solution(cls, virtual, physical, res_node_mapping, res_link_mapping, check_solution=True):
+
+        if physical.grouped_interfaces:
+            pass
+        else:
+            pass
+
+        if check_solution:
+            pass
+
+
+
 
     @classmethod
     def map_to_multiple_interfaces(cls, virtual, physical, res_node_mapping, res_link_mapping):
@@ -122,23 +137,25 @@ class Solution(object):
         rate_on_nodes_interfaces = {
             (i, j): {interface: physical.rate_associated_nw_interface(i, j, interface) for interface in
                      physical.associated_nw_interfaces(i, j)} for (i, j) in physical.edges()}
+
+
         for (u, v) in virtual.edges():
-            physical_u, physical_v = res_node_mapping[u], res_node_mapping[v]
+            phy_u, phy_v = res_node_mapping[u], res_node_mapping[v]
             # if virtual nodes are mapped on two different physical nodes
-            if physical_u != physical_v:
+            if phy_u != phy_v:
                 res_link_mapping_multiple_interfaces[(u, v)] = []
                 # for each mapping in the physical network with grouped interfaces
                 # (even in this case a
                 u_source, _, u_dest, v_source, _, v_dest, rate_mapped = res_link_mapping[(u, v)][0]
-                interfaces_u = rate_on_nodes_interfaces[(u_source, u_dest)] if (u_source,
-                                                                                u_dest) in rate_on_nodes_interfaces else \
-                    rate_on_nodes_interfaces[(u_dest, u_source)]
-                interfaces_v = rate_on_nodes_interfaces[(v_source, v_dest)] if (v_source,
-                                                                                v_dest) in rate_on_nodes_interfaces else \
-                    rate_on_nodes_interfaces[(v_dest, v_source)]
+                interfaces_u = rate_on_nodes_interfaces[(u_source, u_dest)] \
+                    if (u_source, u_dest) in rate_on_nodes_interfaces else rate_on_nodes_interfaces[(u_dest, u_source)]
+                interfaces_v = rate_on_nodes_interfaces[(v_source, v_dest)] \
+                    if (v_source, v_dest) in rate_on_nodes_interfaces else rate_on_nodes_interfaces[(v_dest, v_source)]
+
                 # until we don't map all the requested rate
                 requested_rate = virtual.req_rate(u, v)
                 to_be_mapped = requested_rate
+
                 while to_be_mapped > 0:
                     # take the interfaces with the highest available rate on the physical nodes
                     # where the endpoint of u and v are mapped

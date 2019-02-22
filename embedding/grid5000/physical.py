@@ -12,7 +12,7 @@ class PhysicalNetwork(object):
         """Initialize the physical network with the graph g.
 
         grouped_interfaces is set to True if all the network interfaces between two physical nodes
-        have been grouped into a single one
+        have been grouped into a single one.
         """
         self._g = g
         self.grouped_interfaces = grouped_interfaces
@@ -24,7 +24,7 @@ class PhysicalNetwork(object):
 
     @property
     def compute_nodes(self):
-        """Physical nodes able to run virtual nodes"""
+        """Physical nodes able to run virtual nodes."""
         if not hasattr(self, '_compute'):
             self._compute = set(u for u in self.nodes() if self.cores(u) > 0 and self.memory(u) > 0)
         return self._compute
@@ -92,8 +92,8 @@ class PhysicalNetwork(object):
             return self._computed_paths[(source, target)]
         # check if the path from the destination to the source already exists
         elif (target, source) in self._computed_paths:
-            self._computed_paths[(source, target)] = self._computed_paths[(target, source)][::-1]
-            return self._computed_paths[(source, target)]
+            res = self._computed_paths[(source, target)] = self._computed_paths[(target, source)][::-1]
+            return res
 
         # otherwise compute a path and cache it
         path = [source]
@@ -108,10 +108,10 @@ class PhysicalNetwork(object):
                 if child == target:
                     path.append(target)
                     # return a generator with links sorted in lexicographic way
-                    self._computed_paths[(source, target)] = [
+                    res = self._computed_paths[(source, target)] = [
                         (path[i], path[i + 1]) if path[i] < path[i + 1] else (path[i + 1], path[i]) for i in
                         range(len(path) - 1)]
-                    return self._computed_paths[(source, target)]
+                    return res
                 elif child not in path:
                     path.append(child)
                     stack.append((u for u in self.neighbors(child)))

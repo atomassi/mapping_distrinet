@@ -1,4 +1,3 @@
-import math
 import random
 from collections import defaultdict
 
@@ -7,9 +6,9 @@ from embedding.grid5000.solution import Solution
 from embedding.solve import Embed
 from embedding.utils import timeit
 
-def get_partitions(virtual, n_partitions, n_tries=100):
-    """ Divide the nodes in n_partitions bins and then tries to swap nodes to reduce the cut weight
-    """
+
+def get_partitions(virtual, n_partitions, n_swaps=100):
+    """ Divide the nodes in n_partitions bins and then tries to swap nodes to reduce the cut weight."""
 
     nodes = list(virtual.nodes())
     random.shuffle(nodes)
@@ -19,7 +18,7 @@ def get_partitions(virtual, n_partitions, n_tries=100):
     # current cost for the partition
     old_cost = sum(virtual.req_rate(u, v) for (u, v) in virtual.edges() if nodes_partition[u] != nodes_partition[v])
 
-    for _ in range(n_tries):
+    for _ in range(n_swaps):
         # take two random nodes
         u1, u2 = random.sample(nodes, k=2)
         # if the partitions ids of u1 and u2 are the same continue

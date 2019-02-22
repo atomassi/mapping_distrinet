@@ -14,8 +14,7 @@ class Embed(object, metaclass=ABCMeta):
         self._log = logging.getLogger(__name__)
 
     def _get_LB(self):
-        """Return a lower bound on the minimum number of physical machines needed to map all the virtual nodes
-        """
+        """Return a lower bound on the minimum number of physical machines needed to map all the virtual nodes."""
 
         # nodes able to host VMs
         compute_nodes = self.physical.compute_nodes
@@ -37,7 +36,7 @@ class Embed(object, metaclass=ABCMeta):
                 phy_node) > max_phy_memory else max_phy_memory
 
         # lower bound, any feasible mapping requires at least this number of physical machines
-        return max(math.ceil(tot_req_cores / max_phy_cores), math.ceil(tot_req_memory / max_phy_memory))
+        return math.ceil(max(tot_req_cores / max_phy_cores, tot_req_memory / max_phy_memory))
 
     @abstractmethod
     def __call__(self, *args, **kwargs):

@@ -28,7 +28,19 @@ class VirtualNetwork(object):
 
     def sorted_edges(self):
         """Return the edges of the graph sorted in lexicographic way."""
-        return set((u, v) if u < v else (v, u) for (u, v) in self.edges())
+        if not hasattr(self, '_sorted_links'):
+            self._sorted_links = set((u, v) if u < v else (v, u) for (u, v) in self.edges())
+        return self._sorted_links
+
+    def sorted_edges_from(self, i):
+        """Return the edges starting at node i with each edge sorted in lexicographic way."""
+        if not hasattr(self, '_links_from'):
+            self._links_from = {}
+        try:
+            return self._links_from[i]
+        except KeyError:
+            res = self._links_from[i] = set((i, j) if i < j else (j, i) for j in self._g[i])
+        return res
 
     def nodes(self):
         """Return the nodes of the graph."""

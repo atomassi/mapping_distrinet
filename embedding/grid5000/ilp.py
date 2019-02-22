@@ -97,16 +97,16 @@ class EmbedILP(Embed):
             for i in self.physical.nodes():
                 mapping_ILP += pulp.lpSum(
                     (link_mapping[(u, v, i, j, device)] - link_mapping[(u, v, j, i, device)]) for j in
-                    self.physical.neighbors(i) for device in self.physical.nw_interfaces(i, j)) == (
-                                       node_mapping[(u, i)] - node_mapping[
-                                   (v, i)]), f"flow conservation on physical node {i} for virtual link {u, v}"
+                    self.physical.neighbors(i) for device in self.physical.nw_interfaces(i, j)) == \
+                               (node_mapping[(u, i)] - node_mapping[(v, i)]),\
+                               f"flow conservation on physical node {i} for virtual link {u, v}"
 
         # Link capacity
         for (i, j, device) in self.physical.edges(keys=True):
             mapping_ILP += pulp.lpSum(self.virtual.req_rate(u, v) * (
                     link_mapping[(u, v, i, j, device)] + link_mapping[(u, v, j, i, device)])
-                                      for (u, v) in self.virtual.sorted_edges()) <= self.physical.rate(i, j,
-                                                                                                device), f"link capacity for physical link {i, j, device}"
+                                      for (u, v) in self.virtual.sorted_edges()) <= self.physical.rate(i, j,device), \
+                           f"link capacity for physical link {i, j, device}"
         # Given a virtual link a physical machine the rate that goes out from the physical machine to an interface
         # or that comes in to the physical machine from an interface is at most 1
         for (u, v) in self.virtual.sorted_edges():
@@ -137,17 +137,11 @@ class EmbedILP(Embed):
                 not pulp.value(mapping_ILP.objective) or pulp.value(mapping_ILP.objective) < 1.1):
             # @todo check specific solver status
             raise TimeLimitError
-        self._log.info(f"The solution found uses {pulp.value(mapping_ILP.objective)} physical machines")
 
         # build solution from variables values
         res_node_mapping, res_link_mapping = self._build_ILP_solution(node_mapping, link_mapping)
         # if interfaces have been grouped, map to solution to the original network
-        if self.physical.grouped_interfaces:
-            solution = Solution.map_to_multiple_interfaces(self.virtual, self.physical, res_node_mapping,
-                                                           res_link_mapping)
-        else:
-            solution = Solution(self.virtual, self.physical, res_node_mapping, res_link_mapping)
-
+        solution = Solution.build_solution(self.virtual, self.physical, res_node_mapping, res_link_mapping)
 
         if solver_name=="cplex":
             print("lb cplex", solver.solverModel.solution.MIP.get_best_objective())
@@ -156,15 +150,7 @@ class EmbedILP(Embed):
             print("lb gurobi", mapping_ILP.solverModel.ObjBound)
             solution.lb = mapping_ILP.solverModel.ObjBound
 
-
-        if obj == "min_n_machines":
-            return pulp.value(mapping_ILP.objective), solution
-        else:
-            n_used_machines = sum(next((1 for virtual_node in self.virtual.nodes() if
-                                        node_mapping[(virtual_node, physical_node)].varValue > 0), 0) for physical_node
-                                  in self.physical.nodes())
-
-            return n_used_machines, solution
+        return solution
 
     def _build_ILP_solution(self, node_mapping, link_mapping):
         """Build an assignment of virtual nodes and virtual links starting from the values of the variables in the ILP
@@ -179,17 +165,24 @@ class EmbedILP(Embed):
         for (u, v) in self.virtual.sorted_edges():
             if res_node_mapping[u] != res_node_mapping[v]:
                 s_node, d_node = res_node_mapping[u], res_node_mapping[v]
-                # mapping for the source of the virtual link
+                # source of the virtual link
                 source = next(((s_node, device, j) for j in self.physical.neighbors(s_node) for device in
                                self.physical.nw_interfaces(s_node, j) if
                                link_mapping[(u, v, s_node, j, device)].varValue + link_mapping[
                                    (u, v, j, s_node, device)].varValue > 0.99), None)
-                # mapping for the destination of the virtual link
-                dest = next(((d_node, device, j) for j in self.physical.neighbors(d_node) for device in
+                # destination of the virtual link
+                dest = next(((j, device, d_node) for j in self.physical.neighbors(d_node) for device in
                              self.physical.nw_interfaces(d_node, j) if
                              link_mapping[(u, v, d_node, j, device)].varValue + link_mapping[
                                  (u, v, j, d_node, device)].varValue > 0.99), None)
-                res_link_mapping[(u, v)] = [source + dest + (1.0,)]
+                # intermediary nodes in the path
+                inter_nodes = [(i, device, j) for (i, j, device) in self.physical.edges(keys=True)
+                         if i not in (s_node, d_node) and j not in (s_node, d_node) and
+                            link_mapping[(u, v, i, j, device)].varValue +
+                            link_mapping[(u, v, j, i, device)].varValue > 0.99]
+
+                res_link_mapping[(u, v)] = [source] + inter_nodes + [dest]
+
         return res_node_mapping, res_link_mapping
 
 
@@ -203,6 +196,4 @@ if __name__ == "__main__":
 
     ilp = EmbedILP(virtual_topo, physical_topo)
 
-    time_solution, (value_solution, solution) = ilp()
-    print(time_solution, value_solution)
-    solution.verify_solution()
+    time_solution, solution = ilp()

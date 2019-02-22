@@ -128,9 +128,9 @@ class VirtualNetwork(object):
         return cls(nx.freeze(g))
 
     @classmethod
-    def create_random_nw(cls, n_nodes=10, node_req_cores=2, node_req_memory=8000, link_req_rate=200, seed=99):
+    def create_random_nw(cls, n_nodes=10, p=0.15, node_req_cores=2, node_req_memory=8000, link_req_rate=200, seed=99):
         """create a random network."""
-        g = nx.gnp_random_graph(n_nodes, p=0.15, seed=seed, directed=False)
+        g = nx.gnp_random_graph(n_nodes, p=p, seed=seed, directed=False)
         for (u, v) in g.edges():
             g[u][v]['rate'] = link_req_rate
         for u in g.nodes():

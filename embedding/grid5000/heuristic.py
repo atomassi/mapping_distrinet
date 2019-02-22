@@ -1,4 +1,3 @@
-import math
 import random
 from collections import defaultdict
 
@@ -7,7 +6,7 @@ from networkx.algorithms.community.kernighan_lin import kernighan_lin_bisection
 from embedding.exceptions import NodeResourceError, LinkCapacityError, InfeasibleError
 from embedding.grid5000.solution import Solution
 from embedding.solve import Embed
-from embedding.utils import timeit, CachedFunction
+from embedding.utils import timeit
 
 
 class GetPartition(object):
@@ -126,7 +125,10 @@ class EmbedHeu(Embed):
                 computed_paths = {}
 
                 # iterate over each virtual link between two virtual nodes not mapped on the same physical machine
-                for (u, v) in ((u, v) for (u, v) in self.virtual.edges() if res_node_mapping[u] != res_node_mapping[v]):
+                for (u, v) in ((u, v) for (u, v) in self.virtual.sorted_edges() if
+                               res_node_mapping[u] != res_node_mapping[v]):
+
+                    res_link_mapping[(u, v)] = []
 
                     # physical nodes on which u and v have been placed
                     phy_u, phy_v = res_node_mapping[u], res_node_mapping[v]
@@ -140,38 +142,31 @@ class EmbedHeu(Embed):
                         else:
                             computed_paths[(phy_u, phy_v)] = list(self.physical.find_path(phy_u, phy_v))
 
+                    next_node = phy_u
                     # for each link in the physical path
                     for (i, j) in computed_paths[(phy_u, phy_v)]:
+
                         # get an interface with enough available rate
                         chosen_interface = next((interface for interface in self.physical.nw_interfaces(i, j) if
-                                                 self.physical.rate(i, j, interface) - rate_used[
-                                                     (i, j, interface)] >= self.virtual.req_rate(u, v)), None)
+                                                 self.physical.rate(i, j, interface) - rate_used[(i, j, interface)] >=
+                                                 self.virtual.req_rate(u, v)), None)
+
                         # if such an interface does not exist raise an Exception
                         if not chosen_interface:
                             raise LinkCapacityError((i, j))
+
                         # else update the rate
                         rate_used[(i, j, chosen_interface)] += self.virtual.req_rate(u, v)
 
-                        # get physical source and destination nodes and interfaces for the virtual link
-                        if i == phy_u or j == phy_u:
-                            source = (i, chosen_interface, j) if i == phy_u else (j, chosen_interface, i)
-                        elif i == phy_v or j == phy_v:
-                            dest = (i, chosen_interface, j) if i == phy_v else (j, chosen_interface, i)
+                        res_link_mapping[(u, v)].append(
+                            (i, chosen_interface, j) if i == next_node else (j, chosen_interface, i))
+                        next_node = j if i == next_node else i
 
-                    # update the result
-                    res_link_mapping[(u, v)] = [(source + dest + (1,))]
+                # build solution from the output
+                return Solution.build_solution(self.virtual, self.physical, res_node_mapping, res_link_mapping)
 
-                # if interfaces have been grouped into a single one, ungroup them
-                if self.physical.grouped_interfaces:
-                    solution = Solution.map_to_multiple_interfaces(self.virtual, self.physical, res_node_mapping,
-                                                                   res_link_mapping)
-                else:
-                    solution = Solution(self.virtual, self.physical, res_node_mapping, res_link_mapping)
 
-                # return the number of partitions used and the solution found
-                return n_partitions_to_try, solution
-
-            except (NodeResourceError, LinkCapacityError) as err:
+            except (NodeResourceError, LinkCapacityError):
                 # unfeasible, increase the number of partitions to be used
                 pass
         else:
@@ -182,12 +177,10 @@ if __name__ == "__main__":
     from embedding.grid5000 import PhysicalNetwork
     from embedding.virtual import VirtualNetwork
 
-    physical_topo = PhysicalNetwork.grid5000("grisou", group_interfaces=False)
-    # virtual_topo = VirtualNetwork.create_random_nw(n_nodes=80)
-    virtual_topo = VirtualNetwork.create_fat_tree(k=4)
+    physical_topo = PhysicalNetwork.grid5000("grisou", group_interfaces=True)
+    virtual_topo = VirtualNetwork.create_random_nw(n_nodes=2, link_req_rate=20000, node_req_cores=17, p=1)
+    # virtual_topo = VirtualNetwork.create_fat_tree(k=4)
 
     heu = EmbedHeu(virtual_topo, physical_topo)
 
-    time_solution, (value_solution, solution) = heu()
-    print(time_solution, value_solution)
-    solution.verify_solution()
+    time_solution, solution = heu()

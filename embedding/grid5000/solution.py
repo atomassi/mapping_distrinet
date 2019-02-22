@@ -1,179 +1,190 @@
 import logging
-from collections import defaultdict, namedtuple
+from collections import defaultdict
 
 from embedding.exceptions import EmptySolutionError, AssignmentError, NodeResourceError, LinkCapacityError
 
 
-LinkMap = namedtuple('LinkMap', ['source', 'dest', 'device', 'f_rate'])
+class LinkMap(object):
+    """Virtual Link mapping to physical resources.
+
+    Given a virtual link (u,v) a LinkMap represents a mapping:
+    - from both the physical node and the interface where u is hosted
+    - to both the physical node and the interface where v is hosted
+
+    Also, it specifies the amount of rate (in the range [0,1]) to route in this path.
+    """
+
+    def __init__(self, s_node, s_device, d_node, d_device, f_rate=1):
+        self.s_node = s_node
+        self.s_device = s_device
+        self.d_node = d_node
+        self.d_device = d_device
+        self.f_rate = f_rate
 
 
 class Solution(object):
-    def __init__(self, virtual, physical, res_node_mapping, res_link_mapping):
-        self.virtual = virtual
-        self.physical = physical
-        self.res_node_mapping = res_node_mapping
-        self.res_link_mapping = res_link_mapping
+    """Represent the output of the placement algorithms.
+
+    Examples
+    --------
+    >>> solution.node_info(u)
+    grisou-6
+    >>> solution.node_info(v)
+    grisou-7
+    >>> solution.link_info((u,v))
+    [<embedding.grid5000.solution.LinkMap object at 0x113794a90>]
+    >>> for link_map in solution.link_info((u,v)):
+    ...        print(link_map.__dict__)
+    {'s_node': 'grisou-6', 's_device': 'eth1', 'd_node': 'grisou-7', 'd_device': 'eth3', 'f_rate': 1}
+
+    """
+
+    def __init__(self, node_mapping, link_mapping):
+        self.node_mapping = node_mapping
+        self.link_mapping = link_mapping
+        self.n_machines_used = len(set(node_mapping.values()))
         self._log = logging.getLogger(__name__)
+
+    def node_info(self, node):
+        """Return the mapping for the virtual node."""
+        return self.node_mapping[node]
+
+    def link_info(self, link):
+        """Return the mapping for the virtual link."""
+        (u, v) = link
+        if self.node_mapping[u] != self.node_mapping[v]:
+            return []
+        try:
+            return self.link_mapping[(u, v)]
+        except KeyError:
+            return self.link_mapping[(v, u)]
 
     def output(self):
         raise NotImplementedError
 
-    def verify_solution(self):
+    @staticmethod
+    def verify_solution(virtual, physical, node_mapping, link_path):
         """check if the solution is correct"""
 
         #
         # empty solution or invalid solution
         #
-        if not self.res_node_mapping:
-            raise EmptySolutionError
+        if not node_mapping: raise EmptySolutionError
+
         #
         # each virtual node is assigned to a physical node
         #
-        for virtual_node in self.virtual.nodes():
-            if not virtual_node in self.res_node_mapping:
+        for virtual_node in virtual.nodes():
+            if not virtual_node in node_mapping:
                 raise AssignmentError(virtual_node)
-            else:
-                self._log.info(f"Virtual Node {virtual_node} assigned to {self.res_node_mapping[virtual_node]}")
         #
         # each virtual link is assigned
         #
-        for virtual_link in self.virtual.sorted_edges():
-            (u, v) = virtual_link
-            if not virtual_link in self.res_link_mapping and self.res_node_mapping[u] != self.res_node_mapping[v]:
-                raise AssignmentError(virtual_link)
-            elif self.res_node_mapping[u] != self.res_node_mapping[v]:
-                sum_rate = 0
-                for (source_node, source_interface, _, dest_node, dest_interface, _, rate_on_it) in \
-                        self.res_link_mapping[
-                            (u, v)]:
-                    sum_rate += rate_on_it
-                    if source_node != self.res_node_mapping[u] or dest_node != self.res_node_mapping[v]:
-                        raise AssignmentError(virtual_link)
-                if sum_rate != 1:
-                    raise AssignmentError(virtual_link)
+        for (u, v) in virtual.sorted_edges():
+            if not (u, v) in link_path and node_mapping[u] != node_mapping[v]:
+                raise AssignmentError((u, v))
+            elif node_mapping[u] != node_mapping[v]:
+                if len(link_path[(u, v)]) < 2:
+                    raise AssignmentError((u, v))
 
         #
         # resource usage on nodes
         #
-        # dict -> physical node: CPU cores used on it
-        cpu_used_node = defaultdict(int)
-        # dict -> physical node: memory used on it
-        memory_used_node = defaultdict(int)
-        # compute resources used
-        for virtual_node, physical_node in self.res_node_mapping.items():
-            cpu_used_node[physical_node] += self.virtual.req_cores(virtual_node)
-            memory_used_node[physical_node] += self.virtual.req_memory(virtual_node)
-        # cpu limit is not exceeded
-        for physical_node, cpu_cores_used in cpu_used_node.items():
-            node_cores = self.physical.cores(physical_node)
-            self._log.info(f"Physical Node {physical_node}: cpu cores used {cpu_cores_used} capacity {node_cores}")
-            if cpu_cores_used > self.physical.cores(physical_node):
-                raise NodeResourceError(physical_node, "cpu cores", cpu_cores_used, node_cores)
-        # memory limit is not exceeded
-        for physical_node, memory_used in memory_used_node.items():
-            node_memory = self.physical.memory(physical_node)
-            self._log.info(f"Physical Node {physical_node}: memory used {memory_used} capacity {node_memory}")
-            if memory_used > self.physical.memory(physical_node):
-                raise NodeResourceError(physical_node, "memory", memory_used, node_memory)
+        node_cores_used = defaultdict(int)
+        node_memory_used = defaultdict(int)
+        for virtual_node, physical_node in node_mapping.items():
+            # cpu limit is not exceeded
+            node_cores_used[physical_node] += virtual.req_cores(virtual_node)
+            if node_cores_used[physical_node] > physical.cores(physical_node):
+                raise NodeResourceError(physical_node, "cpu cores", node_cores_used[physical_node],
+                                        physical.cores(physical_node))
+            # memory limit is not exceeded
+            node_memory_used[physical_node] += virtual.req_memory(virtual_node)
+            if node_memory_used[physical_node] > physical.memory(physical_node):
+                raise NodeResourceError(physical_node, "memory", node_memory_used[physical_node],
+                                        physical.memory(physical_node))
+
         #
         # resource usage on links
         #
-        # dict -> physical link: rate used on it
-        #
-        if not self.physical.grouped_interfaces:
-            used_link_resources = {(i, j): {interface: 0 for interface in self.physical.nw_interfaces(i, j)}
-                                   for (i, j) in self.physical.edges()}
-        else:
-            used_link_resources = {(i, j): {interface: 0 for interface in self.physical.associated_nw_interfaces(i, j)}
-                                   for (i, j) in self.physical.edges()}
+        used_link_resources = {(i, j): {interface: 0 for interface in physical.nw_interfaces(i, j)}
+                               for (i, j) in physical.edges()}
 
-        for (u, v) in self.res_link_mapping:
-            for (s1, i1, t1, s2, i2, t2, rate_on_it) in self.res_link_mapping[(u, v)]:
+        for (u, v) in link_path:
+            for s1, i1, t1 in link_path[(u, v)]:
                 try:
-                    used_link_resources[(s1, t1)][i1] += rate_on_it * self.virtual.req_rate(u, v)
+                    used_link_resources[(s1, t1)][i1] += virtual.req_rate(u, v)
                 except KeyError:
-                    used_link_resources[(t1, s1)][i1] += rate_on_it * self.virtual.req_rate(u, v)
+                    used_link_resources[(t1, s1)][i1] += virtual.req_rate(u, v)
 
-                try:
-                    used_link_resources[(s2, t2)][i2] += rate_on_it * self.virtual.req_rate(u, v)
-                except KeyError:
-                    used_link_resources[(t2, s2)][i2] += rate_on_it * self.virtual.req_rate(u, v)
+        for (i, j) in physical.edges():
 
-        for (i, j) in self.physical.edges():
-            nw_interfaces = self.physical.nw_interfaces(i,j) \
-                if not self.physical.grouped_interfaces else self.physical.associated_nw_interfaces(i, j)
-
-            for interface in nw_interfaces:
-                link_rate = self.physical.rate(i, j, interface) \
-                    if not self.physical.grouped_interfaces else self.physical.rate_associated_nw_interface(i, j, interface)
-
-                if used_link_resources[(i, j)][interface] > link_rate:
-                    raise LinkCapacityError((i, j, interface), used_link_resources[(i, j)][interface], link_rate)
+            for interface in physical.nw_interfaces(i, j):
+                if used_link_resources[(i, j)][interface] > physical.rate(i, j, interface):
+                    raise LinkCapacityError((i, j, interface), used_link_resources[(i, j)][interface],
+                                            physical.rate(i, j, interface))
 
         # delay requirements are respected
         # @todo to be defined
 
-
     @classmethod
-    def build_solution(cls, virtual, physical, res_node_mapping, res_link_mapping, check_solution=True):
+    def build_solution(cls, virtual, physical, node_mapping, link_path, check_solution=True):
+        if check_solution:
+            Solution.verify_solution(virtual, physical, node_mapping, link_path)
 
         if physical.grouped_interfaces:
-            pass
+            link_mapping = {}
+            rate_interfaces = {
+                (i, j): {interface: physical.rate_associated_nw_interface(i, j, interface) for interface in
+                         physical.associated_nw_interfaces(i, j)} for (i, j) in physical.edges()}
+
+            for (u, v) in virtual.sorted_edges():
+                phy_u, phy_v = node_mapping[u], node_mapping[v]
+                # if virtual nodes are mapped on two different physical nodes
+                if phy_u != phy_v:
+                    link_mapping[(u, v)] = []
+                    path = link_path[(u, v)]
+                    u_source, _, u_dest = path[0]
+                    v_source, _, v_dest = path[-1]
+
+                    interfaces_u = rate_interfaces[(u_source, u_dest)] \
+                        if (u_source, u_dest) in rate_interfaces else rate_interfaces[(u_dest, u_source)]
+                    interfaces_v = rate_interfaces[(v_source, v_dest)] \
+                        if (v_source, v_dest) in rate_interfaces else rate_interfaces[(v_dest, v_source)]
+
+                    # until we don't map all the requested rate
+                    requested_rate = virtual.req_rate(u, v)
+                    to_be_mapped = requested_rate
+
+                    while to_be_mapped > 0:
+                        # take the interfaces with the highest available rate on the physical nodes
+                        # where the endpoint of u and v are mapped
+                        interface_u_highest_rate = max(interfaces_u, key=interfaces_u.get)
+                        interface_v_highest_rate = max(interfaces_v, key=interfaces_v.get)
+
+                        # the amount of rate that can be mapped is the mininum between rate to be mapped and the available one
+                        mapped_rate = min(to_be_mapped, interfaces_u[interface_u_highest_rate],
+                                          interfaces_v[interface_v_highest_rate])
+
+                        # update the mapping
+
+                        link_mapping[(u, v)].append(
+                            LinkMap(u_source, interface_u_highest_rate, v_dest, interface_v_highest_rate,
+                                    mapped_rate / float(requested_rate)))
+
+                        # update available rate
+                        to_be_mapped -= mapped_rate
+                        interfaces_u[interface_u_highest_rate] -= mapped_rate
+                        interfaces_v[interface_v_highest_rate] -= mapped_rate
+
         else:
-            pass
+            link_mapping = {}
+            for (u, v), path in link_path.items():
+                s_node, s_device, _ = path[0]
+                _, d_device, d_node = path[-1]
+                link_mapping[(u, v)] = [LinkMap(s_node, s_device, d_node, d_device)]
 
-        if check_solution:
-            pass
-
-
-
-
-    @classmethod
-    def map_to_multiple_interfaces(cls, virtual, physical, res_node_mapping, res_link_mapping):
-        """Given a solution for the physical network in which interfaces towards the same node have been
-           grouped into a single one, it finds a solution for the original physical network.
-        """
-        res_link_mapping_multiple_interfaces = {}
-        rate_on_nodes_interfaces = {
-            (i, j): {interface: physical.rate_associated_nw_interface(i, j, interface) for interface in
-                     physical.associated_nw_interfaces(i, j)} for (i, j) in physical.edges()}
-
-
-        for (u, v) in virtual.edges():
-            phy_u, phy_v = res_node_mapping[u], res_node_mapping[v]
-            # if virtual nodes are mapped on two different physical nodes
-            if phy_u != phy_v:
-                res_link_mapping_multiple_interfaces[(u, v)] = []
-                # for each mapping in the physical network with grouped interfaces
-                # (even in this case a
-                u_source, _, u_dest, v_source, _, v_dest, rate_mapped = res_link_mapping[(u, v)][0]
-                interfaces_u = rate_on_nodes_interfaces[(u_source, u_dest)] \
-                    if (u_source, u_dest) in rate_on_nodes_interfaces else rate_on_nodes_interfaces[(u_dest, u_source)]
-                interfaces_v = rate_on_nodes_interfaces[(v_source, v_dest)] \
-                    if (v_source, v_dest) in rate_on_nodes_interfaces else rate_on_nodes_interfaces[(v_dest, v_source)]
-
-                # until we don't map all the requested rate
-                requested_rate = virtual.req_rate(u, v)
-                to_be_mapped = requested_rate
-
-                while to_be_mapped > 0:
-                    # take the interfaces with the highest available rate on the physical nodes
-                    # where the endpoint of u and v are mapped
-                    interface_u_highest_rate = max(interfaces_u, key=interfaces_u.get)
-                    interface_v_highest_rate = max(interfaces_v, key=interfaces_v.get)
-                    # the amount of rate that can be mapped is the mininum between rate to be mapped and the available one
-                    mapped_rate = min(to_be_mapped, interfaces_u[interface_u_highest_rate],
-                                      interfaces_v[interface_v_highest_rate])
-
-                    # update the mapping
-                    res_link_mapping_multiple_interfaces[(u, v)].append((u_source, interface_u_highest_rate, u_dest,
-                                                                         v_source, interface_v_highest_rate, v_dest,
-                                                                         mapped_rate / float(requested_rate)))
-                    # update available rate
-                    to_be_mapped -= mapped_rate
-                    interfaces_u[interface_u_highest_rate] -= mapped_rate
-                    interfaces_v[interface_v_highest_rate] -= mapped_rate
-        return cls(virtual, physical, res_node_mapping, res_link_mapping_multiple_interfaces)
+        return cls(node_mapping, link_mapping)
 
     def __str__(self):
         return "\n".join(

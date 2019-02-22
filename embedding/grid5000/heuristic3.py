@@ -6,6 +6,7 @@ from embedding.grid5000.solution import Solution
 from embedding.solve import Embed
 from embedding.utils import timeit
 
+
 class EmbedHeu(Embed):
 
     @timeit
@@ -20,7 +21,6 @@ class EmbedHeu(Embed):
         used_resources = {'cores': defaultdict(int), 'memory': defaultdict(int)}
 
         res_node_mapping = {}
-        res_link_mapping = {}
         #
         # place virtual nodes and give priority to already selected nodes
         #
@@ -56,15 +56,15 @@ class EmbedHeu(Embed):
         #
         rate_used = defaultdict(int)
         use_link = defaultdict(set)
-        link_mapping = defaultdict(list)
-
+        res_link_mapping = defaultdict(list)
         # iterate over each virtual link between two virtual nodes not mapped on the same physical machine
-        for (u, v) in ((u, v) for (u, v) in self.virtual.edges() if res_node_mapping[u] != res_node_mapping[v]):
+        for (u, v) in ((u, v) for (u, v) in self.virtual.sorted_edges() if res_node_mapping[u] != res_node_mapping[v]):
 
             # physical nodes on which u and v have been placed
             phy_u, phy_v = res_node_mapping[u], res_node_mapping[v]
 
             # for each link in the physical path
+            next_node = phy_u
             for (i, j) in self.physical.find_path(phy_u, phy_v):
                 # get the interface with the maximum available rate
                 chosen_interface = max((interface for interface in self.physical.nw_interfaces(i, j)),
@@ -76,7 +76,9 @@ class EmbedHeu(Embed):
                 # add the virtual link in the list of virtual links that the physical link
                 use_link[(i, j, chosen_interface)].add((u, v))
                 # add to the path
-                link_mapping[(u, v)].append((i, j, chosen_interface))
+                res_link_mapping[(u, v)].append(
+                    (i, chosen_interface, j) if i == next_node else (j, chosen_interface, i))
+                next_node = j if i == next_node else i
 
         # move nodes until link rate is not anymore exceeded
         exceeded_rate = sum(
@@ -124,11 +126,16 @@ class EmbedHeu(Embed):
                         phy_u, phy_v = res_node_mapping[u], res_node_mapping[v]
 
                         # for each link in the previous path
-                        for (i, j, interface) in link_mapping[(u, v)]:
-                            diff_rate[(i, j, interface)] -= self.virtual.req_rate(u, v)
-                            diff_vlinks['remove'][(i, j, interface)].add((u, v))
+                        for (i, interface, j) in res_link_mapping[(u, v)]:
+                            if i < j:
+                                diff_rate[(i, j, interface)] -= self.virtual.req_rate(u, v)
+                                diff_vlinks['remove'][(i, j, interface)].add((u, v))
+                            else:
+                                diff_rate[(j, i, interface)] -= self.virtual.req_rate(u, v)
+                                diff_vlinks['remove'][(j, i, interface)].add((u, v))
 
                         # for each link in the new physical path
+                        next_node = phy_u
                         for (i, j) in self.physical.find_path(phy_u, phy_v):
                             # get the interface with the maximum available rate
                             chosen_interface = max((interface for interface in self.physical.nw_interfaces(i, j)),
@@ -136,7 +143,10 @@ class EmbedHeu(Embed):
                                                                          rate_used[(i, j, interface)] -
                                                                          diff_rate[(i, j, interface)])
 
-                            new_link_mapping[(u, v)].append((i, j, chosen_interface))
+                            new_link_mapping[(u, v)].append(
+                                (i, chosen_interface, j) if i == next_node else (j, chosen_interface, i))
+                            next_node = j if i == next_node else i
+
                             diff_rate[(i, j, chosen_interface)] += self.virtual.req_rate(u, v)
                             diff_vlinks['add'][(i, j, chosen_interface)].add((u, v))
 
@@ -174,35 +184,14 @@ class EmbedHeu(Embed):
 
                         # update the link mapping for the virtual links
                         for (u, v) in new_link_mapping:
-                            link_mapping[(u, v)] = new_link_mapping[(u, v)]
+                            res_link_mapping[(u, v)] = new_link_mapping[(u, v)]
 
                         break
 
             else:
                 raise InfeasibleError
 
-        #
-        # build output link mapping
-        #
-        for (u, v) in ((u, v) for (u, v) in self.virtual.edges() if res_node_mapping[u] != res_node_mapping[v]):
-
-            phy_u, phy_v = res_node_mapping[u], res_node_mapping[v]
-
-            for (i, j, interface) in link_mapping[(u, v)]:
-                if i == phy_u or j == phy_u:
-                    source = (i, interface, j) if i == phy_u else (j, interface, i)
-                elif i == phy_v or j == phy_v:
-                    dest = (i, interface, j) if i == phy_v else (j, interface, i)
-
-            res_link_mapping[(u, v)] = [(source + dest + (1,))]
-
-        if self.physical.grouped_interfaces:
-            solution = Solution.map_to_multiple_interfaces(self.virtual, self.physical, res_node_mapping,
-                                                           res_link_mapping)
-        else:
-            solution = Solution(self.virtual, self.physical, res_node_mapping, res_link_mapping)
-
-        return len(selected), solution
+        return Solution.build_solution(self.virtual, self.physical, res_node_mapping, res_link_mapping)
 
 
 if __name__ == "__main__":
@@ -211,11 +200,6 @@ if __name__ == "__main__":
 
     physical_topo = PhysicalNetwork.grid5000("grisou", group_interfaces=False)
     virtual_topo = VirtualNetwork.create_random_nw(n_nodes=200)
-    #virtual_topo = VirtualNetwork.create_fat_tree(k=12)
+    # virtual_topo = VirtualNetwork.create_fat_tree(k=12)
 
-    print(len(virtual_topo.nodes()),len(virtual_topo.edges()))
-    exit(1)
-
-    time_solution, (value_solution, solution) = EmbedHeu(virtual_topo, physical_topo)()
-    print(time_solution, value_solution)
-    solution.verify_solution()
+    time_solution, solution = EmbedHeu(virtual_topo, physical_topo)()

@@ -107,6 +107,7 @@ class EmbedILP(Embed):
                     link_mapping[(u, v, i, j, device)] + link_mapping[(u, v, j, i, device)])
                                       for (u, v) in self.virtual.sorted_edges()) <= self.physical.rate(i, j,device), \
                            f"link capacity for physical link {i, j, device}"
+
         # Given a virtual link a physical machine the rate that goes out from the physical machine to an interface
         # or that comes in to the physical machine from an interface is at most 1
         for (u, v) in self.virtual.sorted_edges():
@@ -128,7 +129,6 @@ class EmbedILP(Embed):
 
         # solve the ILP
         status = pulp.LpStatus[mapping_ILP.solve()]
-
 
         # check status
         if status == "Infeasible":
@@ -176,12 +176,12 @@ class EmbedILP(Embed):
                              link_mapping[(u, v, d_node, j, device)].varValue + link_mapping[
                                  (u, v, j, d_node, device)].varValue > 0.99), None)
                 # intermediary nodes in the path
-                inter_nodes = [(i, device, j) for (i, j, device) in self.physical.edges(keys=True)
+                inter = [(i, device, j) for (i, j, device) in self.physical.edges(keys=True)
                          if i not in (s_node, d_node) and j not in (s_node, d_node) and
                             link_mapping[(u, v, i, j, device)].varValue +
                             link_mapping[(u, v, j, i, device)].varValue > 0.99]
 
-                res_link_mapping[(u, v)] = [source] + inter_nodes + [dest]
+                res_link_mapping[(u, v)] = [source] + inter + [dest]
 
         return res_node_mapping, res_link_mapping
 

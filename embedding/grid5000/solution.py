@@ -189,6 +189,6 @@ class Solution(object):
     def __str__(self):
         return "\n".join(
             [f"virtual node {virtual_node} mapped on physical node {physical_node}" for virtual_node, physical_node in
-             self.res_node_mapping.items()]) + "\n" + "\n".join(
+             self.node_mapping.items()]) + "\n" + "\n".join(
             [f"virtual link {virtual_link} mapped on physical path {str(physical_path)}" for virtual_link, physical_path
-             in self.res_link_mapping.items()])
+             in self.link_mapping.items()])

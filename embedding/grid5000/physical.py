@@ -107,7 +107,7 @@ class PhysicalNetwork(object):
             else:
                 if child == target:
                     path.append(target)
-                    # return a generator with links sorted in lexicographic way
+                    # return a path as a list of edges
                     res = self._computed_paths[(source, target)] = [
                         (path[i], path[i + 1]) if path[i] < path[i + 1] else (path[i + 1], path[i]) for i in
                         range(len(path) - 1)]

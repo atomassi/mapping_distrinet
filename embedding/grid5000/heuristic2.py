@@ -54,7 +54,7 @@ class EmbedHeu(Embed):
 
         compute_nodes = self.physical.compute_nodes
 
-        for n_partitions_to_try in range(self._get_LB(), len(compute_nodes) + 1):
+        for n_partitions_to_try in range(self._get_lb(), len(compute_nodes) + 1):
             # partitioning of virtual nodes in n_partitions_to_try partitions
             k_partition = get_partitions(self.virtual, n_partitions=n_partitions_to_try)
             # random subset of hosts of size n_partitions_to_try

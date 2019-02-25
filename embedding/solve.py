@@ -13,7 +13,7 @@ class Embed(object, metaclass=ABCMeta):
         self.physical = physical
         self._log = logging.getLogger(__name__)
 
-    def _get_LB(self):
+    def _get_lb(self):
         """Return a lower bound on the minimum number of physical machines needed to map all the virtual nodes."""
 
         # nodes able to host VMs

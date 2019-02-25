@@ -65,9 +65,9 @@ class GetPartition(object):
 
         # merge small partitions to return the required number of partitions
         while len(partitions) > n_partitions:
-            partitions.sort(key=len)
-            e1 = partitions.pop(0)
-            e2 = partitions.pop(0)
+            partitions.sort(key=len, reverse=True)
+            e1 = partitions.pop()
+            e2 = partitions.pop()
             partitions.append(e1.union(e2))
         return partitions
 
@@ -85,7 +85,7 @@ class EmbedHeu(Embed):
 
         compute_nodes = self.physical.compute_nodes
 
-        for n_partitions_to_try in range(self._get_LB(), len(compute_nodes) + 1):
+        for n_partitions_to_try in range(self._get_lb(), len(compute_nodes) + 1):
             # partitioning of virtual nodes in n_partitions_to_try partitions
             k_partition = get_partitions(self.virtual.g, n_partitions=n_partitions_to_try)
             # random subset of hosts of size n_partitions_to_try
@@ -166,7 +166,7 @@ if __name__ == "__main__":
     from embedding.virtual import VirtualNetwork
 
     physical_topo = PhysicalNetwork.grid5000("grisou", group_interfaces=True)
-    virtual_topo = VirtualNetwork.create_random_nw(n_nodes=2, link_req_rate=20000, node_req_cores=17, p=1)
+    virtual_topo = VirtualNetwork.create_random_nw(n_nodes=66)
     # virtual_topo = VirtualNetwork.create_fat_tree(k=4)
 
     heu = EmbedHeu(virtual_topo, physical_topo)

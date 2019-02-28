@@ -142,3 +142,20 @@ class VirtualNetwork(object):
     def read_from_file(cls, filename):
         """Read the graph from a file"""
         raise NotImplementedError
+
+    @classmethod
+    def from_mininet(cls, mininet_topo):
+        from mininet.topo import Topo
+
+        assert isinstance(mininet_topo, Topo), "Invalid Network Format"
+
+        g = nx.Graph()
+
+        for u in mininet_topo.nodes():
+            g.add_node(u, cores=mininet_topo.nodeInfo(u).get('cores', 0),
+                       memory=mininet_topo.nodeInfo(u).get('memory', 0))
+
+        for (u, v) in mininet_topo.iterLinks(withInfo=False):
+            g.add_edge(u, v, rate=mininet_topo.linkInfo(u, v).get('rate', 0))
+
+        return cls(nx.freeze(g))

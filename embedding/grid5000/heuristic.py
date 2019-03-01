@@ -157,7 +157,8 @@ class EmbedHeu(Embed):
                 # unfeasible, increase the number of partitions to be used
                 pass
         else:
-            raise InfeasibleError
+            self.status = Infeasible
+            return Infeasible
 
 
 

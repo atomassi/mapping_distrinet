@@ -50,7 +50,8 @@ class EmbedHeu(Embed):
                     break
             else:
                 # this means that resources on physical nodes are not enough
-                raise InfeasibleError
+                self.status = Infeasible
+                return Infeasible
 
         #
         # compute the paths given the virtual nodes to physical nodes assignment

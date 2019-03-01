@@ -133,11 +133,13 @@ class EmbedILP(Embed):
 
         # check status
         if status == "Infeasible":
-            raise InfeasibleError
+            self.status = Infeasible
+            return Infeasible
         elif (status == 'Not Solved' or status == "Undefined") and (
                 not pulp.value(mapping_ILP.objective) or pulp.value(mapping_ILP.objective) < 1.1):
             # @todo check specific solver status
-            raise TimeLimitError
+            self.status = NotSolved
+            return NotSolved
 
         # build solution from variables values
         res_node_mapping, res_link_mapping = self._build_ILP_solution(self.virtual, self.physical, node_mapping, link_mapping)

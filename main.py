@@ -1,7 +1,7 @@
 from mininet.topo import Topo
 
 import embedding as emb
-from embedding.grid5000 import EmbedMove
+from embedding.grid5000 import EmbedPartition, EmbedKbalanced, EmbedMove, EmbedILP
 from embedding.grid5000 import PhysicalNetwork
 from embedding.virtual import VirtualNetwork
 

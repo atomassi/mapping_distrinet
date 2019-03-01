@@ -64,6 +64,7 @@ if __name__ == '__main__':
     s3 mapped on grisou-12
     s4 mapped on grisou-32
     *** virtual link ('h1', 's3') mapped on
+    source: grisou-3, source_device: eth0, destination node: grisou-12, destination device: eth0, rate to route: 1
     *** virtual link ('s3', 's4') mapped on
     source: grisou-12, source_device: eth1, destination node: grisou-32, destination device: eth0, rate to route: 1
     *** virtual link ('s4', 'h2') mapped on

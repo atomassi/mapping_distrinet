@@ -1,7 +1,7 @@
 from mininet.topo import Topo
 
 import embedding as emb
-from embedding.grid5000 import EmbedILP, EmbedPartition, EmbedMove, EmbedKbalanced
+from embedding.grid5000 import EmbedMove
 from embedding.grid5000 import PhysicalNetwork
 from embedding.virtual import VirtualNetwork
 
@@ -53,20 +53,33 @@ if __name__ == '__main__':
         print("Unfeasible Problem")
     else:
         pass
-        #print(prob.solution)
-
+        # print(prob.solution)
 
     # Example: query the solution
+
+    """
+    Example output
+    h1 mapped on grisou-12
+    h2 mapped on grisou-24
+    s3 mapped on grisou-25
+    s4 mapped on grisou-21
+    *** virtual link ('h1', 's3') mapped on
+    source: grisou-12, source_device: eth0, destination node: grisou-25, destination device: eth1, rate to route: 1
+    *** virtual link ('s3', 's4') mapped on
+    source: grisou-25, source_device: eth0, destination node: grisou-21, destination device: eth0, rate to route: 1
+    *** virtual link ('s4', 'h2') mapped on
+    source: grisou-24, source_device: eth0, destination node: grisou-21, destination device: eth1, rate to route: 1
+    """
 
     # nodes
     for u in mn_topo.nodes():
         print(f"{u} mapped on {prob.solution.node_info(u)}")
 
     # links
-    for (u,v) in mn_topo.links():
-        print(f"virtual link {(u,v)}")
+    for (u, v) in mn_topo.links():
+        print(f"*** virtual link {(u, v)} mapped on")
         if prob.solution.node_info(u) != prob.solution.node_info(v):
-            for path in prob.solution.link_info((u,v)):
+            for path in prob.solution.link_info((u, v)):
                 print(path)
         else:
             print("Nodes are on the same physical machine")

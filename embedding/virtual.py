@@ -67,7 +67,7 @@ class VirtualNetwork(object):
         return self._g[i]
 
     @classmethod
-    def create_fat_tree(cls, k=2, density=2, node_req_cores=2, node_req_memory=8000, link_req_rate=200):
+    def create_fat_tree(cls, k=2, density=2, req_cores=2, req_memory=8000, req_rate=200):
         """create a K-ary FatTree with host density set to density.
 
            Each node is assigned to a request of *node_req_cores* CPU cores
@@ -76,10 +76,10 @@ class VirtualNetwork(object):
         """
         assert k > 1, "k should be greater than 1"
         assert not k % 2, "k should be divisible by 2"
-        assert float(node_req_cores).is_integer(), "the number of requested cores should be integer"
-        assert node_req_cores >= 0, "node CPU cores cannot be negative"
-        assert node_req_memory >= 0, "node memory cannot be negative"
-        assert link_req_rate >= 0, "link rate cannot be negative"
+        assert float(req_cores).is_integer(), "the number of requested cores should be integer"
+        assert req_cores >= 0, "node CPU cores cannot be negative"
+        assert req_memory >= 0, "node memory cannot be negative"
+        assert req_rate >= 0, "link rate cannot be negative"
 
         n_pods = k
         n_core_switches = int((k / 2) ** 2)
@@ -92,26 +92,26 @@ class VirtualNetwork(object):
         edge_switches = [f'edge_{i}' for i in range(1, n_edge_switches + 1)]
 
         g = nx.Graph()
-        g.add_nodes_from(itertools.chain(hosts, core_switches, aggr_switches, edge_switches), cores=node_req_cores,
-                         memory=node_req_memory)
+        g.add_nodes_from(itertools.chain(hosts, core_switches, aggr_switches, edge_switches), cores=req_cores,
+                         memory=req_memory)
 
         # Core to Aggr
         end = int(n_pods / 2)
         for x in range(0, n_aggr_switches, end):
             for i in range(0, end):
                 for j in range(0, end):
-                    g.add_edge(core_switches[i * end + j], aggr_switches[x + i], rate=link_req_rate)
+                    g.add_edge(core_switches[i * end + j], aggr_switches[x + i], rate=req_rate)
 
         # Aggr to Edge
         for x in range(0, n_aggr_switches, end):
             for i in range(0, end):
                 for j in range(0, end):
-                    g.add_edge(aggr_switches[x + i], edge_switches[x + j], rate=link_req_rate)
+                    g.add_edge(aggr_switches[x + i], edge_switches[x + j], rate=req_rate)
 
         # Edge to Host
         for x in range(0, n_edge_switches):
             for i in range(density):
-                g.add_edge(edge_switches[x], hosts[density * x + i], rate=link_req_rate)
+                g.add_edge(edge_switches[x], hosts[density * x + i], rate=req_rate)
 
         return cls(nx.freeze(g))
 
@@ -128,23 +128,25 @@ class VirtualNetwork(object):
         return cls(nx.freeze(g))
 
     @classmethod
-    def create_random_nw(cls, n_nodes=10, p=0.15, node_req_cores=2, node_req_memory=8000, link_req_rate=200, seed=99):
+    def create_random_nw(cls, n_nodes=10, p=0.15, req_cores=2, req_memory=8000, req_rate=200, seed=99):
         """create a random network."""
         g = nx.gnp_random_graph(n_nodes, p=p, seed=seed, directed=False)
         for (u, v) in g.edges():
-            g[u][v]['rate'] = link_req_rate
+            g[u][v]['rate'] = req_rate
         for u in g.nodes():
-            g.nodes[u]['cores'] = node_req_cores
-            g.nodes[u]['memory'] = node_req_memory
+            g.nodes[u]['cores'] = req_cores
+            g.nodes[u]['memory'] = req_memory
         return cls(nx.freeze(g))
 
     @classmethod
     def read_from_file(cls, filename):
-        """Read the graph from a file"""
+        """Read the graph from a file."""
         raise NotImplementedError
 
     @classmethod
     def from_mininet(cls, mininet_topo):
+        """Create a VirtualNetwork from a mininet Topo."""
+
         from mininet.topo import Topo
 
         assert isinstance(mininet_topo, Topo), "Invalid Network Format"

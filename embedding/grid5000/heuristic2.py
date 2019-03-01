@@ -47,18 +47,16 @@ def get_partitions(virtual, n_partitions, n_swaps=100):
 class EmbedHeu(Embed):
 
     @timeit
-    def __call__(self, *args, **kwargs):
+    def __call__(self, virtual, physical, **kwargs):
         """Heuristic based on computing a k-balanced partitions of virtual nodes for then mapping the partition
            on a subset of the physical nodes.
         """
 
-        compute_nodes = self.physical.compute_nodes
-
-        for n_partitions_to_try in range(self._get_lb(), len(compute_nodes) + 1):
+        for n_partitions_to_try in range(self._get_lb(virtual, physical), len(physical.compute_nodes) + 1):
             # partitioning of virtual nodes in n_partitions_to_try partitions
-            k_partition = get_partitions(self.virtual, n_partitions=n_partitions_to_try)
+            k_partition = get_partitions(virtual, n_partitions=n_partitions_to_try)
             # random subset of hosts of size n_partitions_to_try
-            chosen_physical = random.sample(compute_nodes, k=n_partitions_to_try)
+            chosen_physical = random.sample(physical.compute_nodes, k=n_partitions_to_try)
 
             #
             # check if the partitioning is a feasible solution
@@ -74,12 +72,12 @@ class EmbedHeu(Embed):
                     # check if node resources are not exceeded:
                     for virtual_node in assigned_virtual_nodes:
                         # cpu cores
-                        cores_used += self.virtual.req_cores(virtual_node)
-                        if self.physical.cores(physical_node) < cores_used:
+                        cores_used += virtual.req_cores(virtual_node)
+                        if physical.cores(physical_node) < cores_used:
                             raise NodeResourceError(physical_node, "cpu cores")
                         # memory
-                        memory_used += self.virtual.req_memory(virtual_node)
-                        if self.physical.memory(physical_node) < memory_used:
+                        memory_used += virtual.req_memory(virtual_node)
+                        if physical.memory(physical_node) < memory_used:
                             raise NodeResourceError(physical_node, "memory")
                         # assign the virtual nodes to a physical node
                         res_node_mapping[virtual_node] = physical_node
@@ -91,7 +89,8 @@ class EmbedHeu(Embed):
                 rate_used = defaultdict(int)
 
                 # iterate over each virtual link between two virtual nodes not mapped on the same physical machine
-                for (u, v) in ((u, v) for (u, v) in self.virtual.sorted_edges() if res_node_mapping[u] != res_node_mapping[v]):
+                for (u, v) in ((u, v) for (u, v) in virtual.sorted_edges() if
+                               res_node_mapping[u] != res_node_mapping[v]):
 
                     res_link_mapping[(u, v)] = []
 
@@ -100,23 +99,23 @@ class EmbedHeu(Embed):
 
                     next_node = phy_u
                     # for each link in the physical path
-                    for (i, j) in self.physical.find_path(phy_u, phy_v):
+                    for (i, j) in physical.find_path(phy_u, phy_v):
                         # get an interface with enough available rate
-                        chosen_interface = next((interface for interface in self.physical.nw_interfaces(i, j) if
-                                                 self.physical.rate(i, j, interface) - rate_used[
-                                                     (i, j, interface)] >= self.virtual.req_rate(u, v)), None)
+                        chosen_interface = next((interface for interface in physical.nw_interfaces(i, j) if
+                                                 physical.rate(i, j, interface) - rate_used[
+                                                     (i, j, interface)] >= virtual.req_rate(u, v)), None)
                         # if such an interface does not exist raise an Exception
                         if not chosen_interface:
                             raise LinkCapacityError((i, j))
                         # else update the rate
-                        rate_used[(i, j, chosen_interface)] += self.virtual.req_rate(u, v)
+                        rate_used[(i, j, chosen_interface)] += virtual.req_rate(u, v)
 
                         res_link_mapping[(u, v)].append(
                             (i, chosen_interface, j) if i == next_node else (j, chosen_interface, i))
                         next_node = j if i == next_node else i
 
                 # build solution from the output
-                return Solution.build_solution(self.virtual, self.physical, res_node_mapping, res_link_mapping)
+                return Solution.build_solution(virtual, physical, res_node_mapping, res_link_mapping)
 
             except (NodeResourceError, LinkCapacityError) as err:
                 # unfeasible, increase the number of partitions to be used
@@ -124,6 +123,8 @@ class EmbedHeu(Embed):
         else:
             raise InfeasibleError
 
+
+embed_heu = EmbedHeu()
 
 if __name__ == "__main__":
     from embedding.grid5000 import PhysicalNetwork
@@ -133,4 +134,5 @@ if __name__ == "__main__":
     # virtual_topo = VirtualNetwork.create_random_nw(n_nodes=80)
     virtual_topo = VirtualNetwork.create_fat_tree(k=4)
 
-    time_solution, solution = EmbedHeu(virtual_topo, physical_topo)()
+    time_solution, solution = embed_heu(virtual_topo, physical_topo)
+    print(solution)

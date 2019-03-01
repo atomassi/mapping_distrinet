@@ -59,16 +59,15 @@ if __name__ == '__main__':
 
     """
     Example output
-    h1 mapped on grisou-12
-    h2 mapped on grisou-24
-    s3 mapped on grisou-25
-    s4 mapped on grisou-21
+    h1 mapped on grisou-3
+    h2 mapped on grisou-16
+    s3 mapped on grisou-12
+    s4 mapped on grisou-32
     *** virtual link ('h1', 's3') mapped on
-    source: grisou-12, source_device: eth0, destination node: grisou-25, destination device: eth1, rate to route: 1
     *** virtual link ('s3', 's4') mapped on
-    source: grisou-25, source_device: eth0, destination node: grisou-21, destination device: eth0, rate to route: 1
+    source: grisou-12, source_device: eth1, destination node: grisou-32, destination device: eth0, rate to route: 1
     *** virtual link ('s4', 'h2') mapped on
-    source: grisou-24, source_device: eth0, destination node: grisou-21, destination device: eth1, rate to route: 1
+    source: grisou-32, source_device: eth1, destination node: grisou-16, destination device: eth0, rate to route: 1
     """
 
     # nodes

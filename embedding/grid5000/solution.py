@@ -55,13 +55,10 @@ class Solution(object):
 
     def link_info(self, link):
         """Return the mapping for the virtual link."""
-        (u, v) = link
-        if self.node_mapping[u] == self.node_mapping[v]:
-            return []
         try:
-            return self.link_mapping[(u, v)]
+            return self.link_mapping[link]
         except KeyError:
-            return self.link_mapping[(v, u)][::-1]
+            return []
 
     def output(self):
         raise NotImplementedError
@@ -146,6 +143,7 @@ class Solution(object):
                 # if virtual nodes are mapped on two different physical nodes
                 if phy_u != phy_v:
                     link_mapping[(u, v)] = []
+                    link_mapping[(v, u)] = []
                     path = link_path[(u, v)]
                     u_source, _, u_dest = path[0]
                     v_source, _, v_dest = path[-1]
@@ -174,6 +172,9 @@ class Solution(object):
                         link_mapping[(u, v)].append(
                             LinkMap(u_source, interface_u_highest_rate, v_dest, interface_v_highest_rate,
                                     mapped_rate / float(requested_rate)))
+                        link_mapping[(v, u)].append(
+                            LinkMap(v_dest, interface_v_highest_rate, u_source, interface_u_highest_rate,
+                                    mapped_rate / float(requested_rate)))
 
                         # update available rate
                         to_be_mapped -= mapped_rate
@@ -186,6 +187,7 @@ class Solution(object):
                 s_node, s_device, _ = path[0]
                 _, d_device, d_node = path[-1]
                 link_mapping[(u, v)] = [LinkMap(s_node, s_device, d_node, d_device)]
+                link_mapping[(v, u)] = [LinkMap(d_node, d_device, s_node, s_device)]
 
         return cls(node_mapping, link_mapping)
 

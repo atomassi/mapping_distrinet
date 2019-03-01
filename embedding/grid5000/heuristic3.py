@@ -1,7 +1,7 @@
 import itertools
 from collections import defaultdict, Counter, deque
 
-from embedding.exceptions import InfeasibleError
+from embedding.constants import *
 from embedding.grid5000.solution import Solution
 from embedding.solve import Embed
 from embedding.utils import timeit
@@ -10,29 +10,29 @@ from embedding.utils import timeit
 class EmbedHeu(Embed):
 
     @timeit
-    def __call__(self, virtual, physical, **kwargs):
+    def place(self, **kwargs):
         """2 phases:
            - first assign virtual nodes to physical nodes
            - if link rate is exceeded, move virtual nodes until links are not saturated anymore
         """
 
-        selected, not_selected = deque(), set(physical.compute_nodes)
+        selected, not_selected = deque(), set(self.physical.compute_nodes)
         used_resources = {'cores': defaultdict(int), 'memory': defaultdict(int)}
 
         #
         # place virtual nodes and give priority to already selected nodes
         #
         res_node_mapping = {}
-        for virtual_node in virtual.nodes():
+        for virtual_node in self.virtual.nodes():
 
             # required cores and memory
-            req_cores, req_memory = virtual.req_cores(virtual_node), virtual.req_memory(virtual_node)
+            req_cores, req_memory = self.virtual.req_cores(virtual_node), self.virtual.req_memory(virtual_node)
 
             # for each physical node, giving priority to the already selected ones
             for phy_node in itertools.chain(selected, not_selected):
                 # if resources are enough
-                if used_resources['cores'][phy_node] + req_cores <= physical.cores(phy_node) and \
-                        used_resources['memory'][phy_node] + req_memory <= physical.memory(phy_node):
+                if used_resources['cores'][phy_node] + req_cores <= self.physical.cores(phy_node) and \
+                        used_resources['memory'][phy_node] + req_memory <= self.physical.memory(phy_node):
 
                     # assign phy node to virtual_node
                     res_node_mapping[virtual_node] = phy_node
@@ -59,21 +59,21 @@ class EmbedHeu(Embed):
         use_link = defaultdict(set)
         res_link_mapping = defaultdict(list)
         # iterate over each virtual link between two virtual nodes not mapped on the same physical machine
-        for (u, v) in ((u, v) for (u, v) in virtual.sorted_edges() if res_node_mapping[u] != res_node_mapping[v]):
+        for (u, v) in ((u, v) for (u, v) in self.virtual.sorted_edges() if res_node_mapping[u] != res_node_mapping[v]):
 
             # physical nodes on which u and v have been placed
             phy_u, phy_v = res_node_mapping[u], res_node_mapping[v]
 
             # find the physical path
             next_node = phy_u
-            for (i, j) in physical.find_path(phy_u, phy_v):
+            for (i, j) in self.physical.find_path(phy_u, phy_v):
                 # get the interface with the maximum available rate
-                chosen_interface = max((interface for interface in physical.nw_interfaces(i, j)),
-                                       key=lambda interface: physical.rate(i, j, interface) - rate_used[
+                chosen_interface = max((interface for interface in self.physical.nw_interfaces(i, j)),
+                                       key=lambda interface: self.physical.rate(i, j, interface) - rate_used[
                                            (i, j, interface)])
 
                 # update the rate used
-                rate_used[(i, j, chosen_interface)] += virtual.req_rate(u, v)
+                rate_used[(i, j, chosen_interface)] += self.virtual.req_rate(u, v)
                 # add the virtual link in the list of virtual links that the physical link
                 use_link[(i, j, chosen_interface)].add((u, v))
                 # add to the path
@@ -84,16 +84,16 @@ class EmbedHeu(Embed):
 
         # move nodes until link rate is not anymore exceeded
         exceeded_rate = sum(
-            max(0, rate_used[(i, j, interface)] - physical.rate(i, j, interface)) for (i, j, interface) in
+            max(0, rate_used[(i, j, interface)] - self.physical.rate(i, j, interface)) for (i, j, interface) in
             rate_used)
 
         # while all link contraints are not satisfied
         while exceeded_rate > 0:
 
             # take the violated links and the rate in excess on them
-            violated_links = {(i, j, interface): rate_used[(i, j, interface)] - physical.rate(i, j, interface) for
+            violated_links = {(i, j, interface): rate_used[(i, j, interface)] - self.physical.rate(i, j, interface) for
                               (i, j, interface) in rate_used
-                              if rate_used[(i, j, interface)] - physical.rate(i, j, interface) > 0}
+                              if rate_used[(i, j, interface)] - self.physical.rate(i, j, interface) > 0}
 
             # take the link with the highest exceeded rate
             most_violated_link = max(violated_links, key=violated_links.get)
@@ -105,10 +105,10 @@ class EmbedHeu(Embed):
 
                 # if resources are enough
                 if phy_node != res_node_mapping[node_to_move] \
-                        and used_resources['cores'][phy_node] + virtual.req_cores(
-                    node_to_move) <= physical.cores(phy_node) and \
-                        used_resources['memory'][phy_node] + virtual.req_memory(
-                    node_to_move) <= physical.memory(phy_node):
+                        and used_resources['cores'][phy_node] + self.virtual.req_cores(
+                    node_to_move) <= self.physical.cores(phy_node) and \
+                        used_resources['memory'][phy_node] + self.virtual.req_memory(
+                    node_to_move) <= self.physical.memory(phy_node):
 
                     # physical node to which it was previously assigned
                     prev_phy_node = res_node_mapping[node_to_move]
@@ -123,25 +123,25 @@ class EmbedHeu(Embed):
 
                     # for each virtual link adjacent to the virtual node which is being moved
                     for (u, v) in ((node_to_move, neighbor) if node_to_move < neighbor else (
-                            neighbor, node_to_move) for neighbor in virtual.neighbors(node_to_move)
+                            neighbor, node_to_move) for neighbor in self.virtual.neighbors(node_to_move)
                                    if res_node_mapping[neighbor] != res_node_mapping[node_to_move]):
                         phy_u, phy_v = res_node_mapping[u], res_node_mapping[v]
 
                         # for each link in the previous path
                         for (i, interface, j) in res_link_mapping[(u, v)]:
                             if i < j:
-                                diff_rate[(i, j, interface)] -= virtual.req_rate(u, v)
+                                diff_rate[(i, j, interface)] -= self.virtual.req_rate(u, v)
                                 diff_vlinks['remove'][(i, j, interface)].add((u, v))
                             else:
-                                diff_rate[(j, i, interface)] -= virtual.req_rate(u, v)
+                                diff_rate[(j, i, interface)] -= self.virtual.req_rate(u, v)
                                 diff_vlinks['remove'][(j, i, interface)].add((u, v))
 
                         # for each link in the new physical path
                         next_node = phy_u
-                        for (i, j) in physical.find_path(phy_u, phy_v):
+                        for (i, j) in self.physical.find_path(phy_u, phy_v):
                             # get the interface with the maximum available rate
-                            chosen_interface = max((interface for interface in physical.nw_interfaces(i, j)),
-                                                   key=lambda interface: physical.rate(i, j, interface) -
+                            chosen_interface = max((interface for interface in self.physical.nw_interfaces(i, j)),
+                                                   key=lambda interface: self.physical.rate(i, j, interface) -
                                                                          rate_used[(i, j, interface)] -
                                                                          diff_rate[(i, j, interface)])
 
@@ -149,12 +149,12 @@ class EmbedHeu(Embed):
                                 (i, chosen_interface, j) if i == next_node else (j, chosen_interface, i))
                             next_node = j if i == next_node else i
 
-                            diff_rate[(i, j, chosen_interface)] += virtual.req_rate(u, v)
+                            diff_rate[(i, j, chosen_interface)] += self.virtual.req_rate(u, v)
                             diff_vlinks['add'][(i, j, chosen_interface)].add((u, v))
 
                     # compute the new exceeded rate after having moved the node
                     new_exceeded_rate = sum(
-                        max(0, rate_used[(i, j, interface)] + diff_rate[(i, j, interface)] - physical.rate(i, j,
+                        max(0, rate_used[(i, j, interface)] + diff_rate[(i, j, interface)] - self.physical.rate(i, j,
                                                                                                            interface))
                         for (i, j, interface) in rate_used)
 
@@ -168,12 +168,12 @@ class EmbedHeu(Embed):
                             selected.appendleft(phy_node)
 
                         # free resources on previous physical node
-                        used_resources['cores'][prev_phy_node] -= virtual.req_cores(node_to_move)
-                        used_resources['memory'][prev_phy_node] -= virtual.req_memory(node_to_move)
+                        used_resources['cores'][prev_phy_node] -= self.virtual.req_cores(node_to_move)
+                        used_resources['memory'][prev_phy_node] -= self.virtual.req_memory(node_to_move)
 
                         # add resources used on the new physical node
-                        used_resources['cores'][phy_node] += virtual.req_cores(node_to_move)
-                        used_resources['memory'][phy_node] += virtual.req_memory(node_to_move)
+                        used_resources['cores'][phy_node] += self.virtual.req_cores(node_to_move)
+                        used_resources['memory'][phy_node] += self.virtual.req_memory(node_to_move)
 
                         # update the rate used on the network interfaces
                         for (i, j, interface) in diff_rate:
@@ -193,18 +193,21 @@ class EmbedHeu(Embed):
             else:
                 raise InfeasibleError
 
-        return Solution.build_solution(virtual, physical, res_node_mapping, res_link_mapping)
+        self.solution = Solution.build_solution(self.virtual, self.physical, res_node_mapping, res_link_mapping)
+        self.status = Solved
+        return Solved
 
 
-embed_heu = EmbedHeu()
 
 if __name__ == "__main__":
     from embedding.grid5000 import PhysicalNetwork
     from embedding.virtual import VirtualNetwork
 
-    physical_topo = PhysicalNetwork.grid5000("grisou", group_interfaces=False)
-    virtual_topo = VirtualNetwork.create_random_nw(n_nodes=200)
-    # virtual_topo = VirtualNetwork.create_fat_tree(k=12)
+    physical_topo = PhysicalNetwork.grid5000("grisou", group_interfaces=True)
+    virtual_topo = VirtualNetwork.create_random_nw(n_nodes=66)
+    # virtual_topo = VirtualNetwork.create_fat_tree(k=4)
 
-    time_solution, solution = embed_heu(virtual_topo, physical_topo)
-    print(solution)
+    embed = EmbedHeu(virtual_topo, physical_topo)
+    time_solution = embed.place()
+    print(time_solution, embed.status)
+    print(embed.solution)

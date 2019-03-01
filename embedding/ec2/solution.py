@@ -1,7 +1,7 @@
 import itertools
 import logging
 
-from embedding.exceptions import AssignmentError, NodeResourceError
+from embedding.constants import AssignmentError, NodeResourceError
 
 
 class Solution(object):
@@ -21,7 +21,7 @@ class Solution(object):
         nodes_assigned = set(itertools.chain(*self.assignment_ec2_instances.values()))
         if len(nodes_assigned) != len(self.virtual.nodes()):
             not_assigned_nodes = self.virtual.nodes() - nodes_assigned
-            raise AssignmentError(not_assigned_nodes)
+            raise AssignmentError(f"{not_assigned_nodes} have not been assigned to any physical node")
         # EC2 instance resources are not exceeded
         for vm_type, vm_id in self.assignment_ec2_instances:
             used_cores = sum(self.virtual.req_cores(u) for u in self.assignment_ec2_instances[(vm_type, vm_id)])
@@ -30,10 +30,10 @@ class Solution(object):
             vm_memory = self.physical.memory(vm_type)
             # cpu cores
             if used_cores > vm_cores:
-                raise NodeResourceError(vm_type, "CPU cores", used_cores, vm_cores)
+                raise NodeResourceError("cpu cores exceeded")
             # memory
             elif used_memory > vm_memory:
-                raise NodeResourceError(vm_type, "memory", used_memory, vm_memory)
+                raise NodeResourceError("memory exceeded")
 
     def __str__(self):
         res = ""

@@ -1,7 +1,7 @@
 import logging
 from collections import defaultdict
 
-from embedding.exceptions import EmptySolutionError, AssignmentError, NodeResourceError, LinkCapacityError
+from embedding.constants import EmptySolutionError, AssignmentError, NodeResourceError, LinkCapacityError
 
 
 class LinkMap(object):
@@ -20,6 +20,10 @@ class LinkMap(object):
         self.d_node = d_node
         self.d_device = d_device
         self.f_rate = f_rate
+
+    def __str__(self):
+        return f"source: {self.s_node}, source_device: {self.s_device}, destination node: {self.d_node}," \
+            f" destination device: {self.d_device}, rate to route: {self.f_rate}"
 
 
 class Solution(object):
@@ -52,7 +56,7 @@ class Solution(object):
     def link_info(self, link):
         """Return the mapping for the virtual link."""
         (u, v) = link
-        if self.node_mapping[u] != self.node_mapping[v]:
+        if self.node_mapping[u] == self.node_mapping[v]:
             return []
         try:
             return self.link_mapping[(u, v)]
@@ -121,8 +125,7 @@ class Solution(object):
 
             for interface in physical.nw_interfaces(i, j):
                 if used_link_resources[(i, j)][interface] > physical.rate(i, j, interface):
-                    raise LinkCapacityError((i, j, interface), used_link_resources[(i, j)][interface],
-                                            physical.rate(i, j, interface))
+                    raise LinkCapacityError(f"Capacity exceeded on ({i},{j})")
 
         # delay requirements are respected
         # @todo to be defined

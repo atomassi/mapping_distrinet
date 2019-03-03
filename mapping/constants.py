@@ -32,7 +32,7 @@ NotSolved = 0
 Solved = 1
 Infeasible = -1
 
-EmbedStatus = {NotSolved: "Not Solved",
-          Solved: "Solved",
-          Infeasible: "Infeasible"
-          }
+SolutionStatus = {NotSolved: "Not Solved",
+                  Solved: "Solved",
+                  Infeasible: "Infeasible"
+                  }

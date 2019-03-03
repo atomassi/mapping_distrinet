@@ -1,10 +1,10 @@
 import random
 from collections import defaultdict
 
-from embedding.constants import *
-from embedding.grid5000.solution import Solution
-from embedding.solve import Embed
-from embedding.utils import timeit
+from mapping.constants import *
+from mapping.embedding.solution import Solution
+from mapping.solve import Embed
+from mapping.utils import timeit
 
 
 def get_partitions(virtual, n_partitions, n_swaps=100):
@@ -129,8 +129,8 @@ class EmbedHeu(Embed):
 
 
 if __name__ == "__main__":
-    from embedding.grid5000 import PhysicalNetwork
-    from embedding.virtual import VirtualNetwork
+    from mapping.embedding import PhysicalNetwork
+    from mapping.virtual import VirtualNetwork
 
     physical_topo = PhysicalNetwork.grid5000("grisou", group_interfaces=True)
     virtual_topo = VirtualNetwork.create_random_nw(n_nodes=66)

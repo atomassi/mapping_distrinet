@@ -54,7 +54,39 @@ class TestSolution(unittest.TestCase):
 
 
 @unittest.skip("Not implemented")
-class TestProblemInstances(unittest.TestCase):
+class TestProblemInstancesGrid5000(unittest.TestCase):
+    def test_unfeasible_1(self):
+        pass
+
+    def test_unfeasible_2(self):
+        pass
+
+    def test_unfeasible_3(self):
+        pass
+
+    def test_unfeasible_4(self):
+        pass
+
+    def test_unfeasible_5(self):
+        pass
+
+    def test_feasible_1(self):
+        pass
+
+    def test_feasible_2(self):
+        pass
+
+    def test_feasible_3(self):
+        pass
+
+    def test_feasible_4(self):
+        pass
+
+    def test_feasible_5(self):
+        pass
+
+@unittest.skip("Not implemented")
+class TestProblemInstancesEC2(unittest.TestCase):
     def test_unfeasible_1(self):
         pass
 

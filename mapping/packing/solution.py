@@ -1,7 +1,7 @@
 import itertools
 import logging
 
-from embedding.constants import AssignmentError, NodeResourceError
+from mapping.constants import AssignmentError, NodeResourceError
 
 
 class Solution(object):

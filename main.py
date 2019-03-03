@@ -1,9 +1,9 @@
 from mininet.topo import Topo
 
-import embedding as emb
-from embedding.grid5000 import EmbedPartition, EmbedKbalanced, EmbedMove, EmbedILP
-from embedding.grid5000 import PhysicalNetwork
-from embedding.virtual import VirtualNetwork
+import mapping as mp
+from mapping.embedding import EmbedPartition, EmbedKbalanced, EmbedMove, EmbedILP
+from mapping.embedding import PhysicalNetwork
+from mapping.virtual import VirtualNetwork
 
 if __name__ == '__main__':
 
@@ -20,9 +20,9 @@ if __name__ == '__main__':
     prob = EmbedMove(virtual_topo, physical_topo)
     time_solution, status = prob.place()
 
-    if emb.EmbedStatus[status] == "Not Solved":
+    if mp.SolutionStatus[status] == "Not Solved":
         print("Failed to solve")
-    elif emb.EmbedStatus[status] == "Unfeasible":
+    elif mp.SolutionStatus[status] == "Unfeasible":
         print("Unfeasible Problem")
     else:
         pass
@@ -47,9 +47,9 @@ if __name__ == '__main__':
     prob = EmbedMove(mn_topo, physical_topo)
     time_solution, status = prob.place()
 
-    if emb.EmbedStatus[status] == "Not Solved":
+    if mp.SolutionStatus[status] == "Not Solved":
         print("Failed to solve")
-    elif emb.EmbedStatus[status] == "Unfeasible":
+    elif mp.SolutionStatus[status] == "Unfeasible":
         print("Unfeasible Problem")
     else:
         pass

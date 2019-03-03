@@ -2,9 +2,9 @@ from collections import defaultdict
 
 import pulp
 
-from embedding import Embed
-from embedding.constants import InfeasibleError, TimeLimitError
-from embedding.utils import timeit
+from mapping import Embed
+from mapping.constants import InfeasibleError, TimeLimitError
+from mapping.utils import timeit
 from .solution import Solution
 
 

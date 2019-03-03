@@ -2,10 +2,10 @@ import itertools
 
 import pulp
 
-from embedding import Embed
-from embedding.constants import *
-from embedding.grid5000.solution import Solution
-from embedding.utils import timeit
+from mapping import Embed
+from mapping.constants import *
+from mapping.embedding.solution import Solution
+from mapping.utils import timeit
 
 
 class EmbedILP(Embed):
@@ -193,8 +193,8 @@ class EmbedILP(Embed):
 
 
 if __name__ == "__main__":
-    from embedding.grid5000 import PhysicalNetwork
-    from embedding.virtual import VirtualNetwork
+    from mapping.embedding import PhysicalNetwork
+    from mapping.virtual import VirtualNetwork
 
     physical_topo = PhysicalNetwork.grid5000("grisou", group_interfaces=True)
     virtual_topo = VirtualNetwork.create_random_nw(n_nodes=6)

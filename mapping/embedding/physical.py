@@ -122,7 +122,7 @@ class PhysicalNetwork(object):
 
         Parameters
         ----------
-        name : the name of the cluster in grid5000 to be considered
+        name : the name of the cluster in embedding to be considered
             The corresponding filename should be placed in instances/physical/name.json
 
         n_interfaces_to_consider : the maximum number of network interfaces to be considered per node (optional, default: all)

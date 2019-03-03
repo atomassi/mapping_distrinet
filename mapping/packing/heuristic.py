@@ -1,7 +1,7 @@
 from functools import lru_cache
 
-from embedding import Embed
-from embedding.utils import timeit
+from mapping import Embed
+from mapping.utils import timeit
 from .solution import Solution
 
 

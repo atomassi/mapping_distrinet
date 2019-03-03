@@ -1,7 +1,7 @@
 import logging
 from collections import defaultdict
 
-from embedding.constants import EmptySolutionError, AssignmentError, NodeResourceError, LinkCapacityError
+from mapping.constants import EmptySolutionError, AssignmentError, NodeResourceError, LinkCapacityError
 
 
 class LinkMap(object):
@@ -36,7 +36,7 @@ class Solution(object):
     >>> solution.node_info(v)
     grisou-7
     >>> solution.link_info((u,v))
-    [<embedding.grid5000.solution.LinkMap object at 0x113794a90>]
+    [<mapping.embedding.solution.LinkMap object at 0x113794a90>]
     >>> for link_map in solution.link_info((u,v)):
     ...        print(link_map.__dict__)
     {'s_node': 'grisou-6', 's_device': 'eth1', 'd_node': 'grisou-7', 'd_device': 'eth3', 'f_rate': 1}

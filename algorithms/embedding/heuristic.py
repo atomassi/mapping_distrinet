@@ -1,62 +1,93 @@
 import random
 from collections import defaultdict
 
-from mapping.constants import *
-from mapping.embedding.solution import Solution
-from mapping.solve import Embed
-from mapping.utils import timeit
+from networkx.algorithms.community.kernighan_lin import kernighan_lin_bisection
 
+from algorithms.constants import *
+from algorithms.embedding.solution import Solution
+from algorithms.solve import Solve
+from algorithms.utils import timeit
 
-def get_partitions(virtual, n_partitions, n_swaps=100):
-    """ Divide the nodes in n_partitions bins and then tries to swap nodes to reduce the cut weight."""
+class GetPartition(object):
+    """Callable object."""
 
-    nodes = list(virtual.nodes())
-    random.shuffle(nodes)
-    # node -> id of the partition in which it is contained
-    nodes_partition = {node: id_node % n_partitions for id_node, node in enumerate(nodes)}
+    def __init__(self):
+        # to keep track of the already computed partitions
+        self._cache = {}
 
-    # current cost for the partition
-    old_cost = sum(virtual.req_rate(u, v) for (u, v) in virtual.edges() if nodes_partition[u] != nodes_partition[v])
+    def __call__(self, g, n_partitions):
+        """Given the graph G and the number of partitions k, returns a list with k sets of nodes."""
 
-    for _ in range(n_swaps):
-        # take two random nodes
-        u1, u2 = random.sample(nodes, k=2)
-        # if the partitions ids of u1 and u2 are the same continue
-        if nodes_partition[u1] == nodes_partition[u2]:
-            continue
-        # store the old partition ids of u1 and u2
-        old_u1, old_u2 = nodes_partition[u1], nodes_partition[u2]
-        # swap the partitions
-        nodes_partition[u1], nodes_partition[u2] = nodes_partition[u2], nodes_partition[u1]
-        # compute the new cost
-        new_cost = sum(virtual.req_rate(u, v) for (u, v) in virtual.edges() if nodes_partition[u] != nodes_partition[v])
+        def _iterative_cutting(g, p):
+            """helper function (iterative version)"""
 
-        if new_cost < old_cost:
-            # update the current cost
-            old_cost = new_cost
+            to_be_processed = [g]
+            K = len(g.nodes()) / p
+
+            res = []
+            while len(to_be_processed) > 0:
+
+                g = to_be_processed.pop()
+                g_l, g_r = kernighan_lin_bisection(g, weight='rate')
+
+                for partition in g_l, g_r:
+                    if len(partition) > K:
+                        to_be_processed.append(g.subgraph(partition))
+                    else:
+                        res.append(partition)
+            return res
+
+        def _recursive_cutting(g, p, res=[]):
+            """helper function (recursive version)"""
+            k = len(g.nodes()) / p
+
+            g_l, g_r = kernighan_lin_bisection(g, weight='rate')
+
+            for partition in g_l, g_r:
+                if len(partition) > k:
+                    _recursive_cutting(g.subgraph(partition), p / 2, res)
+                else:
+                    res.append(partition)
+
+            return res
+
+        # when computing a partitioning for the graph nodes,
+        # if result is known for a smaller value of n_partitions
+        # don't restart from scratch but use it as an initial value
+        if g not in self._cache or len(self._cache[g]) < n_partitions:
+            self._cache.clear()
+            partitions = _recursive_cutting(g, p=n_partitions)
+            self._cache[g] = partitions[:]
         else:
-            # go back to the previous solution
-            nodes_partition[u1], nodes_partition[u2] = old_u1, old_u2
+            partitions = self._cache[g][:]
 
-    partitions = defaultdict(list)
-    for node, id_partition in nodes_partition.items():
-        partitions[id_partition].append(node)
-    return partitions.values()
+        # merge small partitions to return the required number of partitions
+        while len(partitions) > n_partitions:
+            partitions.sort(key=len, reverse=True)
+            e1 = partitions.pop()
+            e2 = partitions.pop()
+            partitions.append(e1.union(e2))
+        return partitions
 
 
-class EmbedHeu(Embed):
+get_partitions = GetPartition()
+
+
+class EmbedHeu(Solve):
 
     @timeit
     def place(self, **kwargs):
-        """Heuristic based on computing a k-balanced partitions of virtual nodes for then mapping the partition
+        """Heuristic based on computing a k-balanced partitions of virtual nodes for then algorithms the partition
            on a subset of the physical nodes.
         """
 
-        for n_partitions_to_try in range(self._get_lb(), len(self.physical.compute_nodes) + 1):
+        compute_nodes = self.physical.compute_nodes
+
+        for n_partitions_to_try in range(self._get_lb(), len(compute_nodes) + 1):
             # partitioning of virtual nodes in n_partitions_to_try partitions
-            k_partition = get_partitions(self.virtual, n_partitions=n_partitions_to_try)
+            k_partition = get_partitions(self.virtual.g, n_partitions=n_partitions_to_try)
             # random subset of hosts of size n_partitions_to_try
-            chosen_physical = random.sample(self.physical.compute_nodes, k=n_partitions_to_try)
+            chosen_physical = random.sample(compute_nodes, k=n_partitions_to_try)
 
             #
             # check if the partitioning is a feasible solution
@@ -100,13 +131,16 @@ class EmbedHeu(Embed):
                     next_node = phy_u
                     # for each link in the physical path
                     for (i, j) in self.physical.find_path(phy_u, phy_v):
+
                         # get an interface with enough available rate
                         chosen_interface = next((interface for interface in self.physical.nw_interfaces(i, j) if
-                                                 self.physical.rate(i, j, interface) - rate_used[
-                                                     (i, j, interface)] >= self.virtual.req_rate(u, v)), None)
+                                                 self.physical.rate(i, j, interface) - rate_used[(i, j, interface)] >=
+                                                 self.virtual.req_rate(u, v)), None)
+
                         # if such an interface does not exist raise an Exception
                         if not chosen_interface:
                             raise LinkCapacityError(f"Capacity exceeded on ({i},{j})")
+
                         # else update the rate
                         rate_used[(i, j, chosen_interface)] += self.virtual.req_rate(u, v)
 
@@ -115,11 +149,11 @@ class EmbedHeu(Embed):
                         next_node = j if i == next_node else i
 
                 # build solution from the output
-                self.solution =  Solution.build_solution(self.virtual, self.physical, res_node_mapping, res_link_mapping)
+                self.solution = Solution.build_solution(self.virtual, self.physical, res_node_mapping, res_link_mapping)
                 self.status = Solved
                 return Solved
 
-            except (NodeResourceError, LinkCapacityError) as err:
+            except (NodeResourceError, LinkCapacityError):
                 # unfeasible, increase the number of partitions to be used
                 pass
         else:
@@ -129,8 +163,8 @@ class EmbedHeu(Embed):
 
 
 if __name__ == "__main__":
-    from mapping.embedding import PhysicalNetwork
-    from mapping.virtual import VirtualNetwork
+    from algorithms.embedding import PhysicalNetwork
+    from algorithms.virtual import VirtualNetwork
 
     physical_topo = PhysicalNetwork.grid5000("grisou", group_interfaces=True)
     virtual_topo = VirtualNetwork.create_random_nw(n_nodes=66)

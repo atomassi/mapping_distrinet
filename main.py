@@ -1,9 +1,8 @@
 from mininet.topo import Topo
 
-import mapping as mp
-from mapping.embedding import EmbedPartition, EmbedKbalanced, EmbedMove, EmbedILP
-from mapping.embedding import PhysicalNetwork
-from mapping.virtual import VirtualNetwork
+from algorithms.embedding import EmbedPartition, EmbedKbalanced, EmbedMove, EmbedILP
+from algorithms.embedding import PhysicalNetwork
+from algorithms import VirtualNetwork, SolutionStatus
 
 if __name__ == '__main__':
 
@@ -11,7 +10,7 @@ if __name__ == '__main__':
     physical_topo = PhysicalNetwork.grid5000("grisou", group_interfaces=False)
 
     """
-    Custom Network Example (for the moment fat tree and random are available on virtual.py
+    Custom Network  (for the moment fat tree and random are available on virtual.py)
     """
 
     # custom VirtualNetwork
@@ -20,9 +19,9 @@ if __name__ == '__main__':
     prob = EmbedMove(virtual_topo, physical_topo)
     time_solution, status = prob.place()
 
-    if mp.SolutionStatus[status] == "Not Solved":
+    if SolutionStatus[status] == "Not Solved":
         print("Failed to solve")
-    elif mp.SolutionStatus[status] == "Unfeasible":
+    elif SolutionStatus[status] == "Unfeasible":
         print("Unfeasible Problem")
     else:
         pass
@@ -47,18 +46,18 @@ if __name__ == '__main__':
     prob = EmbedMove(mn_topo, physical_topo)
     time_solution, status = prob.place()
 
-    if mp.SolutionStatus[status] == "Not Solved":
+    if SolutionStatus[status] == "Not Solved":
         print("Failed to solve")
-    elif mp.SolutionStatus[status] == "Unfeasible":
+    elif SolutionStatus[status] == "Unfeasible":
         print("Unfeasible Problem")
     else:
         pass
         # print(prob.solution)
 
-    # Example: query the solution
+    # Exaalgole: query the solution
 
     """
-    Example output
+    example output
     h1 mapped on grisou-3
     h2 mapped on grisou-16
     s3 mapped on grisou-12

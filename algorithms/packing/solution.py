@@ -1,7 +1,7 @@
 import itertools
 import logging
 
-from mapping.constants import AssignmentError, NodeResourceError
+from algorithms.constants import AssignmentError, NodeResourceError
 
 
 class Solution(object):

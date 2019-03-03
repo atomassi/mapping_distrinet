@@ -1,7 +1,7 @@
 from functools import lru_cache
 
-from mapping import Embed
-from mapping.utils import timeit
+from algorithms import Solve
+from algorithms.utils import timeit
 from .solution import Solution
 
 
@@ -24,14 +24,13 @@ class Bin(object):
         return f"Bin(vm_type={self.vm_type}, items={self.items}, used cores={self.used_cores}, used memory={self.used_memory})"
 
 
-class EmbedHeu(Embed):
+class PackHeu(Solve):
     @lru_cache(maxsize=256)
     def get_cheapest_feasible(self, cores, memory):
         """Given a demand in terms of number of cores and memory return the cheapest EC2 instance with enough resources.
         """
-        if (cores > self.physical.cores(self.vm_max_cores) or memory > self.physical.memory(self.vm_max_cores)) and (
-                cores > self.physical.cores(self.vm_max_memory) or memory > self.physical.memory(
-            self.vm_max_memory)):
+        if (cores > self.physical.cores(self.vm_max_cores) or memory > self.physical.memory(self.vm_max_cores)) \
+                and (cores > self.physical.cores(self.vm_max_memory) or memory > self.physical.memory(self.vm_max_memory)):
             return None
 
         return min(((vm, self.physical.get_hourly_cost(vm)) for vm in self.physical.vm_options if

@@ -11,9 +11,9 @@ from .constants import *
 from .virtual import VirtualNetwork
 
 
-class Embed(object, metaclass=ABCMeta):
+class Solve(object, metaclass=ABCMeta):
 
-    def __init__(self, virtual, physical):
+    def __init__(self, virtual, physical=None):
         """"""
         self.virtual = VirtualNetwork.from_mininet(virtual) if isinstance(virtual, Topo) else virtual
         self.physical = physical
@@ -40,7 +40,7 @@ class Embed(object, metaclass=ABCMeta):
             max_phy_memory = self.physical.memory(phy_node) if self.physical.memory(
                 phy_node) > max_phy_memory else max_phy_memory
 
-        # lower bound, any feasible mapping requires at least this number of physical machines
+        # lower bound, any feasible algorithms requires at least this number of physical machines
         return math.ceil(max(tot_req_cores / max_phy_cores, tot_req_memory / max_phy_memory))
 
     @abstractmethod

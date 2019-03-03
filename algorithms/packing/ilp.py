@@ -2,13 +2,13 @@ from collections import defaultdict
 
 import pulp
 
-from mapping import Embed
-from mapping.constants import InfeasibleError, TimeLimitError
-from mapping.utils import timeit
+from algorithms import Solve
+from algorithms.constants import InfeasibleError, TimeLimitError
+from algorithms.utils import timeit
 from .solution import Solution
 
 
-class EmbedILP(Embed):
+class PackILP(Solve):
 
     @staticmethod
     def solver(solver_name, timelimit):

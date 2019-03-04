@@ -3,7 +3,7 @@ from collections import defaultdict
 import pulp
 
 from algorithms import Solve
-from algorithms.constants import InfeasibleError, TimeLimitError
+from algorithms.constants import *
 from algorithms.utils import timeit
 from .solution import Solution
 
@@ -11,7 +11,7 @@ from .solution import Solution
 class PackILP(Solve):
 
     @staticmethod
-    def solver(solver_name, timelimit):
+    def _get_solver(solver_name, timelimit):
         if solver_name == 'cplex':
             return pulp.CPLEX(msg=0, timeLimit=timelimit)
         elif solver_name == 'gurobi':
@@ -23,10 +23,10 @@ class PackILP(Solve):
         elif solver_name == 'scip':
             return pulp.SCIP(msg=0, options=['-c', f'set limits time {timelimit}'])
         else:
-            raise ValueError("Invalid solver name")
+            raise ValueError("Invalid _get_solver name")
 
-    def get_UB(self, vm_type):
-        """Return an upper bound on the maximum number of EC2 instances of type vm_type neede to pack all the nodes"""
+    def _get_ub(self, vm_type):
+        """Return an upper bound on the maximum number of EC2 instances of type vm_type needed to pack all the nodes"""
 
         cpu_cores_instance, memory_instance = self.physical.cores(vm_type), self.physical.memory(vm_type)
         n_instances_needed = remaining_cpu_cores = remaining_memory = 0
@@ -49,13 +49,13 @@ class PackILP(Solve):
                        u) <= self.physical.memory(vm_type))
 
     @timeit
-    def __call__(self, **kwargs):
+    def place(self, **kwargs):
 
-        solver_name = kwargs.get('solver', 'cplex').lower()
+        solver_name = kwargs.get('_get_solver', 'cplex').lower()
         timelimit = int(kwargs.get('timelimit', '3600'))
-        self._log.info(f"called ILP solver with the following parameters: {kwargs}")
+        self._log.info(f"called place with the following parameters: {kwargs}")
         # UB on the number of instances of a certain type
-        instances_UB = {vm_type: self.get_UB(vm_type) for vm_type in self.physical.vm_options}
+        instances_UB = {vm_type: self._get_ub(vm_type) for vm_type in self.physical.vm_options}
         # instances on which a virtual node u may be placed
         feasible_instances = {u: self.get_feasible_instances(u) for u in self.virtual.nodes()}
         vm_used = pulp.LpVariable.dicts("vm_used",
@@ -90,7 +90,7 @@ class PackILP(Solve):
                  self.virtual.nodes() if vm_type in feasible_instances[u])) <= self.physical.memory(vm_type) * \
                            vm_used[vm_type, vm_id], f"memory capacity of instance {vm_type, vm_id}"
 
-        solver = self.solver(solver_name, timelimit)
+        solver = self._get_solver(solver_name, timelimit)
         mapping_ILP.setSolver(solver)
 
         # solve the ILP
@@ -98,28 +98,30 @@ class PackILP(Solve):
         obj_value = pulp.value(mapping_ILP.objective)
 
         if status == "Infeasible":
-            raise InfeasibleError
+            self.status = Infeasible
+            return Infeasible
         elif (status == 'Not Solved' or status == "Undefined") and (
                 not obj_value or sum(
             round(node_mapping[(u, vm_type, vm_id)].varValue) for (u, vm_type, vm_id) in
             node_mapping) != self.virtual.number_of_nodes()):
-            raise TimeLimitError
+            self.status = NotSolved
+            return NotSolved
 
         assignment_ec2_instances = self.build_ILP_solution(node_mapping)
-        solution = Solution(self.physical, self.virtual, assignment_ec2_instances)
-        return round(obj_value, 2), solution
+        self.solution = Solution.build_solution(self.virtual, self.physical, assignment_ec2_instances)
+        self.status = Solved
+        return Solved
 
     def build_ILP_solution(self, node_mapping):
-        """Build an assignment of virtual nodes and virtual links starting from the values of the variables in the ILP
-        """
+        """Build an assignment of virtual nodes and virtual links starting from the values of the variables in the ILP."""
 
         # dict: key = vm_type, value = list of assigned virtual nodes
         assignment_ec2_instances = defaultdict(list)
         # dict: key = virtual node, value = vm assigned
-        assignment_nodes = defaultdict()
+        nodes_assignment = defaultdict()
         for (u, vm_type, vm_id) in node_mapping:
             # print(node_mapping[(u, vm_type, vm_id)],node_mapping[(u, vm_type, vm_id)].varValue)
             if round(node_mapping[(u, vm_type, vm_id)].varValue) == 1:
                 assignment_ec2_instances[(vm_type, vm_id)].append(u)
-                # assignment_nodes[u] = (vm_type, vm_id)
+                # nodes_assignment[u] = (vm_type, vm_id)
         return assignment_ec2_instances

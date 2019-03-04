@@ -6,7 +6,7 @@ pip install -r requirements.txt
 ```sh
 python3 reconfiguration/main.py
 ```
-## Testing which solver is currently installed ##
+## Testing which _get_solver is currently installed ##
 ```sh
 python3 reconfiguration/test.py
 ```
@@ -14,8 +14,8 @@ python3 reconfiguration/test.py
 ## Solvers for the ILP approach ##
 * [Cplex] - free for academic use 
 * [Gurobi] - free for academic use
-* [GLPK] - open-source linear programming solver
-* [CBC] - COIN-OR CBC: open-source linear programming solver
+* [GLPK] - open-source linear programming _get_solver
+* [CBC] - COIN-OR CBC: open-source linear programming _get_solver
 * [SCIP] - free for noncommercial and academic institutes
 
 ## Adding a mapping algorithm ##

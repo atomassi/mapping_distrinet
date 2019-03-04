@@ -13,7 +13,7 @@ from .virtual import VirtualNetwork
 
 class Solve(object, metaclass=ABCMeta):
 
-    def __init__(self, virtual, physical=None):
+    def __init__(self, virtual, physical):
         """"""
         self.virtual = VirtualNetwork.from_mininet(virtual) if isinstance(virtual, Topo) else virtual
         self.physical = physical
@@ -44,5 +44,5 @@ class Solve(object, metaclass=ABCMeta):
         return math.ceil(max(tot_req_cores / max_phy_cores, tot_req_memory / max_phy_memory))
 
     @abstractmethod
-    def place(self, virtual, physical, **kwargs):
+    def place(self, **kwargs):
         """This method must be implemented"""

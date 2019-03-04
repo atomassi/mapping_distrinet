@@ -27,7 +27,7 @@ class LinkMap(object):
 
 
 class Solution(object):
-    """Represent the output of the placement algorithms.
+    """Represent the output of the embedding algorithms.
 
     Examples
     --------
@@ -50,11 +50,11 @@ class Solution(object):
         self._log = logging.getLogger(__name__)
 
     def node_info(self, node):
-        """Return the algorithms for the virtual node."""
+        """Return the physical node where the virtual node has been placed."""
         return self.node_mapping[node]
 
     def link_info(self, link):
-        """Return the algorithms for the virtual link."""
+        """Return the mapping for the virtual link."""
         try:
             return self.link_mapping[link]
         except KeyError:

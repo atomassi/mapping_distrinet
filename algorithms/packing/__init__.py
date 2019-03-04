@@ -1,3 +1,3 @@
+from .heuristic import PackHeu as PackHeu
+from .ilp import PackILP as PackILP
 from .instance import InstanceEC2
-from .ilp import PackILP as EmbedILP_EC2
-from .heuristic import PackHeu as EmbdedHeu_EC2

@@ -29,10 +29,10 @@ class EmbedILP(Solve):
     def place(self, **kwargs):
 
         obj = kwargs.get('obj', 'min_n_machines')
-        solver_name = kwargs.get('solver', 'cplex').lower()
+        solver_name = kwargs.get('_get_solver', 'cplex').lower()
         timelimit = int(kwargs.get('timelimit', '3600'))
 
-        if __debug__: self._log.debug(f"called ILP solver with the following parameters: {kwargs}")
+        if __debug__: self._log.debug(f"called ILP _get_solver with the following parameters: {kwargs}")
 
         # link algorithms variables
         link_mapping = pulp.LpVariable.dicts("link_mapping",
@@ -49,9 +49,9 @@ class EmbedILP(Solve):
 
         # problem definition
         mapping_ILP = pulp.LpProblem("Mapping ILP", pulp.LpMinimize)
-        # get solver
+        # get _get_solver
         solver = self._get_solver(solver_name, timelimit)
-        # set solver
+        # set _get_solver
         mapping_ILP.setSolver(solver)
 
         # Case 1: empty objective
@@ -137,7 +137,7 @@ class EmbedILP(Solve):
             return Infeasible
         elif (status == 'Not Solved' or status == "Undefined") and (
                 not pulp.value(mapping_ILP.objective) or pulp.value(mapping_ILP.objective) < 1.1):
-            # @todo check specific solver status
+            # @todo check specific _get_solver status
             self.status = NotSolved
             return NotSolved
 
@@ -150,8 +150,8 @@ class EmbedILP(Solve):
 
         """
         if solver_name == "cplex":
-            print("lb cplex", solver.solverModel.solution.MIP.get_best_objective())
-            self.solution.lb = solver.solverModel.solution.MIP.get_best_objective()
+            print("lb cplex", _get_solver.solverModel.solution.MIP.get_best_objective())
+            self.solution.lb = _get_solver.solverModel.solution.MIP.get_best_objective()
         elif solver_name == "gurobi":
             print("lb gurobi", mapping_ILP.solverModel.ObjBound)
             self.solution.lb = mapping_ILP.solverModel.ObjBound

@@ -2,11 +2,11 @@ import itertools
 import logging
 from collections import Counter
 
-from algorithms.constants import AssignmentError, NodeResourceError
+from mapping.constants import AssignmentError, NodeResourceError
 
 
 class Solution(object):
-    """Represent the output of the placement algorithms.
+    """Represent the output of the placement mapping.
 
     Examples
     --------

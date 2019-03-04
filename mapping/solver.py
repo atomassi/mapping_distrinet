@@ -8,7 +8,7 @@ from abc import abstractmethod, ABCMeta
 from mininet.topo import Topo
 
 from .constants import *
-from algorithms.virtual import VirtualNetwork
+from mapping.virtual import VirtualNetwork
 
 
 class Solver(object, metaclass=ABCMeta):
@@ -40,7 +40,7 @@ class Solver(object, metaclass=ABCMeta):
             max_phy_memory = self.physical.memory(phy_node) if self.physical.memory(
                 phy_node) > max_phy_memory else max_phy_memory
 
-        # lower bound, any feasible algorithms requires at least this number of physical machines
+        # lower bound, any feasible mapping requires at least this number of physical machines
         return math.ceil(max(tot_req_cores / max_phy_cores, tot_req_memory / max_phy_memory))
 
     @abstractmethod

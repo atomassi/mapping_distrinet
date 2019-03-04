@@ -1,9 +1,9 @@
 from functools import lru_cache
 
-from algorithms import Solver
-from algorithms.constants import *
-from algorithms.utils import timeit
-from .solution import Solution
+from mapping import Solver
+from mapping.constants import *
+from mapping.utils import timeit
+from mapping.packing.solution import Solution
 
 
 class Bin(object):
@@ -25,7 +25,7 @@ class Bin(object):
         return f"Bin(vm_type={self.vm_type}, items={self.items}, used cores={self.used_cores}, used memory={self.used_memory})"
 
 
-class PackHeu(Solver):
+class PackGreedy(Solver):
     @lru_cache(maxsize=256)
     def _get_cheapest_feasible(self, cores, memory):
         """Given a demand in terms of number of cores and memory return the cheapest EC2 instance with enough resources.

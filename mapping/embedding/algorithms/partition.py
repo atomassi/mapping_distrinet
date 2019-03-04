@@ -1,10 +1,10 @@
 import random
 from collections import defaultdict
 
-from algorithms.constants import *
-from algorithms.embedding.solution import Solution
-from algorithms.solver import Solver
-from algorithms.utils import timeit
+from mapping.constants import *
+from mapping.embedding.solution import Solution
+from mapping.solver import Solver
+from mapping.utils import timeit
 
 
 def get_partitions(virtual, n_partitions, n_swaps=100):
@@ -48,7 +48,7 @@ class EmbedPartition(Solver):
 
     @timeit
     def solve(self, **kwargs):
-        """Heuristic based on computing a k-balanced partitions of virtual nodes for then algorithms the partition
+        """Heuristic based on computing a k-balanced partitions of virtual nodes for then mapping the partition
            on a subset of the physical nodes.
         """
 
@@ -129,8 +129,8 @@ class EmbedPartition(Solver):
 
 
 if __name__ == "__main__":
-    from algorithms.embedding import PhysicalNetwork
-    from algorithms.virtual import VirtualNetwork
+    from mapping.embedding import PhysicalNetwork
+    from mapping.virtual import VirtualNetwork
 
     physical_topo = PhysicalNetwork.grid5000("grisou", group_interfaces=True)
     virtual_topo = VirtualNetwork.create_random_nw(n_nodes=66)

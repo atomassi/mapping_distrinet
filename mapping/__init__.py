@@ -1,3 +1,3 @@
 from .solver import Solver
+from .virtual import VirtualNetwork
 from .constants import *
-from algorithms.virtual import VirtualNetwork

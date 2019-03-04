@@ -2,10 +2,10 @@ import itertools
 
 import pulp
 
-from algorithms import Solver
-from algorithms.constants import *
-from algorithms.embedding.solution import Solution
-from algorithms.utils import timeit
+from mapping import Solver
+from mapping.constants import *
+from mapping.embedding.solution import Solution
+from mapping.utils import timeit
 
 
 class EmbedILP(Solver):
@@ -34,7 +34,7 @@ class EmbedILP(Solver):
 
         if __debug__: self._log.debug(f"called ILP _get_solver with the following parameters: {kwargs}")
 
-        # link algorithms variables
+        # link mapping variables
         link_mapping = pulp.LpVariable.dicts("link_mapping",
                                              itertools.chain(*(((u, v, i, j, device), (u, v, j, i, device))
                                                                for (u, v) in self.virtual.sorted_edges()
@@ -42,7 +42,7 @@ class EmbedILP(Solver):
                                              lowBound=0, upBound=1,
                                              cat=pulp.LpContinuous if self.physical.grouped_interfaces else pulp.LpBinary)
 
-        # node algorithms variables
+        # node mapping variables
         node_mapping = pulp.LpVariable.dicts("node_mapping",
                                              ((u, i) for u in self.virtual.nodes() for i in self.physical.nodes()),
                                              cat=pulp.LpBinary)
@@ -162,11 +162,11 @@ class EmbedILP(Solver):
         """
         res_node_mapping = {}
         res_link_mapping = {}
-        # algorithms for the virtual nodes
+        # mapping for the virtual nodes
         for virtual_node in virtual.nodes():
             res_node_mapping[virtual_node] = next((physical_node for physical_node in physical.nodes() if
                                                    node_mapping[(virtual_node, physical_node)].varValue > 0), None)
-        # algorithms for the virtual links
+        # mapping for the virtual links
         for (u, v) in virtual.sorted_edges():
             if res_node_mapping[u] != res_node_mapping[v]:
                 s_node, d_node = res_node_mapping[u], res_node_mapping[v]
@@ -193,8 +193,8 @@ class EmbedILP(Solver):
 
 
 if __name__ == "__main__":
-    from algorithms.embedding import PhysicalNetwork
-    from algorithms.virtual import VirtualNetwork
+    from mapping.embedding import PhysicalNetwork
+    from mapping.virtual import VirtualNetwork
 
     physical_topo = PhysicalNetwork.grid5000("grisou", group_interfaces=True)
     virtual_topo = VirtualNetwork.create_random_nw(n_nodes=6)

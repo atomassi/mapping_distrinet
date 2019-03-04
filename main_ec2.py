@@ -1,18 +1,21 @@
-from algorithms.packing import CloudInstance, PackHeu, PackILP
-from algorithms import VirtualNetwork, SolutionStatus
+import mapping as mp
+from mapping.packing import CloudInstance
+from mapping.packing.algorithms import PackILP, PackGreedy
+from mapping import VirtualNetwork
+
 
 if __name__ == '__main__':
 
-    instance_ec2 = CloudInstance.get_EC2_vritual_machines()
+    instance_ec2 = CloudInstance.get_ec2_instances()
 
     virtual = VirtualNetwork.create_random_nw(20)
 
-    prob = PackHeu(virtual, instance_ec2)
+    prob = PackGreedy(virtual, instance_ec2)
     time_solution, status = prob.solve()
 
-    if SolutionStatus[status] == "Not Solved":
+    if mp.SolutionStatus[status] == "Not Solved":
         print("Failed to solve")
-    elif SolutionStatus[status] == "Unfeasible":
+    elif mp.SolutionStatus[status] == "Unfeasible":
         print("Unfeasible Problem")
     else:
         pass

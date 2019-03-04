@@ -1,13 +1,13 @@
 import logging
 from collections import defaultdict
 
-from algorithms.constants import EmptySolutionError, AssignmentError, NodeResourceError, LinkCapacityError
+from mapping.constants import EmptySolutionError, AssignmentError, NodeResourceError, LinkCapacityError
 
 
 class LinkMap(object):
-    """Virtual Link algorithms to physical resources.
+    """Virtual Link mapping to physical resources.
 
-    Given a virtual link (u,v) a LinkMap represents a algorithms:
+    Given a virtual link (u,v) a LinkMap represents a mapping:
     - from both the physical node and the interface where u is hosted
     - to both the physical node and the interface where v is hosted
 
@@ -27,7 +27,7 @@ class LinkMap(object):
 
 
 class Solution(object):
-    """Represent the output of the embedding algorithms.
+    """Represent the output of the embedding mapping.
 
     Examples
     --------
@@ -36,7 +36,7 @@ class Solution(object):
     >>> solution.node_info(v)
     grisou-7
     >>> solution.link_info((u,v))
-    [<algorithms.embedding.solution.LinkMap object at 0x113794a90>]
+    [<mapping.embedding.solution.LinkMap object at 0x113794a90>]
     >>> for link_map in solution.link_info((u,v)):
     ...        print(link_map.__dict__)
     {'s_node': 'grisou-6', 's_device': 'eth1', 'd_node': 'grisou-7', 'd_device': 'eth3', 'f_rate': 1}
@@ -167,7 +167,7 @@ class Solution(object):
                         mapped_rate = min(to_be_mapped, interfaces_u[interface_u_highest_rate],
                                           interfaces_v[interface_v_highest_rate])
 
-                        # update the algorithms
+                        # update the mapping
 
                         link_mapping[(u, v)].append(
                             LinkMap(u_source, interface_u_highest_rate, v_dest, interface_v_highest_rate,

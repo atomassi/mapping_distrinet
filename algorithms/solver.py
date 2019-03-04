@@ -11,7 +11,7 @@ from .constants import *
 from .virtual import VirtualNetwork
 
 
-class Solve(object, metaclass=ABCMeta):
+class Solver(object, metaclass=ABCMeta):
 
     def __init__(self, virtual, physical):
         """"""
@@ -44,5 +44,5 @@ class Solve(object, metaclass=ABCMeta):
         return math.ceil(max(tot_req_cores / max_phy_cores, tot_req_memory / max_phy_memory))
 
     @abstractmethod
-    def place(self, **kwargs):
+    def solve(self, **kwargs):
         """This method must be implemented"""

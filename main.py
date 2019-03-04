@@ -17,7 +17,7 @@ if __name__ == '__main__':
     virtual_topo = VirtualNetwork.create_fat_tree(k=10, density=2)
 
     prob = EmbedMove(virtual_topo, physical_topo)
-    time_solution, status = prob.place()
+    time_solution, status = prob.solve()
 
     if SolutionStatus[status] == "Not Solved":
         print("Failed to solve")
@@ -44,7 +44,7 @@ if __name__ == '__main__':
     mn_topo.addLink(rightSwitch, rightHost, rate=200)
 
     prob = EmbedMove(mn_topo, physical_topo)
-    time_solution, status = prob.place()
+    time_solution, status = prob.solve()
 
     if SolutionStatus[status] == "Not Solved":
         print("Failed to solve")

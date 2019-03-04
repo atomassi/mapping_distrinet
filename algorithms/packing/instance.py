@@ -4,7 +4,7 @@ import os
 import warnings
 
 
-class InstanceEC2(object):
+class CloudInstance(object):
     def __init__(self, vm_options):
         self._log = logging.getLogger(__name__)
         self._vm_options = vm_options

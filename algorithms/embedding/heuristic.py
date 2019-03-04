@@ -5,7 +5,7 @@ from networkx.algorithms.community.kernighan_lin import kernighan_lin_bisection
 
 from algorithms.constants import *
 from algorithms.embedding.solution import Solution
-from algorithms.solve import Solve
+from algorithms.solver import Solver
 from algorithms.utils import timeit
 
 class GetPartition(object):
@@ -73,10 +73,10 @@ class GetPartition(object):
 get_partitions = GetPartition()
 
 
-class EmbedHeu(Solve):
+class EmbedHeu(Solver):
 
     @timeit
-    def place(self, **kwargs):
+    def solve(self, **kwargs):
         """Heuristic based on computing a k-balanced partitions of virtual nodes for then algorithms the partition
            on a subset of the physical nodes.
         """
@@ -171,6 +171,6 @@ if __name__ == "__main__":
     # virtual_topo = VirtualNetwork.create_fat_tree(k=4)
 
     embed = EmbedHeu(virtual_topo, physical_topo)
-    time_solution = embed.place()
+    time_solution = embed.solve()
     print(time_solution, embed.status)
     print(embed.solution)

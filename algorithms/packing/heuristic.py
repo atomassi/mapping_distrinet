@@ -1,6 +1,6 @@
 from functools import lru_cache
 
-from algorithms import Solve
+from algorithms import Solver
 from algorithms.constants import *
 from algorithms.utils import timeit
 from .solution import Solution
@@ -25,7 +25,7 @@ class Bin(object):
         return f"Bin(vm_type={self.vm_type}, items={self.items}, used cores={self.used_cores}, used memory={self.used_memory})"
 
 
-class PackHeu(Solve):
+class PackHeu(Solver):
     @lru_cache(maxsize=256)
     def _get_cheapest_feasible(self, cores, memory):
         """Given a demand in terms of number of cores and memory return the cheapest EC2 instance with enough resources.
@@ -40,7 +40,7 @@ class PackHeu(Solve):
                    key=lambda x: x[1])[0]
 
     @timeit
-    def place(self, **kwargs):
+    def solve(self, **kwargs):
         """
         """
         self.vm_max_cores = max(self.physical.vm_options, key=lambda vm: self.physical.cores(vm))
@@ -75,7 +75,7 @@ class PackHeu(Solve):
                     new_bin = Bin(vm_to_pack_u)
                     new_bin.add_item(u, req_cores, req_memory)
                     bins.append(new_bin)
-        # print(self._get_cheapest_feasible.cache_info())
+        print(self._get_cheapest_feasible.cache_info())
         self.solution = Solution.build_solution(self.virtual, self.physical,
                                                 {(bin.vm_type, i): bin.items for i, bin in enumerate(bins)})
         self.status = Solved

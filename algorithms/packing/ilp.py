@@ -2,13 +2,13 @@ from collections import defaultdict
 
 import pulp
 
-from algorithms import Solve
+from algorithms import Solver
 from algorithms.constants import *
 from algorithms.utils import timeit
 from .solution import Solution
 
 
-class PackILP(Solve):
+class PackILP(Solver):
 
     @staticmethod
     def _get_solver(solver_name, timelimit):
@@ -49,11 +49,11 @@ class PackILP(Solve):
                        u) <= self.physical.memory(vm_type))
 
     @timeit
-    def place(self, **kwargs):
+    def solve(self, **kwargs):
 
         solver_name = kwargs.get('_get_solver', 'cplex').lower()
         timelimit = int(kwargs.get('timelimit', '3600'))
-        self._log.info(f"called place with the following parameters: {kwargs}")
+        self._log.info(f"called solve with the following parameters: {kwargs}")
         # UB on the number of instances of a certain type
         instances_UB = {vm_type: self._get_ub(vm_type) for vm_type in self.physical.vm_options}
         # instances on which a virtual node u may be placed

@@ -2,13 +2,13 @@ import itertools
 
 import pulp
 
-from algorithms import Solve
+from algorithms import Solver
 from algorithms.constants import *
 from algorithms.embedding.solution import Solution
 from algorithms.utils import timeit
 
 
-class EmbedILP(Solve):
+class EmbedILP(Solver):
 
     @staticmethod
     def _get_solver(solver_name, timelimit):
@@ -26,7 +26,7 @@ class EmbedILP(Solve):
             raise ValueError("Invalid Solver Name")
 
     @timeit
-    def place(self, **kwargs):
+    def solve(self, **kwargs):
 
         obj = kwargs.get('obj', 'min_n_machines')
         solver_name = kwargs.get('_get_solver', 'cplex').lower()
@@ -201,6 +201,6 @@ if __name__ == "__main__":
     # virtual_topo = VirtualNetwork.create_fat_tree(k=4)
 
     embed = EmbedILP(virtual_topo, physical_topo)
-    time_solution = embed.place()
+    time_solution = embed.solve()
     print(time_solution, embed.status)
     print(embed.solution)

@@ -3,14 +3,14 @@ from collections import defaultdict, Counter, deque
 
 from algorithms.constants import *
 from algorithms.embedding.solution import Solution
-from algorithms.solve import Solve
+from algorithms.solver import Solver
 from algorithms.utils import timeit
 
 
-class EmbedHeu(Solve):
+class EmbedHeu(Solver):
 
     @timeit
-    def place(self, **kwargs):
+    def solve(self, **kwargs):
         """2 phases:
            - first assign virtual nodes to physical nodes
            - if link rate is exceeded, move virtual nodes until links are not saturated anymore
@@ -20,7 +20,7 @@ class EmbedHeu(Solve):
         used_resources = {'cores': defaultdict(int), 'memory': defaultdict(int)}
 
         #
-        # place virtual nodes and give priority to already selected nodes
+        # solve virtual nodes and give priority to already selected nodes
         #
         res_node_mapping = {}
         for virtual_node in self.virtual.nodes():
@@ -209,6 +209,6 @@ if __name__ == "__main__":
     # virtual_topo = VirtualNetwork.create_fat_tree(k=4)
 
     embed = EmbedHeu(virtual_topo, physical_topo)
-    time_solution = embed.place()
+    time_solution = embed.solve()
     print(time_solution, embed.status)
     print(embed.solution)

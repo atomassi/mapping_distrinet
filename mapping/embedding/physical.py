@@ -118,25 +118,11 @@ class PhysicalNetwork(object):
 
     @classmethod
     def grid5000(cls, name, n_interfaces_to_consider=float('inf'), group_interfaces=False):
-        """Import the physical network topology from a Grid5000 cluster.
+        """Import the physical network topology from a Grid5000 cluster json description."""
 
-        Parameters
-        ----------
-        name : the name of the cluster in embedding to be considered
-            The corresponding filename should be placed in instances/physical/name.json
-
-        n_interfaces_to_consider : the maximum number of network interfaces to be considered per node (optional, default: all)
-
-        group_interfaces : True if the interfaces towards the same destination node should be considered as a single one (optional, default: False)
-            This option allow traffic from a Node i to a Node j to be splitted between different interfaces. E.g., 50% on eth0 and 50% on eth1
-
-        Returns
-        -------
-        an instance of the PhysicalNetwork class
-        """
         g = nx.MultiGraph()
         # compute nodes
-        with open(os.path.join(os.path.dirname(os.path.abspath(__file__)),"instances", "grid5k", name + ".json")) as f:
+        with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "instances", "grid5k", name + ".json")) as f:
             data = json.load(f)
 
             for node in data['items']:
@@ -195,7 +181,7 @@ class PhysicalNetwork(object):
                     else:
                         g[u][v]['dummy_interface']['rate'] += interfaces_list['nw_interfaces'][device_name]
                         g[u][v]['dummy_interface']['associated_interfaces'][device_name] = \
-                        interfaces_list['nw_interfaces'][device_name]
+                            interfaces_list['nw_interfaces'][device_name]
 
                 n_added_interfaces += 1
                 if n_added_interfaces == n_interfaces_to_consider:
@@ -240,11 +226,11 @@ class PhysicalNetwork(object):
 
         return cls(nx.freeze(g))
 
-if __name__=="__main__":
 
-
+if __name__ == "__main__":
 
     from mininet.topo import Topo
+
     mn_topo = Topo()
 
     master1 = mn_topo.addHost('Master1', cores=2)
@@ -258,8 +244,8 @@ if __name__=="__main__":
     p3 = PhysicalNetwork.from_file(group_interfaces=False)
     p4 = PhysicalNetwork.from_file(group_interfaces=True)
 
-    for p in p1,p2,p3,p4:
+    for p in p1, p2, p3, p4:
         print(str(p))
         print(p.nodes())
         print(p.edges(keys=True))
-        print(p.find_path('Master1','Node1'))
+        print(p.find_path('Master1', 'Node1'))

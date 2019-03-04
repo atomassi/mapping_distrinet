@@ -172,7 +172,7 @@ class PhysicalNetwork(object):
 
     @classmethod
     def from_mininet(cls, mininet_topo, n_interfaces_to_consider=float('inf'), group_interfaces=False):
-        """Create a VirtualNetwork from a mininet Topo."""
+        """Create a PhysicalNetwork from a mininet Topo network."""
 
         from mininet.topo import Topo
 

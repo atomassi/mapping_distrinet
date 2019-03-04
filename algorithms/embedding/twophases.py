@@ -7,7 +7,7 @@ from algorithms.solver import Solver
 from algorithms.utils import timeit
 
 
-class EmbedHeu(Solver):
+class EmbedTwoPhases(Solver):
 
     @timeit
     def solve(self, **kwargs):
@@ -208,7 +208,7 @@ if __name__ == "__main__":
     virtual_topo = VirtualNetwork.create_random_nw(n_nodes=66)
     # virtual_topo = VirtualNetwork.create_fat_tree(k=4)
 
-    embed = EmbedHeu(virtual_topo, physical_topo)
+    embed = EmbedTwoPhases(virtual_topo, physical_topo)
     time_solution = embed.solve()
     print(time_solution, embed.status)
     print(embed.solution)

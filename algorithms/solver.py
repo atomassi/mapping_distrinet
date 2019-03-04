@@ -8,7 +8,7 @@ from abc import abstractmethod, ABCMeta
 from mininet.topo import Topo
 
 from .constants import *
-from .virtual import VirtualNetwork
+from algorithms.virtual import VirtualNetwork
 
 
 class Solver(object, metaclass=ABCMeta):

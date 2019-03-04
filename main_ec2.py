@@ -1,5 +1,4 @@
-from algorithms.packing import CloudInstance
-from algorithms.packing import PackHeu, PackILP
+from algorithms.packing import CloudInstance, PackHeu, PackILP
 from algorithms import VirtualNetwork, SolutionStatus
 
 if __name__ == '__main__':

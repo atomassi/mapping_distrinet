@@ -29,7 +29,7 @@ class CloudInstance(object):
 
     @classmethod
     def get_EC2_vritual_machines(cls, vm_type='general_purpose'):
-        with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "instances", vm_type + ".json")) as f:
+        with open(os.path.join(os.path.dirname(os.path.abspath(__file__)),"instances", "ec2", vm_type + ".json")) as f:
             vm_options = json.load(f)
         # gibibyte to mebibyte conversion
         for vm in vm_options:

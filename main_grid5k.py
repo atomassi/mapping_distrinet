@@ -1,7 +1,6 @@
 from mininet.topo import Topo
 
-from algorithms.embedding import EmbedPartition, EmbedKbalanced, EmbedMove, EmbedILP
-from algorithms.embedding import PhysicalNetwork
+from algorithms.embedding import PhysicalNetwork, EmbedBalanced, EmbedPartition, EmbedTwoPhases, EmbedILP
 from algorithms import VirtualNetwork, SolutionStatus
 
 if __name__ == '__main__':
@@ -16,7 +15,7 @@ if __name__ == '__main__':
     # custom VirtualNetwork
     virtual_topo = VirtualNetwork.create_fat_tree(k=10, density=2)
 
-    prob = EmbedMove(virtual_topo, physical_topo)
+    prob = EmbedTwoPhases(virtual_topo, physical_topo)
     time_solution, status = prob.solve()
 
     if SolutionStatus[status] == "Not Solved":
@@ -43,7 +42,7 @@ if __name__ == '__main__':
     mn_topo.addLink(leftSwitch, rightSwitch, rate=200)
     mn_topo.addLink(rightSwitch, rightHost, rate=200)
 
-    prob = EmbedMove(mn_topo, physical_topo)
+    prob = EmbedTwoPhases(mn_topo, physical_topo)
     time_solution, status = prob.solve()
 
     if SolutionStatus[status] == "Not Solved":

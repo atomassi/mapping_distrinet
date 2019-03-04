@@ -8,7 +8,7 @@ from algorithms.embedding.solution import Solution
 from algorithms.solver import Solver
 from algorithms.utils import timeit
 
-class GetPartition(object):
+class GetPartitions(object):
     """Callable object."""
 
     def __init__(self):
@@ -70,10 +70,10 @@ class GetPartition(object):
         return partitions
 
 
-get_partitions = GetPartition()
+get_partitions = GetPartitions()
 
 
-class EmbedHeu(Solver):
+class EmbedBalanced(Solver):
 
     @timeit
     def solve(self, **kwargs):
@@ -170,7 +170,7 @@ if __name__ == "__main__":
     virtual_topo = VirtualNetwork.create_random_nw(n_nodes=66)
     # virtual_topo = VirtualNetwork.create_fat_tree(k=4)
 
-    embed = EmbedHeu(virtual_topo, physical_topo)
+    embed = EmbedBalanced(virtual_topo, physical_topo)
     time_solution = embed.solve()
     print(time_solution, embed.status)
     print(embed.solution)

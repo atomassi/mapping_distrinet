@@ -136,7 +136,7 @@ class PhysicalNetwork(object):
         """
         g = nx.MultiGraph()
         # compute nodes
-        with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "physical_topo", name + ".json")) as f:
+        with open(os.path.join(os.path.dirname(os.path.abspath(__file__)),"instances", "grid5k", name + ".json")) as f:
             data = json.load(f)
 
             for node in data['items']:

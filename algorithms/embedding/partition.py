@@ -44,7 +44,7 @@ def get_partitions(virtual, n_partitions, n_swaps=100):
     return partitions.values()
 
 
-class EmbedHeu(Solver):
+class EmbedPartition(Solver):
 
     @timeit
     def solve(self, **kwargs):
@@ -136,7 +136,7 @@ if __name__ == "__main__":
     virtual_topo = VirtualNetwork.create_random_nw(n_nodes=66)
     # virtual_topo = VirtualNetwork.create_fat_tree(k=4)
 
-    embed = EmbedHeu(virtual_topo, physical_topo)
+    embed = EmbedPartition(virtual_topo, physical_topo)
     time_solution = embed.solve()
     print(time_solution, embed.status)
     print(embed.solution)

@@ -167,7 +167,7 @@ class PhysicalNetwork(object):
         g = nx.MultiGraph()
 
         for u in mininet_topo.nodes():
-            g.add_node(u, cores=mn_topo.nodeInfo(u).get('cores', 0), memory=mn_topo.nodeInfo(u).get('memory', 0))
+            g.add_node(u, cores=mininet_topo.nodeInfo(u).get('cores', 0), memory=mininet_topo.nodeInfo(u).get('memory', 0))
 
         for (u, v, interfaces_list) in mininet_topo.iterLinks(withInfo=True):
             n_added_interfaces = 0
@@ -186,7 +186,8 @@ class PhysicalNetwork(object):
                 n_added_interfaces += 1
                 if n_added_interfaces == n_interfaces_to_consider:
                     break
-
+        print(g.nodes())
+        print(g.edges())
         return cls(nx.freeze(g))
 
     @classmethod

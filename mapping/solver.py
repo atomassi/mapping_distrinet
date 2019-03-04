@@ -9,14 +9,14 @@ from mininet.topo import Topo
 
 from .constants import *
 from mapping.virtual import VirtualNetwork
-
+from mapping.embedding import PhysicalNetwork
 
 class Solver(object, metaclass=ABCMeta):
 
     def __init__(self, virtual, physical):
         """"""
         self.virtual = VirtualNetwork.from_mininet(virtual) if isinstance(virtual, Topo) else virtual
-        self.physical = physical
+        self.physical = PhysicalNetwork.from_mininet(physical) if isinstance(physical,Topo) else physical
         self.solution = None
         self.status = NotSolved
         self._log = logging.getLogger(__name__)

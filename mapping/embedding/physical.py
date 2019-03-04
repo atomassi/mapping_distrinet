@@ -44,14 +44,14 @@ class PhysicalNetwork(object):
 
     def cores(self, node):
         """Return the number of physical cores for a physical node."""
-        if 'nb_cores' in self._g.nodes[node]:
-            return self._g.node[node]['nb_cores']
+        if 'cores' in self._g.nodes[node]:
+            return self._g.node[node]['cores']
         return 0
 
     def memory(self, node):
         """Return the amount of memory for a physical node."""
-        if 'ram_size' in self._g.nodes[node]:
-            return self._g.node[node]['ram_size']
+        if 'memory' in self._g.nodes[node]:
+            return self._g.node[node]['memory']
         return 0
 
     def rate(self, i, j, device='dummy_interface'):
@@ -141,8 +141,8 @@ class PhysicalNetwork(object):
 
             for node in data['items']:
                 # from byte to mebibyte
-                g.add_node(node['uid'], nb_cores=node['architecture']['nb_cores'] * node['architecture']['nb_procs'],
-                           ram_size=node['main_memory']['ram_size'] / (1024 ** 2))
+                g.add_node(node['uid'], cores=node['architecture']['nb_cores'] * node['architecture']['nb_procs'],
+                           memory=node['main_memory']['ram_size'] / (1024 ** 2))
 
                 n_added_interfaces = 0
                 for interface, link in enumerate(node['network_adapters']):
@@ -169,3 +169,56 @@ class PhysicalNetwork(object):
     def crete_test_nw(cls):
         """Create a test network to run tests"""
         raise NotImplementedError
+
+    @classmethod
+    def from_mininet(cls, mininet_topo, n_interfaces_to_consider=float('inf'), group_interfaces=False):
+        """Create a VirtualNetwork from a mininet Topo."""
+
+        from mininet.topo import Topo
+
+        assert isinstance(mininet_topo, Topo), "Invalid Network Format"
+
+        g = nx.MultiGraph()
+
+        for u in mininet_topo.nodes():
+            g.add_node(u, cores=mn_topo.nodeInfo(u).get('cores', 0),
+                       memory=mn_topo.nodeInfo(u).get('memory', 0))
+
+        for (u, v, interfaces_list) in mininet_topo.iterLinks(withInfo=True):
+            n_added_interfaces = 0
+            for device_name in interfaces_list['nw_interfaces']:
+                if not group_interfaces:
+                    g.add_edge(u, v, key=device_name, rate=interfaces_list['nw_interfaces'][device_name])
+                else:
+                    if not g.has_edge(u, v):
+                        g.add_edge(u, v, key='dummy_interface', rate=interfaces_list['nw_interfaces'][device_name],
+                                   associated_interfaces={device_name: interfaces_list['nw_interfaces'][device_name]})
+                    else:
+                        g[u][v]['dummy_interface']['rate'] += interfaces_list['nw_interfaces'][device_name]
+                        g[u][v]['dummy_interface']['associated_interfaces'][device_name] = \
+                        interfaces_list['nw_interfaces'][device_name]
+
+                n_added_interfaces += 1
+                if n_added_interfaces == n_interfaces_to_consider:
+                    break
+
+        return cls(nx.freeze(g))
+
+if __name__=="__main__":
+
+    from mininet.topo import Topo
+    mn_topo = Topo()
+
+    master1 = mn_topo.addHost('Master1', cores=2, memory=8000)
+    node1 = mn_topo.addHost('Node1', cores=2, memory=8000)
+    sw = mn_topo.addSwitch('SW', cores=2, memory=8000)
+    mn_topo.addLink(master1, sw, nw_interfaces={"eth0": 1000})
+    mn_topo.addLink(node1, sw, nw_interfaces={"eth0": 1000})
+
+    p1 = PhysicalNetwork.from_mininet(mn_topo, group_interfaces=False)
+    p2 = PhysicalNetwork.from_mininet(mn_topo, group_interfaces=True)
+
+    for p in p1,p2:
+        print(p.nodes())
+        print(p.edges(keys=True))
+        print(p.find_path('Master1','Node1'))

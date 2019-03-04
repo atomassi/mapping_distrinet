@@ -181,8 +181,7 @@ class PhysicalNetwork(object):
         g = nx.MultiGraph()
 
         for u in mininet_topo.nodes():
-            g.add_node(u, cores=mn_topo.nodeInfo(u).get('cores', 0),
-                       memory=mn_topo.nodeInfo(u).get('memory', 0))
+            g.add_node(u, cores=mn_topo.nodeInfo(u).get('cores', 0), memory=mn_topo.nodeInfo(u).get('memory', 0))
 
         for (u, v, interfaces_list) in mininet_topo.iterLinks(withInfo=True):
             n_added_interfaces = 0
@@ -204,21 +203,63 @@ class PhysicalNetwork(object):
 
         return cls(nx.freeze(g))
 
+    @classmethod
+    def from_file(cls, filename="example", n_interfaces_to_consider=float('inf'), group_interfaces=False):
+        """Create a PhysicalNetwork from a json file."""
+
+        g = nx.MultiGraph()
+
+        with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "instances", "generic",
+                               filename + ".json")) as f:
+
+            data = json.load(f)
+
+            for node_info in data['nodes']:
+                g.add_node(node_info['id'], cores=node_info.get('cores', 0), memory=node_info.get('memory', 0))
+
+            for link_info in data['links']:
+                u, v, nw_interfaces = link_info['source'], link_info['target'], link_info['nw_interfaces']
+
+                n_added_interfaces = 0
+                for device in nw_interfaces:
+                    device_name, rate = device['device_name'], device['rate']
+
+                    if not group_interfaces:
+                        g.add_edge(u, v, key=device_name, rate=rate)
+                    else:
+                        if not g.has_edge(u, v):
+                            g.add_edge(u, v, key='dummy_interface', rate=rate,
+                                       associated_interfaces={device_name: rate})
+                        else:
+                            g[u][v]['dummy_interface']['rate'] += rate
+                            g[u][v]['dummy_interface']['associated_interfaces'][device_name] = rate
+
+                    n_added_interfaces += 1
+                    if n_added_interfaces == n_interfaces_to_consider:
+                        break
+
+        return cls(nx.freeze(g))
+
 if __name__=="__main__":
+
+
 
     from mininet.topo import Topo
     mn_topo = Topo()
 
-    master1 = mn_topo.addHost('Master1', cores=2, memory=8000)
-    node1 = mn_topo.addHost('Node1', cores=2, memory=8000)
-    sw = mn_topo.addSwitch('SW', cores=2, memory=8000)
+    master1 = mn_topo.addHost('Master1', cores=2)
+    node1 = mn_topo.addHost('Node1', cores=2)
+    sw = mn_topo.addSwitch('SW')
     mn_topo.addLink(master1, sw, nw_interfaces={"eth0": 1000})
     mn_topo.addLink(node1, sw, nw_interfaces={"eth0": 1000})
 
     p1 = PhysicalNetwork.from_mininet(mn_topo, group_interfaces=False)
     p2 = PhysicalNetwork.from_mininet(mn_topo, group_interfaces=True)
+    p3 = PhysicalNetwork.from_file(group_interfaces=False)
+    p4 = PhysicalNetwork.from_file(group_interfaces=True)
 
-    for p in p1,p2:
+    for p in p1,p2,p3,p4:
+        print(str(p))
         print(p.nodes())
         print(p.edges(keys=True))
         print(p.find_path('Master1','Node1'))

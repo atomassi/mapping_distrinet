@@ -1,0 +1,36 @@
+{
+    "nodes": [
+        {
+            "id": "Master1",
+            "cores": 2,
+            "memory": 0
+        },
+        {
+            "id": "Node1",
+            "cores": 2,
+            "memory": 0
+        }
+    ],
+    "links": [
+        {
+            "source": "Master1",
+            "target": "SW",
+            "nw_interfaces": [
+                {
+                    "device_name": "eth0",
+                    "rate": 1000
+                }
+            ]
+        },
+        {
+            "source": "Node1",
+            "target": "SW",
+            "nw_interfaces": [
+                {
+                    "device_name": "eth0",
+                    "rate": 1000
+                }
+            ]
+        }
+    ]
+}

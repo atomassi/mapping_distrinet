@@ -69,13 +69,13 @@ class PhysicalNetwork(object):
     def associated_nw_interfaces(self, i, j):
         """Return the real interfaces associated with the link."""
         if not self.grouped_interfaces:
-            raise ValueError("Undefined")
+            raise ValueError("Defined only when interfaces are grouped")
         return self._g[i][j]['dummy_interface']['associated_interfaces']
 
     def rate_associated_nw_interface(self, i, j, device):
         """Return the rate of a real link interface."""
         if not self.grouped_interfaces:
-            raise ValueError("Undefined")
+            raise ValueError("Defined only when interfaces are grouped")
         return self._g[i][j]['dummy_interface']['associated_interfaces'][device]
 
     def number_of_nodes(self):
@@ -115,6 +115,9 @@ class PhysicalNetwork(object):
                 elif child not in path:
                     path.append(child)
                     stack.append((u for u in self.neighbors(child)))
+        else:
+            print("No path exists")
+            exit(1)
 
     @classmethod
     def grid5000(cls, name, n_interfaces_to_consider=float('inf'), group_interfaces=False):
@@ -148,13 +151,42 @@ class PhysicalNetwork(object):
                         n_added_interfaces += 1
                         if n_added_interfaces == n_interfaces_to_consider:
                             break
-
         return cls(g, group_interfaces)
 
     @classmethod
     def crete_test_nw(cls):
-        """Create a test network to run tests"""
-        raise NotImplementedError
+        """Create a test physical network to run tests.
+
+                         s3
+                       /    \
+                      s1     s2
+                     /  \   /  \
+                    h1  h2 h3  h4
+
+        """
+        # Nodes
+
+        g = nx.MultiGraph()
+        g.add_node("h1", cores=10, memory=64000)
+        g.add_node("h2", cores=10, memory=64000)
+        g.add_node("h3", cores=10, memory=64000)
+        g.add_node("h4", cores=10, memory=64000)
+
+        g.add_node("s1", cores=0, memory=0)
+        g.add_node("s2", cores=0, memory=0)
+        g.add_node("s3", cores=0, memory=0)
+
+        # Links
+        g.add_edge("h1", "s1", key="eth0", rate=10000)
+        g.add_edge("h2", "s1", key="eth0", rate=10000)
+
+        g.add_edge("h3", "s2", key="eth0", rate=10000)
+        g.add_edge("h4", "s2", key="eth0", rate=10000)
+
+        g.add_edge("s1", "s3", key="eth0", rate=10000)
+        g.add_edge("s2", "s3", key="eth0", rate=10000)
+
+        return cls(nx.freeze(g))
 
     @classmethod
     def from_mininet(cls, mininet_topo, n_interfaces_to_consider=float('inf'), group_interfaces=False):
@@ -167,7 +199,8 @@ class PhysicalNetwork(object):
         g = nx.MultiGraph()
 
         for u in mininet_topo.nodes():
-            g.add_node(u, cores=mininet_topo.nodeInfo(u).get('cores', 0), memory=mininet_topo.nodeInfo(u).get('memory', 0))
+            g.add_node(u, cores=mininet_topo.nodeInfo(u).get('cores', 0),
+                       memory=mininet_topo.nodeInfo(u).get('memory', 0))
 
         for (u, v, interfaces_list) in mininet_topo.iterLinks(withInfo=True):
             n_added_interfaces = 0
@@ -186,8 +219,7 @@ class PhysicalNetwork(object):
                 n_added_interfaces += 1
                 if n_added_interfaces == n_interfaces_to_consider:
                     break
-        print(g.nodes())
-        print(g.edges())
+
         return cls(nx.freeze(g))
 
     @classmethod

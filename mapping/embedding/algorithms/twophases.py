@@ -67,6 +67,7 @@ class EmbedTwoPhases(Solver):
 
             # find the physical path
             next_node = phy_u
+
             for (i, j) in self.physical.find_path(phy_u, phy_v):
                 # get the interface with the maximum available rate
                 chosen_interface = max((interface for interface in self.physical.nw_interfaces(i, j)),

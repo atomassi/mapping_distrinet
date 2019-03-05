@@ -146,7 +146,7 @@ class PhysicalNetwork(object):
 
     @classmethod
     def from_files(cls, *filenames, n_interfaces_to_consider=float('inf'), group_interfaces=False):
-        """Create a PhysicalNetwork from a json file."""
+        """Create a PhysicalNetwork from json files."""
 
         g = nx.MultiGraph()
 
@@ -225,27 +225,3 @@ class PhysicalNetwork(object):
         g.add_edge("s2", "s3", devices={"s2": "eth10", "s3": "eth11"}, rate=10000)
 
         return cls(nx.freeze(g))
-
-
-if __name__ == "__main__":
-
-    from mininet.topo import Topo
-
-    mn_topo = Topo()
-
-    master1 = mn_topo.addHost('Master1', cores=2)
-    node1 = mn_topo.addHost('Node1', cores=2)
-    sw = mn_topo.addSwitch('SW')
-    mn_topo.addLink(master1, sw, nw_interfaces={"eth0": 1000})
-    mn_topo.addLink(node1, sw, nw_interfaces={"eth0": 1000})
-
-    p1 = PhysicalNetwork.from_mininet(mn_topo, group_interfaces=False)
-    p2 = PhysicalNetwork.from_mininet(mn_topo, group_interfaces=True)
-    p3 = PhysicalNetwork.from_file(group_interfaces=False)
-    p4 = PhysicalNetwork.from_file(group_interfaces=True)
-
-    for p in p1, p2, p3, p4:
-        print(str(p))
-        print(p.nodes())
-        print(p.edges(keys=True))
-        print(p.find_path('Master1', 'Node1'))

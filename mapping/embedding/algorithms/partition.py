@@ -132,7 +132,7 @@ if __name__ == "__main__":
     from mapping.embedding import PhysicalNetwork
     from mapping.virtual import VirtualNetwork
 
-    physical_topo = PhysicalNetwork.grid5000("grisou", group_interfaces=True)
+    physical_topo = PhysicalNetwork.from_files("grisou", group_interfaces=False)
     virtual_topo = VirtualNetwork.create_random_nw(n_nodes=66)
     # virtual_topo = VirtualNetwork.create_fat_tree(k=4)
 

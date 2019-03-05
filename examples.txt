@@ -16,9 +16,9 @@ g = nx.MultiGraph()
 g.add_node("Master1", cores=2)
 g.add_node("Node1", cores=2)
 # links
-g.add_edge("Master1", "SW", rate=1000, interfaces = {"Master1":"eth0","SW":"eth0"})
-g.add_edge("Master1", "SW", rate=2000, interfaces = {"Master1":"eth1","SW":"eth2"})
-g.add_edge("Node1", "SW", rate=1000, interfaces = {"Master1":"eth0","SW":"eth1"})
+g.add_edge("Master1", "SW", rate=1000, devices={"Master1":"eth0","SW":"eth0"})
+g.add_edge("Master1", "SW", rate=2000, devices={"Master1":"eth1","SW":"eth2"})
+g.add_edge("Node1", "SW", rate=1000, devices={"Master1":"eth0","SW":"eth1"})
 
 # mininet
 

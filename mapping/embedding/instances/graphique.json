@@ -1,0 +1,102 @@
+{
+    "nodes": [
+        {
+            "id": "graphique-1",
+            "cores": 24,
+            "memory": 65536.0
+        },
+        {
+            "id": "graphique-2",
+            "cores": 24,
+            "memory": 65536.0
+        },
+        {
+            "id": "graphique-3",
+            "cores": 24,
+            "memory": 65536.0
+        },
+        {
+            "id": "graphique-4",
+            "cores": 24,
+            "memory": 65536.0
+        },
+        {
+            "id": "graphique-5",
+            "cores": 24,
+            "memory": 65536.0
+        },
+        {
+            "id": "graphique-6",
+            "cores": 24,
+            "memory": 65536.0
+        }
+    ],
+    "links": [
+        {
+            "source": "graphique-1",
+            "target": "gw-nancy",
+            "devices": [
+                {
+                    "source_device": "eth0",
+                    "target_device": "Ethernet1/25",
+                    "rate": 10000.0
+                }
+            ]
+        },
+        {
+            "source": "graphique-2",
+            "target": "gw-nancy",
+            "devices": [
+                {
+                    "source_device": "eth0",
+                    "target_device": "Ethernet1/24",
+                    "rate": 10000.0
+                }
+            ]
+        },
+        {
+            "source": "graphique-3",
+            "target": "gw-nancy",
+            "devices": [
+                {
+                    "source_device": "eth0",
+                    "target_device": "Ethernet1/23",
+                    "rate": 10000.0
+                }
+            ]
+        },
+        {
+            "source": "graphique-4",
+            "target": "gw-nancy",
+            "devices": [
+                {
+                    "source_device": "eth0",
+                    "target_device": "Ethernet1/21",
+                    "rate": 10000.0
+                }
+            ]
+        },
+        {
+            "source": "graphique-5",
+            "target": "gw-nancy",
+            "devices": [
+                {
+                    "source_device": "eth0",
+                    "target_device": "Ethernet1/22",
+                    "rate": 10000.0
+                }
+            ]
+        },
+        {
+            "source": "graphique-6",
+            "target": "gw-nancy",
+            "devices": [
+                {
+                    "source_device": "eth0",
+                    "target_device": "Ethernet1/26",
+                    "rate": 10000.0
+                }
+            ]
+        }
+    ]
+}

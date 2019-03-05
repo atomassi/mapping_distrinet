@@ -7,11 +7,11 @@ from abc import abstractmethod, ABCMeta
 
 from mininet.topo import Topo
 
-from .constants import *
+from mapping.constants import *
 from mapping.virtual import VirtualNetwork
 from mapping.embedding import PhysicalNetwork
 
-class Solver(object, metaclass=ABCMeta):
+class EmbeddingSolver(object, metaclass=ABCMeta):
 
     def __init__(self, virtual, physical):
         """"""

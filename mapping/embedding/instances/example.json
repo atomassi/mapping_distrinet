@@ -2,22 +2,23 @@
     "nodes": [
         {
             "id": "Master1",
-            "cores": 2,
-            "memory": 0
+            "cores": 16,
+            "memory": 64000
         },
         {
             "id": "Node1",
-            "cores": 2,
-            "memory": 0
+            "cores": 16,
+            "memory": 64000
         }
     ],
     "links": [
         {
             "source": "Master1",
             "target": "SW",
-            "nw_interfaces": [
+            "devices": [
                 {
-                    "device_name": "eth0",
+                    "source_device": "eth0",
+                    "target_device": "eth0",
                     "rate": 1000
                 }
             ]
@@ -25,9 +26,10 @@
         {
             "source": "Node1",
             "target": "SW",
-            "nw_interfaces": [
+            "devices": [
                 {
-                    "device_name": "eth0",
+                    "source_device": "eth0",
+                    "target_device": "eth1",
                     "rate": 1000
                 }
             ]

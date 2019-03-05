@@ -1,6 +1,6 @@
-from functools import lru_cache
 
-from mapping import Solver
+
+from mapping.packing import PackingSolver
 from mapping.constants import *
 from mapping.utils import timeit
 from mapping.packing.solution import Solution
@@ -25,19 +25,7 @@ class Bin(object):
         return f"Bin(vm_type={self.vm_type}, items={self.items}, used cores={self.used_cores}, used memory={self.used_memory})"
 
 
-class PackGreedy(Solver):
-    @lru_cache(maxsize=256)
-    def _get_cheapest_feasible(self, cores, memory):
-        """Given a demand in terms of number of cores and memory return the cheapest EC2 instance with enough resources.
-        """
-        if (cores > self.physical.cores(self.vm_max_cores) or memory > self.physical.memory(self.vm_max_cores)) \
-                and (
-                cores > self.physical.cores(self.vm_max_memory) or memory > self.physical.memory(self.vm_max_memory)):
-            return None
-
-        return min(((vm, self.physical.get_hourly_cost(vm)) for vm in self.physical.vm_options if
-                    cores <= self.physical.cores(vm) and memory <= self.physical.memory(vm)),
-                   key=lambda x: x[1])[0]
+class PackGreedy(PackingSolver):
 
     @timeit
     def solve(self, **kwargs):
@@ -75,7 +63,7 @@ class PackGreedy(Solver):
                     new_bin = Bin(vm_to_pack_u)
                     new_bin.add_item(u, req_cores, req_memory)
                     bins.append(new_bin)
-        print(self._get_cheapest_feasible.cache_info())
+        #print(self._get_cheapest_feasible.cache_info())
         self.solution = Solution.build_solution(self.virtual, self.physical,
                                                 {(bin.vm_type, i): bin.items for i, bin in enumerate(bins)})
         self.status = Solved

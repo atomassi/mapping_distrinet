@@ -7,9 +7,9 @@ import networkx as nx
 
 
 class VirtualNetwork(object):
+    "Utility class to model the virtual network. Uses networkx.Graph."
 
     def __init__(self, g):
-        """Initialize the virtual network with the graph g."""
         self._g = g
         self._log = logging.getLogger(__name__)
 
@@ -28,18 +28,18 @@ class VirtualNetwork(object):
 
     def sorted_edges(self):
         """Return the edges of the graph sorted in lexicographic way."""
-        if not hasattr(self, '_sorted_links'):
-            self._sorted_links = set((u, v) if u < v else (v, u) for (u, v) in self.edges())
-        return self._sorted_links
+        if not hasattr(self, '_sorted_edges'):
+            self._sorted_edges = set((u, v) if u < v else (v, u) for (u, v) in self.edges())
+        return self._sorted_edges
 
     def sorted_edges_from(self, i):
         """Return the edges starting at node i with each edge sorted in lexicographic way."""
         if not hasattr(self, '_links_from'):
-            self._links_from = {}
+            self._sorted_edges_from = {}
         try:
-            return self._links_from[i]
+            return self._sorted_edges_from[i]
         except KeyError:
-            res = self._links_from[i] = set((i, j) if i < j else (j, i) for j in self._g[i])
+            res = self._sorted_edges_from[i] = set((i, j) if i < j else (j, i) for j in self._g[i])
         return res
 
     def nodes(self):
@@ -139,7 +139,7 @@ class VirtualNetwork(object):
         return cls(nx.freeze(g))
 
     @classmethod
-    def read_from_file(cls, filename):
+    def from_file(cls, filename):
         """Read the graph from a file."""
         raise NotImplementedError
 

@@ -1,0 +1,1587 @@
+{
+    "nodes": [
+        {
+            "id": "grisou-1",
+            "cores": 32,
+            "memory": 131072.0
+        },
+        {
+            "id": "grisou-10",
+            "cores": 32,
+            "memory": 131072.0
+        },
+        {
+            "id": "grisou-11",
+            "cores": 32,
+            "memory": 131072.0
+        },
+        {
+            "id": "grisou-12",
+            "cores": 32,
+            "memory": 131072.0
+        },
+        {
+            "id": "grisou-13",
+            "cores": 32,
+            "memory": 131072.0
+        },
+        {
+            "id": "grisou-14",
+            "cores": 32,
+            "memory": 131072.0
+        },
+        {
+            "id": "grisou-15",
+            "cores": 32,
+            "memory": 131072.0
+        },
+        {
+            "id": "grisou-16",
+            "cores": 32,
+            "memory": 131072.0
+        },
+        {
+            "id": "grisou-17",
+            "cores": 32,
+            "memory": 131072.0
+        },
+        {
+            "id": "grisou-18",
+            "cores": 32,
+            "memory": 131072.0
+        },
+        {
+            "id": "grisou-19",
+            "cores": 32,
+            "memory": 131072.0
+        },
+        {
+            "id": "grisou-2",
+            "cores": 32,
+            "memory": 131072.0
+        },
+        {
+            "id": "grisou-20",
+            "cores": 32,
+            "memory": 131072.0
+        },
+        {
+            "id": "grisou-21",
+            "cores": 32,
+            "memory": 131072.0
+        },
+        {
+            "id": "grisou-22",
+            "cores": 32,
+            "memory": 131072.0
+        },
+        {
+            "id": "grisou-23",
+            "cores": 32,
+            "memory": 131072.0
+        },
+        {
+            "id": "grisou-24",
+            "cores": 32,
+            "memory": 131072.0
+        },
+        {
+            "id": "grisou-25",
+            "cores": 32,
+            "memory": 131072.0
+        },
+        {
+            "id": "grisou-26",
+            "cores": 32,
+            "memory": 131072.0
+        },
+        {
+            "id": "grisou-27",
+            "cores": 32,
+            "memory": 131072.0
+        },
+        {
+            "id": "grisou-28",
+            "cores": 32,
+            "memory": 131072.0
+        },
+        {
+            "id": "grisou-29",
+            "cores": 32,
+            "memory": 131072.0
+        },
+        {
+            "id": "grisou-3",
+            "cores": 32,
+            "memory": 131072.0
+        },
+        {
+            "id": "grisou-30",
+            "cores": 32,
+            "memory": 131072.0
+        },
+        {
+            "id": "grisou-31",
+            "cores": 32,
+            "memory": 131072.0
+        },
+        {
+            "id": "grisou-32",
+            "cores": 32,
+            "memory": 131072.0
+        },
+        {
+            "id": "grisou-33",
+            "cores": 32,
+            "memory": 131072.0
+        },
+        {
+            "id": "grisou-34",
+            "cores": 32,
+            "memory": 131072.0
+        },
+        {
+            "id": "grisou-35",
+            "cores": 32,
+            "memory": 131072.0
+        },
+        {
+            "id": "grisou-36",
+            "cores": 32,
+            "memory": 131072.0
+        },
+        {
+            "id": "grisou-37",
+            "cores": 32,
+            "memory": 131072.0
+        },
+        {
+            "id": "grisou-38",
+            "cores": 32,
+            "memory": 131072.0
+        },
+        {
+            "id": "grisou-39",
+            "cores": 32,
+            "memory": 131072.0
+        },
+        {
+            "id": "grisou-4",
+            "cores": 32,
+            "memory": 131072.0
+        },
+        {
+            "id": "grisou-40",
+            "cores": 32,
+            "memory": 131072.0
+        },
+        {
+            "id": "grisou-41",
+            "cores": 32,
+            "memory": 131072.0
+        },
+        {
+            "id": "grisou-42",
+            "cores": 32,
+            "memory": 131072.0
+        },
+        {
+            "id": "grisou-43",
+            "cores": 32,
+            "memory": 131072.0
+        },
+        {
+            "id": "grisou-44",
+            "cores": 32,
+            "memory": 131072.0
+        },
+        {
+            "id": "grisou-45",
+            "cores": 32,
+            "memory": 131072.0
+        },
+        {
+            "id": "grisou-46",
+            "cores": 32,
+            "memory": 131072.0
+        },
+        {
+            "id": "grisou-47",
+            "cores": 32,
+            "memory": 131072.0
+        },
+        {
+            "id": "grisou-48",
+            "cores": 32,
+            "memory": 131072.0
+        },
+        {
+            "id": "grisou-49",
+            "cores": 32,
+            "memory": 131072.0
+        },
+        {
+            "id": "grisou-5",
+            "cores": 32,
+            "memory": 131072.0
+        },
+        {
+            "id": "grisou-50",
+            "cores": 32,
+            "memory": 131072.0
+        },
+        {
+            "id": "grisou-51",
+            "cores": 32,
+            "memory": 131072.0
+        },
+        {
+            "id": "grisou-6",
+            "cores": 32,
+            "memory": 131072.0
+        },
+        {
+            "id": "grisou-7",
+            "cores": 32,
+            "memory": 131072.0
+        },
+        {
+            "id": "grisou-8",
+            "cores": 32,
+            "memory": 131072.0
+        },
+        {
+            "id": "grisou-9",
+            "cores": 32,
+            "memory": 131072.0
+        }
+    ],
+    "links": [
+        {
+            "source": "grisou-1",
+            "target": "gw-nancy",
+            "devices": [
+                {
+                    "source_device": "eth0",
+                    "target_device": "Ethernet2/1",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth1",
+                    "target_device": "Ethernet3/1",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth2",
+                    "target_device": "Ethernet4/1",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth3",
+                    "target_device": "Ethernet5/1",
+                    "rate": 10000.0
+                }
+            ]
+        },
+        {
+            "source": "grisou-10",
+            "target": "gw-nancy",
+            "devices": [
+                {
+                    "source_device": "eth0",
+                    "target_device": "Ethernet2/10",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth1",
+                    "target_device": "Ethernet3/10",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth2",
+                    "target_device": "Ethernet4/10",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth3",
+                    "target_device": "Ethernet5/10",
+                    "rate": 10000.0
+                }
+            ]
+        },
+        {
+            "source": "grisou-11",
+            "target": "gw-nancy",
+            "devices": [
+                {
+                    "source_device": "eth0",
+                    "target_device": "Ethernet2/11",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth1",
+                    "target_device": "Ethernet3/11",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth2",
+                    "target_device": "Ethernet4/11",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth3",
+                    "target_device": "Ethernet5/11",
+                    "rate": 10000.0
+                }
+            ]
+        },
+        {
+            "source": "grisou-12",
+            "target": "gw-nancy",
+            "devices": [
+                {
+                    "source_device": "eth0",
+                    "target_device": "Ethernet2/12",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth1",
+                    "target_device": "Ethernet3/12",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth2",
+                    "target_device": "Ethernet4/12",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth3",
+                    "target_device": "Ethernet5/12",
+                    "rate": 10000.0
+                }
+            ]
+        },
+        {
+            "source": "grisou-13",
+            "target": "gw-nancy",
+            "devices": [
+                {
+                    "source_device": "eth0",
+                    "target_device": "Ethernet2/13",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth1",
+                    "target_device": "Ethernet3/13",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth2",
+                    "target_device": "Ethernet4/13",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth3",
+                    "target_device": "Ethernet5/13",
+                    "rate": 10000.0
+                }
+            ]
+        },
+        {
+            "source": "grisou-14",
+            "target": "gw-nancy",
+            "devices": [
+                {
+                    "source_device": "eth0",
+                    "target_device": "Ethernet2/14",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth1",
+                    "target_device": "Ethernet3/14",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth2",
+                    "target_device": "Ethernet4/14",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth3",
+                    "target_device": "Ethernet5/14",
+                    "rate": 10000.0
+                }
+            ]
+        },
+        {
+            "source": "grisou-15",
+            "target": "gw-nancy",
+            "devices": [
+                {
+                    "source_device": "eth0",
+                    "target_device": "Ethernet2/15",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth1",
+                    "target_device": "Ethernet3/15",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth2",
+                    "target_device": "Ethernet4/15",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth3",
+                    "target_device": "Ethernet5/15",
+                    "rate": 10000.0
+                }
+            ]
+        },
+        {
+            "source": "grisou-16",
+            "target": "gw-nancy",
+            "devices": [
+                {
+                    "source_device": "eth0",
+                    "target_device": "Ethernet2/16",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth1",
+                    "target_device": "Ethernet3/16",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth2",
+                    "target_device": "Ethernet4/16",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth3",
+                    "target_device": "Ethernet5/16",
+                    "rate": 10000.0
+                }
+            ]
+        },
+        {
+            "source": "grisou-17",
+            "target": "gw-nancy",
+            "devices": [
+                {
+                    "source_device": "eth0",
+                    "target_device": "Ethernet2/17",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth1",
+                    "target_device": "Ethernet3/17",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth2",
+                    "target_device": "Ethernet4/17",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth3",
+                    "target_device": "Ethernet5/17",
+                    "rate": 10000.0
+                }
+            ]
+        },
+        {
+            "source": "grisou-18",
+            "target": "gw-nancy",
+            "devices": [
+                {
+                    "source_device": "eth0",
+                    "target_device": "Ethernet2/18",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth1",
+                    "target_device": "Ethernet3/18",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth2",
+                    "target_device": "Ethernet4/18",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth3",
+                    "target_device": "Ethernet5/18",
+                    "rate": 10000.0
+                }
+            ]
+        },
+        {
+            "source": "grisou-19",
+            "target": "gw-nancy",
+            "devices": [
+                {
+                    "source_device": "eth0",
+                    "target_device": "Ethernet2/19",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth1",
+                    "target_device": "Ethernet3/19",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth2",
+                    "target_device": "Ethernet4/19",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth3",
+                    "target_device": "Ethernet5/19",
+                    "rate": 10000.0
+                }
+            ]
+        },
+        {
+            "source": "grisou-2",
+            "target": "gw-nancy",
+            "devices": [
+                {
+                    "source_device": "eth0",
+                    "target_device": "Ethernet2/2",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth1",
+                    "target_device": "Ethernet3/2",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth2",
+                    "target_device": "Ethernet4/2",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth3",
+                    "target_device": "Ethernet5/2",
+                    "rate": 10000.0
+                }
+            ]
+        },
+        {
+            "source": "grisou-20",
+            "target": "gw-nancy",
+            "devices": [
+                {
+                    "source_device": "eth0",
+                    "target_device": "Ethernet2/20",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth1",
+                    "target_device": "Ethernet3/20",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth2",
+                    "target_device": "Ethernet4/20",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth3",
+                    "target_device": "Ethernet5/20",
+                    "rate": 10000.0
+                }
+            ]
+        },
+        {
+            "source": "grisou-21",
+            "target": "gw-nancy",
+            "devices": [
+                {
+                    "source_device": "eth0",
+                    "target_device": "Ethernet2/21",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth1",
+                    "target_device": "Ethernet3/21",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth2",
+                    "target_device": "Ethernet4/21",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth3",
+                    "target_device": "Ethernet5/21",
+                    "rate": 10000.0
+                }
+            ]
+        },
+        {
+            "source": "grisou-22",
+            "target": "gw-nancy",
+            "devices": [
+                {
+                    "source_device": "eth0",
+                    "target_device": "Ethernet2/22",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth1",
+                    "target_device": "Ethernet3/22",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth2",
+                    "target_device": "Ethernet4/22",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth3",
+                    "target_device": "Ethernet5/22",
+                    "rate": 10000.0
+                }
+            ]
+        },
+        {
+            "source": "grisou-23",
+            "target": "gw-nancy",
+            "devices": [
+                {
+                    "source_device": "eth0",
+                    "target_device": "Ethernet2/23",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth1",
+                    "target_device": "Ethernet3/23",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth2",
+                    "target_device": "Ethernet4/23",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth3",
+                    "target_device": "Ethernet5/23",
+                    "rate": 10000.0
+                }
+            ]
+        },
+        {
+            "source": "grisou-24",
+            "target": "gw-nancy",
+            "devices": [
+                {
+                    "source_device": "eth0",
+                    "target_device": "Ethernet2/24",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth1",
+                    "target_device": "Ethernet3/24",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth2",
+                    "target_device": "Ethernet4/24",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth3",
+                    "target_device": "Ethernet5/24",
+                    "rate": 10000.0
+                }
+            ]
+        },
+        {
+            "source": "grisou-25",
+            "target": "gw-nancy",
+            "devices": [
+                {
+                    "source_device": "eth0",
+                    "target_device": "Ethernet2/25",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth1",
+                    "target_device": "Ethernet3/25",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth2",
+                    "target_device": "Ethernet4/25",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth3",
+                    "target_device": "Ethernet5/25",
+                    "rate": 10000.0
+                }
+            ]
+        },
+        {
+            "source": "grisou-26",
+            "target": "gw-nancy",
+            "devices": [
+                {
+                    "source_device": "eth0",
+                    "target_device": "Ethernet2/26",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth1",
+                    "target_device": "Ethernet3/26",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth2",
+                    "target_device": "Ethernet4/26",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth3",
+                    "target_device": "Ethernet5/26",
+                    "rate": 10000.0
+                }
+            ]
+        },
+        {
+            "source": "grisou-27",
+            "target": "gw-nancy",
+            "devices": [
+                {
+                    "source_device": "eth0",
+                    "target_device": "Ethernet2/27",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth1",
+                    "target_device": "Ethernet3/27",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth2",
+                    "target_device": "Ethernet4/27",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth3",
+                    "target_device": "Ethernet5/27",
+                    "rate": 10000.0
+                }
+            ]
+        },
+        {
+            "source": "grisou-28",
+            "target": "gw-nancy",
+            "devices": [
+                {
+                    "source_device": "eth0",
+                    "target_device": "Ethernet2/28",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth1",
+                    "target_device": "Ethernet3/28",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth2",
+                    "target_device": "Ethernet4/28",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth3",
+                    "target_device": "Ethernet5/28",
+                    "rate": 10000.0
+                }
+            ]
+        },
+        {
+            "source": "grisou-29",
+            "target": "gw-nancy",
+            "devices": [
+                {
+                    "source_device": "eth0",
+                    "target_device": "Ethernet2/29",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth1",
+                    "target_device": "Ethernet3/29",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth2",
+                    "target_device": "Ethernet4/29",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth3",
+                    "target_device": "Ethernet5/29",
+                    "rate": 10000.0
+                }
+            ]
+        },
+        {
+            "source": "grisou-3",
+            "target": "gw-nancy",
+            "devices": [
+                {
+                    "source_device": "eth0",
+                    "target_device": "Ethernet2/3",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth1",
+                    "target_device": "Ethernet3/3",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth2",
+                    "target_device": "Ethernet4/3",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth3",
+                    "target_device": "Ethernet5/3",
+                    "rate": 10000.0
+                }
+            ]
+        },
+        {
+            "source": "grisou-30",
+            "target": "gw-nancy",
+            "devices": [
+                {
+                    "source_device": "eth0",
+                    "target_device": "Ethernet2/30",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth1",
+                    "target_device": "Ethernet3/30",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth2",
+                    "target_device": "Ethernet4/30",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth3",
+                    "target_device": "Ethernet5/30",
+                    "rate": 10000.0
+                }
+            ]
+        },
+        {
+            "source": "grisou-31",
+            "target": "gw-nancy",
+            "devices": [
+                {
+                    "source_device": "eth0",
+                    "target_device": "Ethernet2/31",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth1",
+                    "target_device": "Ethernet3/31",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth2",
+                    "target_device": "Ethernet4/31",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth3",
+                    "target_device": "Ethernet5/31",
+                    "rate": 10000.0
+                }
+            ]
+        },
+        {
+            "source": "grisou-32",
+            "target": "gw-nancy",
+            "devices": [
+                {
+                    "source_device": "eth0",
+                    "target_device": "Ethernet2/32",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth1",
+                    "target_device": "Ethernet3/32",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth2",
+                    "target_device": "Ethernet4/32",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth3",
+                    "target_device": "Ethernet5/32",
+                    "rate": 10000.0
+                }
+            ]
+        },
+        {
+            "source": "grisou-33",
+            "target": "gw-nancy",
+            "devices": [
+                {
+                    "source_device": "eth0",
+                    "target_device": "Ethernet2/33",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth1",
+                    "target_device": "Ethernet3/33",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth2",
+                    "target_device": "Ethernet4/33",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth3",
+                    "target_device": "Ethernet5/33",
+                    "rate": 10000.0
+                }
+            ]
+        },
+        {
+            "source": "grisou-34",
+            "target": "gw-nancy",
+            "devices": [
+                {
+                    "source_device": "eth0",
+                    "target_device": "Ethernet2/34",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth1",
+                    "target_device": "Ethernet3/34",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth2",
+                    "target_device": "Ethernet4/34",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth3",
+                    "target_device": "Ethernet5/34",
+                    "rate": 10000.0
+                }
+            ]
+        },
+        {
+            "source": "grisou-35",
+            "target": "gw-nancy",
+            "devices": [
+                {
+                    "source_device": "eth0",
+                    "target_device": "Ethernet2/35",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth1",
+                    "target_device": "Ethernet3/35",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth2",
+                    "target_device": "Ethernet4/35",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth3",
+                    "target_device": "Ethernet5/35",
+                    "rate": 10000.0
+                }
+            ]
+        },
+        {
+            "source": "grisou-36",
+            "target": "gw-nancy",
+            "devices": [
+                {
+                    "source_device": "eth0",
+                    "target_device": "Ethernet2/36",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth1",
+                    "target_device": "Ethernet3/36",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth2",
+                    "target_device": "Ethernet4/36",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth3",
+                    "target_device": "Ethernet5/36",
+                    "rate": 10000.0
+                }
+            ]
+        },
+        {
+            "source": "grisou-37",
+            "target": "gw-nancy",
+            "devices": [
+                {
+                    "source_device": "eth0",
+                    "target_device": "Ethernet2/37",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth1",
+                    "target_device": "Ethernet3/37",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth2",
+                    "target_device": "Ethernet4/37",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth3",
+                    "target_device": "Ethernet5/37",
+                    "rate": 10000.0
+                }
+            ]
+        },
+        {
+            "source": "grisou-38",
+            "target": "gw-nancy",
+            "devices": [
+                {
+                    "source_device": "eth0",
+                    "target_device": "Ethernet2/38",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth1",
+                    "target_device": "Ethernet3/38",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth2",
+                    "target_device": "Ethernet4/38",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth3",
+                    "target_device": "Ethernet5/38",
+                    "rate": 10000.0
+                }
+            ]
+        },
+        {
+            "source": "grisou-39",
+            "target": "gw-nancy",
+            "devices": [
+                {
+                    "source_device": "eth0",
+                    "target_device": "Ethernet2/39",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth1",
+                    "target_device": "Ethernet3/39",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth2",
+                    "target_device": "Ethernet4/39",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth3",
+                    "target_device": "Ethernet5/39",
+                    "rate": 10000.0
+                }
+            ]
+        },
+        {
+            "source": "grisou-4",
+            "target": "gw-nancy",
+            "devices": [
+                {
+                    "source_device": "eth0",
+                    "target_device": "Ethernet2/4",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth1",
+                    "target_device": "Ethernet3/4",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth2",
+                    "target_device": "Ethernet4/4",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth3",
+                    "target_device": "Ethernet5/4",
+                    "rate": 10000.0
+                }
+            ]
+        },
+        {
+            "source": "grisou-40",
+            "target": "gw-nancy",
+            "devices": [
+                {
+                    "source_device": "eth0",
+                    "target_device": "Ethernet2/40",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth1",
+                    "target_device": "Ethernet3/40",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth2",
+                    "target_device": "Ethernet4/40",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth3",
+                    "target_device": "Ethernet5/40",
+                    "rate": 10000.0
+                }
+            ]
+        },
+        {
+            "source": "grisou-41",
+            "target": "gw-nancy",
+            "devices": [
+                {
+                    "source_device": "eth0",
+                    "target_device": "Ethernet1/27",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth1",
+                    "target_device": "Ethernet6/1",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth2",
+                    "target_device": "Ethernet6/2",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth3",
+                    "target_device": "Ethernet6/3",
+                    "rate": 10000.0
+                }
+            ]
+        },
+        {
+            "source": "grisou-42",
+            "target": "gw-nancy",
+            "devices": [
+                {
+                    "source_device": "eth0",
+                    "target_device": "Ethernet1/28",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth1",
+                    "target_device": "Ethernet6/4",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth2",
+                    "target_device": "Ethernet6/5",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth3",
+                    "target_device": "Ethernet6/6",
+                    "rate": 10000.0
+                }
+            ]
+        },
+        {
+            "source": "grisou-43",
+            "target": "gw-nancy",
+            "devices": [
+                {
+                    "source_device": "eth0",
+                    "target_device": "Ethernet1/29",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth1",
+                    "target_device": "Ethernet6/7",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth2",
+                    "target_device": "Ethernet6/8",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth3",
+                    "target_device": "Ethernet6/9",
+                    "rate": 10000.0
+                }
+            ]
+        },
+        {
+            "source": "grisou-44",
+            "target": "gw-nancy",
+            "devices": [
+                {
+                    "source_device": "eth0",
+                    "target_device": "Ethernet1/30",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth1",
+                    "target_device": "Ethernet6/10",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth2",
+                    "target_device": "Ethernet6/11",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth3",
+                    "target_device": "Ethernet6/12",
+                    "rate": 10000.0
+                }
+            ]
+        },
+        {
+            "source": "grisou-45",
+            "target": "gw-nancy",
+            "devices": [
+                {
+                    "source_device": "eth0",
+                    "target_device": "Ethernet1/31",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth1",
+                    "target_device": "Ethernet6/13",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth2",
+                    "target_device": "Ethernet6/14",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth3",
+                    "target_device": "Ethernet6/15",
+                    "rate": 10000.0
+                }
+            ]
+        },
+        {
+            "source": "grisou-46",
+            "target": "gw-nancy",
+            "devices": [
+                {
+                    "source_device": "eth0",
+                    "target_device": "Ethernet1/32",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth1",
+                    "target_device": "Ethernet6/16",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth2",
+                    "target_device": "Ethernet6/17",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth3",
+                    "target_device": "Ethernet6/18",
+                    "rate": 10000.0
+                }
+            ]
+        },
+        {
+            "source": "grisou-47",
+            "target": "gw-nancy",
+            "devices": [
+                {
+                    "source_device": "eth0",
+                    "target_device": "Ethernet1/33",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth1",
+                    "target_device": "Ethernet6/19",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth2",
+                    "target_device": "Ethernet6/20",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth3",
+                    "target_device": "Ethernet6/21",
+                    "rate": 10000.0
+                }
+            ]
+        },
+        {
+            "source": "grisou-48",
+            "target": "gw-nancy",
+            "devices": [
+                {
+                    "source_device": "eth0",
+                    "target_device": "Ethernet1/34",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth1",
+                    "target_device": "Ethernet6/22",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth2",
+                    "target_device": "Ethernet6/23",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth3",
+                    "target_device": "Ethernet6/24",
+                    "rate": 10000.0
+                }
+            ]
+        },
+        {
+            "source": "grisou-49",
+            "target": "gw-nancy",
+            "devices": [
+                {
+                    "source_device": "eth0",
+                    "target_device": "Ethernet1/35",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth1",
+                    "target_device": "Ethernet6/25",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth2",
+                    "target_device": "Ethernet6/26",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth3",
+                    "target_device": "Ethernet6/27",
+                    "rate": 10000.0
+                }
+            ]
+        },
+        {
+            "source": "grisou-5",
+            "target": "gw-nancy",
+            "devices": [
+                {
+                    "source_device": "eth0",
+                    "target_device": "Ethernet2/5",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth1",
+                    "target_device": "Ethernet3/5",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth2",
+                    "target_device": "Ethernet4/5",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth3",
+                    "target_device": "Ethernet5/5",
+                    "rate": 10000.0
+                }
+            ]
+        },
+        {
+            "source": "grisou-50",
+            "target": "gw-nancy",
+            "devices": [
+                {
+                    "source_device": "eth0",
+                    "target_device": "Ethernet1/36",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth1",
+                    "target_device": "Ethernet6/28",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth2",
+                    "target_device": "Ethernet6/29",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth3",
+                    "target_device": "Ethernet6/30",
+                    "rate": 10000.0
+                }
+            ]
+        },
+        {
+            "source": "grisou-51",
+            "target": "gw-nancy",
+            "devices": [
+                {
+                    "source_device": "eth0",
+                    "target_device": "Ethernet1/37",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth1",
+                    "target_device": "Ethernet6/31",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth2",
+                    "target_device": "Ethernet6/32",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth3",
+                    "target_device": "Ethernet6/33",
+                    "rate": 10000.0
+                }
+            ]
+        },
+        {
+            "source": "grisou-6",
+            "target": "gw-nancy",
+            "devices": [
+                {
+                    "source_device": "eth0",
+                    "target_device": "Ethernet2/6",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth1",
+                    "target_device": "Ethernet3/6",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth2",
+                    "target_device": "Ethernet4/6",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth3",
+                    "target_device": "Ethernet5/6",
+                    "rate": 10000.0
+                }
+            ]
+        },
+        {
+            "source": "grisou-7",
+            "target": "gw-nancy",
+            "devices": [
+                {
+                    "source_device": "eth0",
+                    "target_device": "Ethernet2/7",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth1",
+                    "target_device": "Ethernet3/7",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth2",
+                    "target_device": "Ethernet4/7",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth3",
+                    "target_device": "Ethernet5/7",
+                    "rate": 10000.0
+                }
+            ]
+        },
+        {
+            "source": "grisou-8",
+            "target": "gw-nancy",
+            "devices": [
+                {
+                    "source_device": "eth0",
+                    "target_device": "Ethernet2/8",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth1",
+                    "target_device": "Ethernet3/8",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth2",
+                    "target_device": "Ethernet4/8",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth3",
+                    "target_device": "Ethernet5/8",
+                    "rate": 10000.0
+                }
+            ]
+        },
+        {
+            "source": "grisou-9",
+            "target": "gw-nancy",
+            "devices": [
+                {
+                    "source_device": "eth0",
+                    "target_device": "Ethernet2/9",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth1",
+                    "target_device": "Ethernet3/9",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth2",
+                    "target_device": "Ethernet4/9",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth3",
+                    "target_device": "Ethernet5/9",
+                    "rate": 10000.0
+                }
+            ]
+        }
+    ]
+}

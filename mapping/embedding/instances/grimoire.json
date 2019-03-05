@@ -1,0 +1,254 @@
+{
+    "nodes": [
+        {
+            "id": "grimoire-1",
+            "cores": 32,
+            "memory": 131072.0
+        },
+        {
+            "id": "grimoire-2",
+            "cores": 32,
+            "memory": 131072.0
+        },
+        {
+            "id": "grimoire-3",
+            "cores": 32,
+            "memory": 131072.0
+        },
+        {
+            "id": "grimoire-4",
+            "cores": 32,
+            "memory": 131072.0
+        },
+        {
+            "id": "grimoire-5",
+            "cores": 32,
+            "memory": 131072.0
+        },
+        {
+            "id": "grimoire-6",
+            "cores": 32,
+            "memory": 131072.0
+        },
+        {
+            "id": "grimoire-7",
+            "cores": 32,
+            "memory": 131072.0
+        },
+        {
+            "id": "grimoire-8",
+            "cores": 32,
+            "memory": 131072.0
+        }
+    ],
+    "links": [
+        {
+            "source": "grimoire-1",
+            "target": "gw-nancy",
+            "devices": [
+                {
+                    "source_device": "eth0",
+                    "target_device": "Ethernet2/41",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth1",
+                    "target_device": "Ethernet3/41",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth2",
+                    "target_device": "Ethernet4/41",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth3",
+                    "target_device": "Ethernet5/41",
+                    "rate": 10000.0
+                }
+            ]
+        },
+        {
+            "source": "grimoire-2",
+            "target": "gw-nancy",
+            "devices": [
+                {
+                    "source_device": "eth0",
+                    "target_device": "Ethernet2/42",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth1",
+                    "target_device": "Ethernet3/42",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth2",
+                    "target_device": "Ethernet4/42",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth3",
+                    "target_device": "Ethernet5/42",
+                    "rate": 10000.0
+                }
+            ]
+        },
+        {
+            "source": "grimoire-3",
+            "target": "gw-nancy",
+            "devices": [
+                {
+                    "source_device": "eth0",
+                    "target_device": "Ethernet2/43",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth1",
+                    "target_device": "Ethernet3/43",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth2",
+                    "target_device": "Ethernet4/43",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth3",
+                    "target_device": "Ethernet5/43",
+                    "rate": 10000.0
+                }
+            ]
+        },
+        {
+            "source": "grimoire-4",
+            "target": "gw-nancy",
+            "devices": [
+                {
+                    "source_device": "eth0",
+                    "target_device": "Ethernet2/44",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth1",
+                    "target_device": "Ethernet3/44",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth2",
+                    "target_device": "Ethernet4/44",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth3",
+                    "target_device": "Ethernet5/44",
+                    "rate": 10000.0
+                }
+            ]
+        },
+        {
+            "source": "grimoire-5",
+            "target": "gw-nancy",
+            "devices": [
+                {
+                    "source_device": "eth0",
+                    "target_device": "Ethernet2/45",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth1",
+                    "target_device": "Ethernet3/45",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth2",
+                    "target_device": "Ethernet4/45",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth3",
+                    "target_device": "Ethernet5/45",
+                    "rate": 10000.0
+                }
+            ]
+        },
+        {
+            "source": "grimoire-6",
+            "target": "gw-nancy",
+            "devices": [
+                {
+                    "source_device": "eth0",
+                    "target_device": "Ethernet2/46",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth1",
+                    "target_device": "Ethernet3/46",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth2",
+                    "target_device": "Ethernet4/46",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth3",
+                    "target_device": "Ethernet5/46",
+                    "rate": 10000.0
+                }
+            ]
+        },
+        {
+            "source": "grimoire-7",
+            "target": "gw-nancy",
+            "devices": [
+                {
+                    "source_device": "eth0",
+                    "target_device": "Ethernet2/47",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth1",
+                    "target_device": "Ethernet3/47",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth2",
+                    "target_device": "Ethernet4/47",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth3",
+                    "target_device": "Ethernet5/47",
+                    "rate": 10000.0
+                }
+            ]
+        },
+        {
+            "source": "grimoire-8",
+            "target": "gw-nancy",
+            "devices": [
+                {
+                    "source_device": "eth0",
+                    "target_device": "Ethernet2/48",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth1",
+                    "target_device": "Ethernet3/48",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth2",
+                    "target_device": "Ethernet4/48",
+                    "rate": 10000.0
+                },
+                {
+                    "source_device": "eth3",
+                    "target_device": "Ethernet5/48",
+                    "rate": 10000.0
+                }
+            ]
+        }
+    ]
+}

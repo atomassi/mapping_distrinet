@@ -3,11 +3,11 @@ from collections import defaultdict, Counter, deque
 
 from mapping.constants import *
 from mapping.embedding.solution import Solution
-from mapping.solver import Solver
+from mapping.embedding import EmbeddingSolver
 from mapping.utils import timeit
 
 
-class EmbedTwoPhases(Solver):
+class EmbedTwoPhases(EmbeddingSolver):
 
     @timeit
     def solve(self, **kwargs):
@@ -69,33 +69,34 @@ class EmbedTwoPhases(Solver):
             next_node = phy_u
 
             for (i, j) in self.physical.find_path(phy_u, phy_v):
-                # get the interface with the maximum available rate
-                chosen_interface = max((interface for interface in self.physical.nw_interfaces(i, j)),
-                                       key=lambda interface: self.physical.rate(i, j, interface) - rate_used[
-                                           (i, j, interface)])
+                # get the interface_name with the maximum available rate
+                chosen_interface_id = max((interface for interface in self.physical.interfaces_ids(i, j)),
+                                          key=lambda interface: self.physical.rate(i, j, interface) - rate_used[
+                                              (i, j, interface)])
 
                 # update the rate used
-                rate_used[(i, j, chosen_interface)] += self.virtual.req_rate(u, v)
+                rate_used[(i, j, chosen_interface_id)] += self.virtual.req_rate(u, v)
                 # add the virtual link in the list of virtual links that the physical link
-                use_link[(i, j, chosen_interface)].add((u, v))
+                use_link[(i, j, chosen_interface_id)].add((u, v))
                 # add to the path
                 res_link_mapping[(u, v)].append(
-                    (i, chosen_interface, j) if i == next_node else (j, chosen_interface, i))
+                    (i, chosen_interface_id, j) if i == next_node else (j, chosen_interface_id, i))
                 # update the next node in the path
                 next_node = j if i == next_node else i
 
         # move nodes until link rate is not anymore exceeded
         exceeded_rate = sum(
-            max(0, rate_used[(i, j, interface)] - self.physical.rate(i, j, interface)) for (i, j, interface) in
+            max(0, rate_used[(i, j, interface_id)] - self.physical.rate(i, j, interface_id)) for (i, j, interface_id) in
             rate_used)
 
         # while all link contraints are not satisfied
         while exceeded_rate > 0:
 
             # take the violated links and the rate in excess on them
-            violated_links = {(i, j, interface): rate_used[(i, j, interface)] - self.physical.rate(i, j, interface) for
-                              (i, j, interface) in rate_used
-                              if rate_used[(i, j, interface)] - self.physical.rate(i, j, interface) > 0}
+            violated_links = {
+            (i, j, interface_id): rate_used[(i, j, interface_id)] - self.physical.rate(i, j, interface_id) for
+            (i, j, interface_id) in rate_used
+            if rate_used[(i, j, interface_id)] - self.physical.rate(i, j, interface_id) > 0}
 
             # take the link with the highest exceeded rate
             most_violated_link = max(violated_links, key=violated_links.get)
@@ -130,35 +131,38 @@ class EmbedTwoPhases(Solver):
                         phy_u, phy_v = res_node_mapping[u], res_node_mapping[v]
 
                         # for each link in the previous path
-                        for (i, interface, j) in res_link_mapping[(u, v)]:
+                        for (i, interface_id, j) in res_link_mapping[(u, v)]:
                             if i < j:
-                                diff_rate[(i, j, interface)] -= self.virtual.req_rate(u, v)
-                                diff_vlinks['remove'][(i, j, interface)].add((u, v))
+                                diff_rate[(i, j, interface_id)] -= self.virtual.req_rate(u, v)
+                                diff_vlinks['remove'][(i, j, interface_id)].add((u, v))
                             else:
-                                diff_rate[(j, i, interface)] -= self.virtual.req_rate(u, v)
-                                diff_vlinks['remove'][(j, i, interface)].add((u, v))
+                                diff_rate[(j, i, interface_id)] -= self.virtual.req_rate(u, v)
+                                diff_vlinks['remove'][(j, i, interface_id)].add((u, v))
 
                         # for each link in the new physical path
                         next_node = phy_u
                         for (i, j) in self.physical.find_path(phy_u, phy_v):
-                            # get the interface with the maximum available rate
-                            chosen_interface = max((interface for interface in self.physical.nw_interfaces(i, j)),
-                                                   key=lambda interface: self.physical.rate(i, j, interface) -
-                                                                         rate_used[(i, j, interface)] -
-                                                                         diff_rate[(i, j, interface)])
+                            # get the interface_name with the maximum available rate
+                            chosen_interface_id = max(
+                                (interface_id for interface_id in self.physical.interfaces_ids(i, j)),
+                                key=lambda interface_id: self.physical.rate(i, j, interface_id) -
+                                                         rate_used[(i, j, interface_id)] -
+                                                         diff_rate[(i, j, interface_id)])
 
                             new_link_mapping[(u, v)].append(
-                                (i, chosen_interface, j) if i == next_node else (j, chosen_interface, i))
+                                (i, chosen_interface_id, j) if i == next_node else (j, chosen_interface_id, i))
                             next_node = j if i == next_node else i
 
-                            diff_rate[(i, j, chosen_interface)] += self.virtual.req_rate(u, v)
-                            diff_vlinks['add'][(i, j, chosen_interface)].add((u, v))
+                            diff_rate[(i, j, chosen_interface_id)] += self.virtual.req_rate(u, v)
+                            diff_vlinks['add'][(i, j, chosen_interface_id)].add((u, v))
+
 
                     # compute the new exceeded rate after having moved the node
                     new_exceeded_rate = sum(
-                        max(0, rate_used[(i, j, interface)] + diff_rate[(i, j, interface)] - self.physical.rate(i, j,
-                                                                                                           interface))
-                        for (i, j, interface) in rate_used)
+                        max(0,
+                            rate_used[(i, j, interface_id)] + diff_rate[(i, j, interface_id)] - self.physical.rate(i, j,
+                                                                                                                   interface_id))
+                        for (i, j, interface_id) in rate_used)
 
                     # if the rate in exceed is decreased, update the partial results
                     if new_exceeded_rate < exceeded_rate:
@@ -178,13 +182,13 @@ class EmbedTwoPhases(Solver):
                         used_resources['memory'][phy_node] += self.virtual.req_memory(node_to_move)
 
                         # update the rate used on the network interfaces
-                        for (i, j, interface) in diff_rate:
-                            rate_used[(i, j, interface)] += diff_rate[(i, j, interface)]
+                        for (i, j, interface_id) in diff_rate:
+                            rate_used[(i, j, interface_id)] += diff_rate[(i, j, interface_id)]
 
                         # update link usage
-                        for (i, j, interface) in set(diff_vlinks['remove']) | set(diff_vlinks['add']):
-                            use_link[(i, j, interface)] = use_link[(i, j, interface)] - (
-                                diff_vlinks['remove'][(i, j, interface)]) | diff_vlinks['add'][(i, j, interface)]
+                        for (i, j, interface_id) in set(diff_vlinks['remove']) | set(diff_vlinks['add']):
+                            use_link[(i, j, interface_id)] = use_link[(i, j, interface_id)] - (
+                                diff_vlinks['remove'][(i, j, interface_id)]) | diff_vlinks['add'][(i, j, interface_id)]
 
                         # update the link mapping for the virtual links
                         for (u, v) in new_link_mapping:
@@ -193,12 +197,13 @@ class EmbedTwoPhases(Solver):
                         break
 
             else:
-                raise InfeasibleError
+                self.status = Infeasible
+                return Infeasible
+
 
         self.solution = Solution.build_solution(self.virtual, self.physical, res_node_mapping, res_link_mapping)
         self.status = Solved
         return Solved
-
 
 
 if __name__ == "__main__":

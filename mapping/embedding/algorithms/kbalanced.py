@@ -5,7 +5,7 @@ from networkx.algorithms.community.kernighan_lin import kernighan_lin_bisection
 
 from mapping.constants import *
 from mapping.embedding.solution import Solution
-from mapping.solver import Solver
+from mapping.embedding import EmbeddingSolver
 from mapping.utils import timeit
 
 class GetPartitions(object):
@@ -73,7 +73,7 @@ class GetPartitions(object):
 get_partitions = GetPartitions()
 
 
-class EmbedBalanced(Solver):
+class EmbedBalanced(EmbeddingSolver):
 
     @timeit
     def solve(self, **kwargs):
@@ -132,20 +132,20 @@ class EmbedBalanced(Solver):
                     # for each link in the physical path
                     for (i, j) in self.physical.find_path(phy_u, phy_v):
 
-                        # get an interface with enough available rate
-                        chosen_interface = next((interface for interface in self.physical.nw_interfaces(i, j) if
-                                                 self.physical.rate(i, j, interface) - rate_used[(i, j, interface)] >=
-                                                 self.virtual.req_rate(u, v)), None)
+                        # get an interface_name with enough available rate
+                        chosen_interface_id = next((interface for interface in self.physical.interfaces_ids(i, j) if
+                                                    self.physical.rate(i, j, interface) - rate_used[(i, j, interface)] >=
+                                                    self.virtual.req_rate(u, v)), None)
 
-                        # if such an interface does not exist raise an Exception
-                        if not chosen_interface:
+                        # if such an interface_name does not exist raise an Exception
+                        if not chosen_interface_id:
                             raise LinkCapacityError(f"Capacity exceeded on ({i},{j})")
 
                         # else update the rate
-                        rate_used[(i, j, chosen_interface)] += self.virtual.req_rate(u, v)
+                        rate_used[(i, j, chosen_interface_id)] += self.virtual.req_rate(u, v)
 
                         res_link_mapping[(u, v)].append(
-                            (i, chosen_interface, j) if i == next_node else (j, chosen_interface, i))
+                            (i, chosen_interface_id, j) if i == next_node else (j, chosen_interface_id, i))
                         next_node = j if i == next_node else i
 
                 # build solution from the output

@@ -2,13 +2,13 @@ from collections import defaultdict
 
 import pulp
 
-from mapping import Solver
+from mapping.packing import PackingSolver
 from mapping.constants import *
 from mapping.utils import timeit
 from mapping.packing.solution import Solution
 
 
-class PackILP(Solver):
+class PackILP(PackingSolver):
 
     @staticmethod
     def _get_solver(solver_name, timelimit):
@@ -25,28 +25,7 @@ class PackILP(Solver):
         else:
             raise ValueError("Invalid _get_solver name")
 
-    def _get_ub(self, vm_type):
-        """Return an upper bound on the maximum number of EC2 instances of type vm_type needed to pack all the nodes"""
 
-        cpu_cores_instance, memory_instance = self.physical.cores(vm_type), self.physical.memory(vm_type)
-        n_instances_needed = remaining_cpu_cores = remaining_memory = 0
-        for u in self.virtual.nodes():
-            req_cores, req_memory = self.virtual.req_cores(u), self.virtual.req_memory(u)
-            if req_cores <= remaining_cpu_cores and req_memory <= remaining_memory:
-                remaining_cpu_cores -= req_cores
-                remaining_memory -= req_memory
-            elif req_cores <= cpu_cores_instance and req_memory <= memory_instance:
-                remaining_cpu_cores = cpu_cores_instance - req_cores
-                remaining_memory = memory_instance - req_memory
-                n_instances_needed += 1
-        return n_instances_needed
-
-    def get_feasible_instances(self, u):
-        """Return a set with the instances types feasible for node u
-        """
-        return set(vm_type for vm_type in self.physical.vm_options if
-                   self.virtual.req_cores(u) <= self.physical.cores(vm_type) and self.virtual.req_memory(
-                       u) <= self.physical.memory(vm_type))
 
     @timeit
     def solve(self, **kwargs):
@@ -57,7 +36,7 @@ class PackILP(Solver):
         # UB on the number of instances of a certain type
         instances_UB = {vm_type: self._get_ub(vm_type) for vm_type in self.physical.vm_options}
         # instances on which a virtual node u may be placed
-        feasible_instances = {u: self.get_feasible_instances(u) for u in self.virtual.nodes()}
+        feasible_instances = {u: self._get_feasible_instances(u) for u in self.virtual.nodes()}
         vm_used = pulp.LpVariable.dicts("vm_used",
                                         ((vm_type, vm_id) for vm_type in self.physical.vm_options for vm_id in
                                          range(instances_UB[vm_type])), cat=pulp.LpBinary)

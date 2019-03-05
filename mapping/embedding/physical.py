@@ -59,13 +59,13 @@ class PhysicalNetwork(object):
         return self._g[i][j]['dummy']['associated_devices']
 
     def rate_associated_nw_interface(self, i, j, device_id):
-        """Return the rate of a real link interface_name."""
+        """Return the rate associated to a real link interface."""
         if not self.grouped_interfaces:
             raise ValueError("Defined only when interfaces are grouped")
         return self._g[i][j]['dummy']['associated_devices'][device_id]['rate']
 
     def name_associated_nw_interface(self, i, j, device_id):
-        """Return the name of a real link interface_name."""
+        """Return the name associated to a real link interface."""
         if not self.grouped_interfaces:
             raise ValueError("Defined only when interfaces are grouped")
         return self._g[i][j]['dummy']['associated_devices'][device_id][i]
@@ -213,16 +213,16 @@ class PhysicalNetwork(object):
         g.add_node("s3", cores=0, memory=0)
 
         # Links
-        g.add_edge("h1", "s1", key=1, devices={"h1": "eth0", "s1": "eth1"}, rate=10000)
-        g.add_edge("h1", "s1", key=1, devices={"h1": "eth66", "s1": "eth67"}, rate=10000)
+        g.add_edge("h1", "s1", devices={"h1": "eth0", "s1": "eth1"}, rate=10000)
+        g.add_edge("h1", "s1", devices={"h1": "eth66", "s1": "eth67"}, rate=10000)
 
-        g.add_edge("h2", "s1", key=2, devices={"h2": "eth2", "s1": "eth3"}, rate=10000)
+        g.add_edge("h2", "s1", devices={"h2": "eth2", "s1": "eth3"}, rate=10000)
 
-        g.add_edge("h3", "s2", key=3, devices={"h3": "eth4", "s2": "eth5"}, rate=10000)
-        g.add_edge("h4", "s2", key=4, devices={"h4": "eth6", "s2": "eth7"}, rate=10000)
+        g.add_edge("h3", "s2", devices={"h3": "eth4", "s2": "eth5"}, rate=10000)
+        g.add_edge("h4", "s2", devices={"h4": "eth6", "s2": "eth7"}, rate=10000)
 
-        g.add_edge("s1", "s3", key=5, devices={"s1": "eth8", "s3": "eth9"}, rate=10000)
-        g.add_edge("s2", "s3", key=6, devices={"s2": "eth10", "s3": "eth11"}, rate=10000)
+        g.add_edge("s1", "s3", devices={"s1": "eth8", "s3": "eth9"}, rate=10000)
+        g.add_edge("s2", "s3", devices={"s2": "eth10", "s3": "eth11"}, rate=10000)
 
         return cls(nx.freeze(g))
 

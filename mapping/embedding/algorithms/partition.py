@@ -105,7 +105,7 @@ class EmbedPartition(EmbeddingSolver):
                                                     self.physical.rate(i, j, interface) - rate_used[
                                                      (i, j, interface)] >= self.virtual.req_rate(u, v)), None)
                         # if such an interface_name does not exist raise an Exception
-                        if not chosen_interface_id:
+                        if chosen_interface_id is None:
                             raise LinkCapacityError(f"Capacity exceeded on ({i},{j})")
                         # else update the rate
                         rate_used[(i, j, chosen_interface_id)] += self.virtual.req_rate(u, v)

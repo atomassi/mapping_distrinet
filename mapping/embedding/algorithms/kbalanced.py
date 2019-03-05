@@ -1,4 +1,5 @@
 import random
+import math
 from collections import defaultdict
 
 from networkx.algorithms.community.kernighan_lin import kernighan_lin_bisection
@@ -22,7 +23,7 @@ class GetPartitions(object):
             """helper function (iterative version)"""
 
             to_be_processed = [g]
-            K = len(g.nodes()) / p
+            K = math.ceil(len(g.nodes()) / p)
 
             res = []
             while len(to_be_processed) > 0:
@@ -39,8 +40,7 @@ class GetPartitions(object):
 
         def _recursive_cutting(g, p, res=[]):
             """helper function (recursive version)"""
-            k = len(g.nodes()) / p
-
+            k = math.ceil(len(g.nodes()) / p)
             g_l, g_r = kernighan_lin_bisection(g, weight='rate')
 
             for partition in g_l, g_r:
@@ -84,6 +84,7 @@ class EmbedBalanced(EmbeddingSolver):
         compute_nodes = self.physical.compute_nodes
 
         for n_partitions_to_try in range(self._get_lb(), len(compute_nodes) + 1):
+
             # partitioning of virtual nodes in n_partitions_to_try partitions
             k_partition = get_partitions(self.virtual.g, n_partitions=n_partitions_to_try)
             # random subset of hosts of size n_partitions_to_try
@@ -133,12 +134,12 @@ class EmbedBalanced(EmbeddingSolver):
                     for (i, j) in self.physical.find_path(phy_u, phy_v):
 
                         # get an interface_name with enough available rate
-                        chosen_interface_id = next((interface for interface in self.physical.interfaces_ids(i, j) if
-                                                    self.physical.rate(i, j, interface) - rate_used[(i, j, interface)] >=
+                        chosen_interface_id = next((interface_id for interface_id in self.physical.interfaces_ids(i, j) if
+                                                    self.physical.rate(i, j, interface_id) - rate_used[(i, j, interface_id)] >=
                                                     self.virtual.req_rate(u, v)), None)
 
                         # if such an interface_name does not exist raise an Exception
-                        if not chosen_interface_id:
+                        if chosen_interface_id is None:
                             raise LinkCapacityError(f"Capacity exceeded on ({i},{j})")
 
                         # else update the rate

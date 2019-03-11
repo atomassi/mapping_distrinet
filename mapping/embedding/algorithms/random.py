@@ -22,15 +22,14 @@ class RandomSelection(EmbeddingSolver):
             memory_used = defaultdict(int)
 
             # random virtual node to physical node assignment
-            for virtual_node in self.virtual.nodes():
-                chosen_phy = my_random.choice(compute_nodes)
+            for virtual_node, phy_node in zip(self.virtual.nodes(),
+                                              my_random.choices(compute_nodes, k=self.virtual.number_of_nodes())):
+                res_node_mapping[virtual_node] = phy_node
+                cores_used[phy_node] += self.virtual.req_cores(virtual_node)
+                memory_used[phy_node] += self.virtual.req_memory(virtual_node)
 
-                res_node_mapping[virtual_node] = chosen_phy
-                cores_used[chosen_phy] += self.virtual.req_cores(virtual_node)
-                memory_used[chosen_phy] += self.virtual.req_memory(virtual_node)
-
-                if cores_used[chosen_phy] > self.physical.cores(chosen_phy) or memory_used[
-                    chosen_phy] > self.physical.memory(chosen_phy):
+                if cores_used[phy_node] > self.physical.cores(phy_node) or memory_used[
+                    phy_node] > self.physical.memory(phy_node):
                     continue
 
             res_link_mapping = {}

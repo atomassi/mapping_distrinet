@@ -71,8 +71,8 @@ class RandomSelection(EmbeddingSolver):
                 self.status = Solved
                 return Solved
 
-            except (NodeResourceError, LinkCapacityError) as err:
-                print(1)
+            except (NodeResourceError, LinkCapacityError):
+                pass
 
 
 if __name__ == "__main__":

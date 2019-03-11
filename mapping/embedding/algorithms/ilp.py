@@ -157,7 +157,8 @@ class EmbedILP(EmbeddingSolver):
             self.solution.lb = mapping_ILP.solverModel.ObjBound
          """
 
-    def _build_ILP_solution(self, virtual, physical, node_mapping, link_mapping):
+    @staticmethod
+    def _build_ILP_solution(virtual, physical, node_mapping, link_mapping):
         """Build an assignment of virtual nodes and virtual links starting from the values of the variables in the ILP
         """
         res_node_mapping = {}

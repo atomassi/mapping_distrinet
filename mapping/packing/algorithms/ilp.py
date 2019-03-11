@@ -7,7 +7,6 @@ from mapping.constants import *
 from mapping.utils import timeit
 from mapping.packing.solution import Solution
 
-
 class PackILP(PackingSolver):
 
     @staticmethod
@@ -30,13 +29,14 @@ class PackILP(PackingSolver):
     @timeit
     def solve(self, **kwargs):
 
-        solver_name = kwargs.get('_get_solver', 'cplex').lower()
+        solver_name = kwargs.get('solver', 'cplex').lower()
         timelimit = int(kwargs.get('timelimit', '3600'))
         self._log.info(f"called solve with the following parameters: {kwargs}")
         # UB on the number of instances of a certain type
         instances_UB = {vm_type: self._get_ub(vm_type) for vm_type in self.physical.vm_options}
         # instances on which a virtual node u may be placed
         feasible_instances = {u: self._get_feasible_instances(u) for u in self.virtual.nodes()}
+
         vm_used = pulp.LpVariable.dicts("vm_used",
                                         ((vm_type, vm_id) for vm_type in self.physical.vm_options for vm_id in
                                          range(instances_UB[vm_type])), cat=pulp.LpBinary)
@@ -45,7 +45,7 @@ class PackILP(PackingSolver):
                                               feasible_instances[u] for vm_id in range(instances_UB[vm_type])),
                                              cat=pulp.LpBinary)
         # problem definition
-        mapping_ILP = pulp.LpProblem("Mapping ILP", pulp.LpMinimize)
+        mapping_ILP = pulp.LpProblem("Packing ILP", pulp.LpMinimize)
 
         # objective function
         mapping_ILP += pulp.lpSum(
@@ -79,10 +79,9 @@ class PackILP(PackingSolver):
         if status == "Infeasible":
             self.status = Infeasible
             return Infeasible
-        elif (status == 'Not Solved' or status == "Undefined") and (
-                not obj_value or sum(
-            round(node_mapping[(u, vm_type, vm_id)].varValue) for (u, vm_type, vm_id) in
-            node_mapping) != self.virtual.number_of_nodes()):
+        elif (status == 'Not Solved' or status == "Undefined") and \
+             (not obj_value or sum( round(node_mapping[(u, vm_type, vm_id)].varValue)
+                                            for (u, vm_type, vm_id) in node_mapping) != self.virtual.number_of_nodes()):
             self.status = NotSolved
             return NotSolved
 
@@ -91,7 +90,8 @@ class PackILP(PackingSolver):
         self.status = Solved
         return Solved
 
-    def build_ILP_solution(self, node_mapping):
+    @staticmethod
+    def build_ILP_solution(node_mapping):
         """Build an assignment of virtual nodes and virtual links starting from the values of the variables in the ILP."""
 
         # dict: key = vm_type, value = list of assigned virtual nodes

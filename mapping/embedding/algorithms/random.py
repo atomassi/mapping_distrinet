@@ -13,7 +13,6 @@ class RandomSelection(EmbeddingSolver):
     def solve(self, **kwargs):
         seed = kwargs.get("seed", 66)
         my_random = random.Random(seed)
-        random.seed(seed)
 
         compute_nodes = sorted(list(self.physical.compute_nodes))
 

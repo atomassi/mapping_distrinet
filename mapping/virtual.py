@@ -119,8 +119,8 @@ class VirtualNetwork(object):
     def create_random_EC2(cls, n_nodes=100, seed=99):
         """create a random EC2 instance."""
         random.seed(seed)
-        range_cores = list(range(1, 11))
-        range_memory = list(range(512, 4096, 512))
+        range_cores = list(range(1, 9))
+        range_memory = [512] + list(range(1024, 8193, 1024))
 
         g = nx.Graph()
         g.add_nodes_from(

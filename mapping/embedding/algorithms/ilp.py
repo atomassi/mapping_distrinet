@@ -141,6 +141,14 @@ class EmbedILP(EmbeddingSolver):
             self.status = NotSolved
             return NotSolved
 
+        if solver_name == "cplex":
+            self.lb = solver.solverModel.solution.MIP.get_best_objective()
+        elif solver_name == "gurobi":
+            self.lb = mapping_ILP.solverModel.ObjBound
+        else:
+            self.lb = 0
+
+
         # build solution from variables values
         res_node_mapping, res_link_mapping = self._build_ILP_solution(self.virtual, self.physical, node_mapping, link_mapping)
         # if interfaces have been grouped, map to solution to the original network
@@ -148,14 +156,6 @@ class EmbedILP(EmbeddingSolver):
         self.status = Solved
         return Solved
 
-        """
-        if solver_name == "cplex":
-            print("lb cplex", _get_solver.solverModel.solution.MIP.get_best_objective())
-            self.solution.lb = _get_solver.solverModel.solution.MIP.get_best_objective()
-        elif solver_name == "gurobi":
-            print("lb gurobi", mapping_ILP.solverModel.ObjBound)
-            self.solution.lb = mapping_ILP.solverModel.ObjBound
-         """
 
     @staticmethod
     def _build_ILP_solution(virtual, physical, node_mapping, link_mapping):

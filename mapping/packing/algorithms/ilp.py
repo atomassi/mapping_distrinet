@@ -85,6 +85,14 @@ class PackILP(PackingSolver):
             self.status = NotSolved
             return NotSolved
 
+        if solver_name == "cplex":
+            self.lb = round(solver.solverModel.solution.MIP.get_best_objective(),2)
+        elif solver_name == "gurobi":
+            self.lb = round(mapping_ILP.solverModel.ObjBound,2)
+        else:
+            self.lb = 0
+
+
         assignment_ec2_instances = self.build_ILP_solution(node_mapping)
         self.solution = Solution.build_solution(self.virtual, self.physical, assignment_ec2_instances)
         self.status = Solved

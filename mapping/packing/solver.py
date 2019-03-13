@@ -20,6 +20,7 @@ class PackingSolver(object, metaclass=ABCMeta):
         self.solution = None
         self.status = NotSolved
         self._log = logging.getLogger(__name__)
+        self.lb = 0
 
     def _get_ub(self, vm_type):
         """Return an upper bound on the maximum number of EC2 instances of type vm_type needed to pack all the nodes"""
@@ -48,10 +49,10 @@ class PackingSolver(object, metaclass=ABCMeta):
     def _get_cheapest_feasible(self, cores, memory):
         """Given a demand in terms of number of cores and memory return the cheapest EC2 instance with enough resources.
         """
-        if (cores > self.physical.cores(self.vm_max_cores) or memory > self.physical.memory(self.vm_max_cores)) \
-                and (
-                cores > self.physical.cores(self.vm_max_memory) or memory > self.physical.memory(self.vm_max_memory)):
-            return None
+        #if (cores > self.physical.cores(self.vm_max_cores) or memory > self.physical.memory(self.vm_max_cores)) \
+        #        and (
+        #        cores > self.physical.cores(self.vm_max_memory) or memory > self.physical.memory(self.vm_max_memory)):
+        #    return None
 
         return min(((vm, self.physical.get_hourly_cost(vm)) for vm in self.physical.vm_options if
                     cores <= self.physical.cores(vm) and memory <= self.physical.memory(vm)),

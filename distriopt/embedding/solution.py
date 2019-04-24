@@ -1,7 +1,7 @@
 import logging
 from collections import defaultdict
 
-from mapping.constants import EmptySolutionError, AssignmentError, NodeResourceError, LinkCapacityError
+from distriopt.constants import EmptySolutionError, AssignmentError, NodeResourceError, LinkCapacityError
 
 
 class Path(object):

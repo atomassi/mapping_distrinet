@@ -1,10 +1,14 @@
-import mapping as mp
-from mapping.packing import CloudInstance
-from mapping.packing.algorithms import PackILP, PackGreedy
-from mapping import VirtualNetwork
-
+from distriopt.packing import CloudInstance
+from distriopt.packing.algorithms import PackGreedy
+from distriopt import VirtualNetwork
+from distriopt import SolutionStatus
+import logging.config
 
 if __name__ == '__main__':
+
+    logging.config.fileConfig("/Users/andrea/Documents/GitHub/mapping_distrinet/logging.conf")
+
+    logger = logging.getLogger()
 
     instance_ec2 = CloudInstance.get_ec2_instances()
 
@@ -13,9 +17,9 @@ if __name__ == '__main__':
     prob = PackGreedy(virtual, instance_ec2)
     time_solution, status = prob.solve()
 
-    if mp.SolutionStatus[status] == "Not Solved":
+    if SolutionStatus[status] == "Not Solved":
         print("Failed to solve")
-    elif mp.SolutionStatus[status] == "Unfeasible":
+    elif SolutionStatus[status] == "Unfeasible":
         print("Unfeasible Problem")
     else:
         pass
@@ -25,6 +29,3 @@ if __name__ == '__main__':
     print(prob.solution.nodes_assignment[1])
     print(prob.solution.vm_used)
     print(prob.solution)
-
-
-

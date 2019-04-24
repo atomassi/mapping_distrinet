@@ -7,9 +7,9 @@ from abc import abstractmethod, ABCMeta
 
 from mininet.topo import Topo
 
-from mapping.constants import *
-from mapping.virtual import VirtualNetwork
-from mapping.embedding import PhysicalNetwork
+from distriopt.constants import *
+from distriopt import VirtualNetwork
+from distriopt.embedding import PhysicalNetwork
 
 class EmbeddingSolver(object, metaclass=ABCMeta):
 

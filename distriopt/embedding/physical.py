@@ -11,7 +11,7 @@ class PhysicalNetwork(object):
     def __init__(self, g, grouped_interfaces=False):
         self._g = g
         self.grouped_interfaces = grouped_interfaces
-        self._log = logging.getLogger(__name__)
+        self._logger = logging.getLogger(__name__)
 
     @property
     def compute_nodes(self):

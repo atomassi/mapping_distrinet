@@ -2,10 +2,10 @@ from collections import defaultdict
 
 import pulp
 
-from mapping.packing import PackingSolver
-from mapping.constants import *
-from mapping.utils import timeit
-from mapping.packing.solution import Solution
+from distriopt.packing import PackingSolver
+from distriopt.constants import *
+from distriopt.utils import timeit
+from distriopt.packing.solution import Solution
 
 class PackILP(PackingSolver):
 

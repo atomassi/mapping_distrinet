@@ -11,7 +11,7 @@ class VirtualNetwork(object):
 
     def __init__(self, g):
         self._g = g
-        self._log = logging.getLogger(__name__)
+        self._logger = logging.getLogger(__name__)
 
     @property
     def g(self):

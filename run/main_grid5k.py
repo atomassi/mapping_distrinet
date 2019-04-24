@@ -1,10 +1,9 @@
 from mininet.topo import Topo
 
-import mapping as mp
-from mapping import VirtualNetwork
-from mapping.embedding import PhysicalNetwork
-from mapping.embedding.algorithms import EmbedBalanced, EmbedPartition, EmbedTwoPhases, EmbedILP
-
+from distriopt import VirtualNetwork
+from distriopt.embedding import PhysicalNetwork
+from distriopt.embedding.algorithms import EmbedTwoPhases
+from distriopt import SolutionStatus
 if __name__ == '__main__':
 
     """
@@ -19,10 +18,10 @@ if __name__ == '__main__':
     prob = EmbedTwoPhases(virtual_topo, physical_topo)
     time_solution, status = prob.solve()
 
-    if mp.SolutionStatus[status] == "Not Solved":
+    if SolutionStatus[status] == "Not Solved":
         print("Failed to solve")
         exit(1)
-    elif mp.SolutionStatus[status] == "Infeasible":
+    elif SolutionStatus[status] == "Infeasible":
         print("Unfeasible Problem")
         exit(1)
     else:
@@ -62,10 +61,10 @@ if __name__ == '__main__':
 
     prob = EmbedTwoPhases(virtual=virtual_topo, physical=phy_topo)
     time_solution, status = prob.solve()
-    if mp.SolutionStatus[status] == "Not Solved":
+    if SolutionStatus[status] == "Not Solved":
         print("Failed to solve")
         exit(1)
-    elif mp.SolutionStatus[status] == "Infeasible":
+    elif SolutionStatus[status] == "Infeasible":
         print("Unfeasible Problem")
         exit(1)
     else:
@@ -95,10 +94,10 @@ if __name__ == '__main__':
 
     prob = EmbedTwoPhases(virtual=virtual_topo, physical=physical_topo)
     time_solution, status = prob.solve()
-    if mp.SolutionStatus[status] == "Not Solved":
+    if SolutionStatus[status] == "Not Solved":
         print("Failed to solve")
         exit(1)
-    elif mp.SolutionStatus[status] == "Infeasible":
+    elif SolutionStatus[status] == "Infeasible":
         print("Unfeasible Problem")
         exit(1)
     else:

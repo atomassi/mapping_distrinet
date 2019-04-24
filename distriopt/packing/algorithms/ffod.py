@@ -5,10 +5,10 @@ First Fit Ordered Deviation heuristic from [2]
     "Multiple-type, two-dimensional bin packing problems: Applications and algorithms."
     Annals of Operations Research 50.1 (1994): 239-261.
 """
-from mapping.constants import *
-from mapping.packing import PackingSolver
-from mapping.packing.solution import Solution
-from mapping.utils import timeit
+from distriopt.constants import *
+from distriopt.packing import PackingSolver
+from distriopt.packing.solution import Solution
+from distriopt.utils import timeit
 
 
 class Bin(object):

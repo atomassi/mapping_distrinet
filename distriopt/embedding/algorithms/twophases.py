@@ -1,10 +1,10 @@
 import itertools
 from collections import defaultdict, Counter, deque
 
-from mapping.constants import *
-from mapping.embedding.solution import Solution
-from mapping.embedding import EmbeddingSolver
-from mapping.utils import timeit
+from distriopt.constants import *
+from distriopt.embedding.solution import Solution
+from distriopt.embedding import EmbeddingSolver
+from distriopt.utils import timeit
 
 
 class EmbedTwoPhases(EmbeddingSolver):
@@ -207,8 +207,8 @@ class EmbedTwoPhases(EmbeddingSolver):
 
 
 if __name__ == "__main__":
-    from mapping.embedding import PhysicalNetwork
-    from mapping.virtual import VirtualNetwork
+    from distriopt.embedding import PhysicalNetwork
+    from distriopt.mapping import VirtualNetwork
 
     physical_topo = PhysicalNetwork.grid5000("grisou", group_interfaces=True)
     virtual_topo = VirtualNetwork.create_random_nw(n_nodes=66)

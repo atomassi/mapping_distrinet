@@ -7,8 +7,8 @@ from functools import lru_cache
 
 from mininet.topo import Topo
 
-from mapping.constants import *
-from mapping.virtual import VirtualNetwork
+from distriopt.constants import *
+from distriopt import VirtualNetwork
 
 
 class PackingSolver(object, metaclass=ABCMeta):

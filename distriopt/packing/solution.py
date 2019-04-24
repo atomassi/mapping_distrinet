@@ -2,7 +2,7 @@ import itertools
 import logging
 from collections import Counter
 
-from mapping.constants import AssignmentError, NodeResourceError
+from distriopt.constants import AssignmentError, NodeResourceError
 
 
 class Solution(object):

@@ -53,8 +53,8 @@ class PackGreedy(PackingSolver):
                 vm_to_pack_u = self._get_cheapest_feasible(req_cores, req_memory)
                 for bin in reversed(bins):
                     vm_to_upgrade = self._get_cheapest_feasible(req_cores + bin.used_cores, req_memory + bin.used_memory)
-                    if vm_to_upgrade and self.physical.get_hourly_cost(vm_to_upgrade) < self.physical.get_hourly_cost(
-                            vm_to_pack_u) + self.physical.get_hourly_cost(bin.vm_type):
+                    if vm_to_upgrade and self.physical.hourly_cost(vm_to_upgrade) < self.physical.hourly_cost(
+                            vm_to_pack_u) + self.physical.hourly_cost(bin.vm_type):
                         bin.vm_type = vm_to_upgrade
                         bin.add_item(u, req_cores, req_memory)
                         break

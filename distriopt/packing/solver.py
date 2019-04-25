@@ -54,7 +54,7 @@ class PackingSolver(object, metaclass=ABCMeta):
         #        cores > self.physical.cores(self.vm_max_memory) or memory > self.physical.memory(self.vm_max_memory)):
         #    return None
 
-        return min(((vm, self.physical.get_hourly_cost(vm)) for vm in self.physical.vm_options if
+        return min(((vm, self.physical.hourly_cost(vm)) for vm in self.physical.vm_options if
                     cores <= self.physical.cores(vm) and memory <= self.physical.memory(vm)),
                    key=lambda x: x[1])[0]
 

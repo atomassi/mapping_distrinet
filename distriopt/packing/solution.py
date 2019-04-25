@@ -63,7 +63,7 @@ class Solution(object):
         nodes_assignment = {node: instance_id for instance_id in assignment_ec2_instances for node in
                             assignment_ec2_instances[instance_id]}
         vm_used = Counter(vm_type for vm_type, _ in set(nodes_assignment.values()))
-        cost = round(sum(physical.get_hourly_cost(vm_type) for vm_type, _ in assignment_ec2_instances), 2)
+        cost = round(sum(physical.hourly_cost(vm_type) for vm_type, _ in assignment_ec2_instances), 2)
         return cls(nodes_assignment, vm_used, cost)
 
     def __str__(self):

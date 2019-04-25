@@ -46,15 +46,15 @@ class FirstFitOrderedDeviation(PackingSolver):
 
             # cost of the cheapest new bin
             type_cheapest_new, cost_cheapest_new = min(
-                ((t, self.physical.get_hourly_cost(t) * max(req_cores / float(self.physical.cores(t)),
-                                                            req_memory / float(self.physical.memory(t))))
+                ((t, self.physical.hourly_cost(t) * max(req_cores / float(self.physical.cores(t)),
+                                                        req_memory / float(self.physical.memory(t))))
                  for t in self.physical.vm_options
                  if req_cores <= self.physical.cores(t) and req_memory <= self.physical.memory(t)), key=lambda x: x[1])
 
             try:
                 # cost cheapest already opened bin
                 cheapest_opened, cost_cheapest_opened = min(
-                    ((bin, self.physical.get_hourly_cost(bin.vm_type) *
+                    ((bin, self.physical.hourly_cost(bin.vm_type) *
                       (max(
                           req_cores / float(self.physical.cores(bin.vm_type)),
                           req_memory / float(self.physical.memory(bin.vm_type)) - bin.used_cores / float(

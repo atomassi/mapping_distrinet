@@ -14,6 +14,10 @@ class PhysicalNetwork(object):
         self._logger = logging.getLogger(__name__)
 
     @property
+    def g(self):
+        return self._g
+
+    @property
     def compute_nodes(self):
         """Physical nodes able to run virtual nodes."""
         if not hasattr(self, '_compute'):

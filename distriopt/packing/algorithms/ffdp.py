@@ -45,7 +45,7 @@ class FirstFitDecreasingPriority(PackingSolver):
                      sum(self.physical.memory(vm) for vm in self.physical.vm_options))}
 
         sorted_bin_types = sorted(self.physical.vm_options,
-                                  key=lambda x: 1 / float(self.physical.get_hourly_cost(x)) *
+                                  key=lambda x: 1 / float(self.physical.hourly_cost(x)) *
                                                 (alpha['cores'] * 1000 * self.physical.cores(x) + alpha[
                                                     'memory'] * self.physical.memory(x)), reverse=True)
 
@@ -56,7 +56,7 @@ class FirstFitDecreasingPriority(PackingSolver):
             try:
                 selected_bin = max((bin for bin in bins if bin.used_cores + req_cores <= self.physical.cores(
                     bin.vm_type) and bin.used_memory + req_memory <= self.physical.memory(bin.vm_type)),
-                                   key=lambda x: 1 / float(self.physical.get_hourly_cost(x.vm_type)) * (
+                                   key=lambda x: 1 / float(self.physical.hourly_cost(x.vm_type)) * (
                                            sum(alpha['cores'] * 1000 * self.virtual.req_cores(v) for v in
                                                x.items) + sum(
                                        alpha['memory'] * self.virtual.req_memory(v) for v in x.items)))

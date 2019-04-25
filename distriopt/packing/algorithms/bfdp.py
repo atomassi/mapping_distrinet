@@ -47,7 +47,7 @@ class BestFitDopProduct(PackingSolver):
             try:
                 selected_bin = max((bin for bin in bins if bin.used_cores + req_cores <= self.physical.cores(
                     bin.vm_type) and bin.used_memory + req_memory <= self.physical.memory(bin.vm_type)),
-                                   key=lambda x: 1 / float(self.physical.get_hourly_cost(x.vm_type)) *
+                                   key=lambda x: 1 / float(self.physical.hourly_cost(x.vm_type)) *
                                                  (1000 * req_cores * sum(self.virtual.req_cores(v) for v in x.items) +
                                                   req_memory * sum(self.virtual.req_memory(v) for v in x.items)))
                 # print(selected_bin.vm_type)
@@ -57,7 +57,7 @@ class BestFitDopProduct(PackingSolver):
             except ValueError:
                 bin_to_open = max((vm_type for vm_type in self.physical.vm_options if
                                    req_cores <= self.physical.cores(vm_type) and req_memory <= self.physical.memory(
-                                       vm_type)), key=lambda x: 1 / float(self.physical.get_hourly_cost(x)) *
+                                       vm_type)), key=lambda x: 1 / float(self.physical.hourly_cost(x)) *
                                                                 (req_memory * self.physical.memory(
                                                                     x) + 1000 * req_cores * self.physical.cores(x)))
                 if bin_to_open is None:

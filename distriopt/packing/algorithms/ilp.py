@@ -49,7 +49,7 @@ class PackILP(PackingSolver):
 
         # objective function
         mapping_ILP += pulp.lpSum(
-            (self.physical.get_hourly_cost(vm_type) * vm_used[(vm_type, vm_id)] for (vm_type, vm_id) in vm_used))
+            (self.physical.hourly_cost(vm_type) * vm_used[(vm_type, vm_id)] for (vm_type, vm_id) in vm_used))
 
         # Assignment of a virtual node to an EC2 instance
         for u in self.virtual.nodes():

@@ -19,5 +19,8 @@ install:
   - pip install -r requirements.txt
   - pip install pytest
 
+before_script:
+  - export PYTHONPATH=$PYTHONPATH:$(pwd)
+
 script:
   - pytest -v tests

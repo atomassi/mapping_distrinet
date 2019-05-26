@@ -40,7 +40,7 @@ class LinkMap(object):
         self.f_rate = f_rate
 
     def __str__(self):
-        return f"source: {self.s_node}, source_device: {self.s_device}, destination node: {self.d_node}," \
+        return f"source: {self.s_node}, source device: {self.s_device}, destination node: {self.d_node}," \
             f" destination device: {self.d_device}, rate to route: {self.f_rate}"
 
 
@@ -168,8 +168,12 @@ class Solution(object):
                 (i, j): {interface_id: physical.rate_associated_nw_interface(i, j, interface_id) for interface_id in
                          physical.associated_nw_interfaces(i, j)} for (i, j) in physical.edges()}
 
-            for (u, v) in virtual.sorted_edges():
+            for (u, v) in link_path:
+
                 phy_u, phy_v = node_mapping[u], node_mapping[v]
+                path = link_path[(u, v)]
+
+
                 # if virtual nodes are mapped on two different physical nodes
                 if phy_u != phy_v:
                     link_mapping[(u, v)] = []
@@ -177,7 +181,6 @@ class Solution(object):
                     paths[(u, v)] = []
                     paths[(v, u)] = []
 
-                    path = link_path[(u, v)]
 
                     u_source, _, u_dest = path[0]
                     v_source, _, v_dest = path[-1]
@@ -219,14 +222,14 @@ class Solution(object):
                                     mapped))
 
                         paths[(u, v)].append(
-                            Path([(s, physical.name_associated_nw_interface(s, t, interface_u_highest_rate), t,
-                                   physical.name_associated_nw_interface(t, s, interface_u_highest_rate)) for
+                            Path([(s, physical.name_associated_nw_interface(s, t, interface_u_highest_rate),
+                                   physical.name_associated_nw_interface(t, s, interface_u_highest_rate), t) for
                                   s, device_id, t in path],
                                  mapped))
 
                         paths[(v, u)].append(
-                            Path([(t, physical.name_associated_nw_interface(t, s, interface_v_highest_rate), s,
-                                   physical.name_associated_nw_interface(s, t, interface_v_highest_rate)) for
+                            Path([(t, physical.name_associated_nw_interface(t, s, interface_v_highest_rate),
+                                   physical.name_associated_nw_interface(s, t, interface_v_highest_rate), s) for
                                   s, device_id, t in
                                   path[::-1]],
                                  mapped))
@@ -239,13 +242,12 @@ class Solution(object):
         else:
 
             for (u, v), path in link_path.items():
-                paths[(u, v)] = [Path([(s, physical.interface_name(s, t, device_id), t,
-                                        physical.interface_name(t, s, device_id)) for s, device_id, t in path], 1)]
+                paths[(u, v)] = [Path([(s, physical.interface_name(s, t, device_id),
+                                        physical.interface_name(t, s, device_id), t) for s, device_id, t in path], 1)]
 
-                paths[(v, u)] = [Path([(t, physical.interface_name(t, s, device_id), s,
-                                        physical.interface_name(s, t, device_id)) for s, device_id, t in path[::-1]],
+                paths[(v, u)] = [Path([(t, physical.interface_name(t, s, device_id),
+                                        physical.interface_name(s, t, device_id), s) for s, device_id, t in path[::-1]],
                                       1)]
-
                 start_s, start_device_id, start_t = path[0]
                 end_s, end_device_id, end_t = path[-1]
 
@@ -254,6 +256,7 @@ class Solution(object):
                             physical.interface_name(end_t, end_s, end_device_id))]
                 link_mapping[(v, u)] = [LinkMap(end_t, physical.interface_name(end_t, end_s, end_device_id), start_s,
                                                 physical.interface_name(start_s, start_t, start_device_id))]
+
         return cls(node_mapping, link_mapping, paths)
 
     def __str__(self):

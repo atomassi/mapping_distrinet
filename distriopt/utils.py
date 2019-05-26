@@ -1,10 +1,14 @@
+import functools
 import time
 
 
-def timeit(f):
+def timeit(func):
+    """Decorator to measure the time spent by a function."""
+
+    @functools.wraps(func)
     def timed(*args, **kwargs):
         start = time.time()
-        result = f(*args, **kwargs)
+        result = func(*args, **kwargs)
         end = time.time()
         return end - start, result
 
@@ -12,13 +16,15 @@ def timeit(f):
 
 
 class CachedFunction:
-    def __init__(self, f):
-        self.f = f
+    """Cached Function - useful to store intermediate results."""
+
+    def __init__(self, func):
+        self.func = func
         self._cache = {}
 
     def __call__(self, *args):
         try:
             return self._cache[args]
         except KeyError:
-            res = self._cache[args] = self.f(*args)
+            res = self._cache[args] = self.func(*args)
             return res

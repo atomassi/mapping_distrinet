@@ -55,18 +55,6 @@ def test_logical_fat_tree():
         assert virtual.req_rate(i, j) == 200
 
 
-def test_mini_phy_nw():
-    """Test the small example network"""
-    from distriopt.embedding import PhysicalNetwork
-    physical = PhysicalNetwork.crete_test_nw()
-    assert physical.number_of_nodes() == 7
-    assert len(physical.compute_nodes) == 4
-    assert len(physical.edges()) == 7
-    for node in physical.compute_nodes:
-        assert physical.cores(node) == 10
-        assert physical.memory(node) == 64000
-    for i, j, device in physical.edges(keys=True):
-        assert physical.rate(i, j, device) == 10000
 
 
 def test_logical_random():

@@ -81,14 +81,15 @@ class EmbedBalanced(EmbeddingSolver):
            on a subset of the physical nodes.
         """
 
-        compute_nodes = self.physical.compute_nodes
+        sorted_compute_nodes = sorted(self.physical.compute_nodes,key=lambda x: self.physical.cores(x) * 1000 + self.physical.memory(x),reverse=True)
 
-        for n_partitions_to_try in range(self._get_lb(), len(compute_nodes) + 1):
+        for n_partitions_to_try in range(self._get_lb(), len(sorted_compute_nodes) + 1):
 
             # partitioning of virtual nodes in n_partitions_to_try partitions
             k_partition = get_partitions(self.virtual.g, n_partitions=n_partitions_to_try)
-            # random subset of hosts of size n_partitions_to_try
-            chosen_physical = random.sample(compute_nodes, k=n_partitions_to_try)
+
+            # subset of hosts of size n_partitions_to_try
+            chosen_physical = sorted_compute_nodes[:n_partitions_to_try]
 
             #
             # check if the partitioning is a feasible solution
@@ -129,32 +130,21 @@ class EmbedBalanced(EmbeddingSolver):
                     # physical nodes on which u and v have been placed
                     phy_u, phy_v = res_node_mapping[u], res_node_mapping[v]
 
-                    next_node = phy_u
                     # for each link in the physical path
-                    for (i, j) in self.physical.find_path(phy_u, phy_v):
-
-                        # get an interface_name with enough available rate
-                        chosen_interface_id = next((interface_id for interface_id in self.physical.interfaces_ids(i, j) if
-                                                    self.physical.rate(i, j, interface_id) - rate_used[(i, j, interface_id)] >=
-                                                    self.virtual.req_rate(u, v)), None)
-
-                        # if such an interface_name does not exist raise an Exception
-                        if chosen_interface_id is None:
-                            raise LinkCapacityError(f"Capacity exceeded on ({i},{j})")
+                    for (i, j, device_id) in self.physical.find_path(phy_u, phy_v,req_rate=self.virtual.req_rate(u,v),used_rate=rate_used):
 
                         # else update the rate
-                        rate_used[(i, j, chosen_interface_id)] += self.virtual.req_rate(u, v)
+                        rate_used[(i, j, device_id)] += self.virtual.req_rate(u, v)
 
-                        res_link_mapping[(u, v)].append(
-                            (i, chosen_interface_id, j) if i == next_node else (j, chosen_interface_id, i))
-                        next_node = j if i == next_node else i
+                        res_link_mapping[(u, v)].append((i, device_id, j))
+
 
                 # build solution from the output
                 self.solution = Solution.build_solution(self.virtual, self.physical, res_node_mapping, res_link_mapping)
                 self.status = Solved
                 return Solved
 
-            except (NodeResourceError, LinkCapacityError):
+            except (NodeResourceError, NoPathFoundError):
                 # unfeasible, increase the number of partitions to be used
                 pass
         else:
@@ -163,11 +153,13 @@ class EmbedBalanced(EmbeddingSolver):
 
 
 
+
+
 if __name__ == "__main__":
     from distriopt.embedding import PhysicalNetwork
-    from distriopt.mapping import VirtualNetwork
+    from distriopt import VirtualNetwork
 
-    physical_topo = PhysicalNetwork.grid5000("grisou", group_interfaces=True)
+    physical_topo = PhysicalNetwork.from_files("grisou", group_interfaces=True)
     virtual_topo = VirtualNetwork.create_random_nw(n_nodes=66)
     # virtual_topo = VirtualNetwork.create_fat_tree(k=4)
 

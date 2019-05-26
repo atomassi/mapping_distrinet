@@ -2,3 +2,5 @@ PuLP>=1.6.9
 matplotlib>=2.2.3
 networkx>=2.2
 git+https://github.com/mininet/mininet.git
+pytest
+coverage

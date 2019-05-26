@@ -2,6 +2,7 @@ import json
 import logging
 import os
 
+from distriopt.constants import NoPathFoundError
 import networkx as nx
 
 
@@ -44,6 +45,11 @@ class PhysicalNetwork(object):
         """Return the maximum allowed rate for a physical link."""
         return self._g[i][j][device_id]['rate']
 
+    def rate_out(self, i):
+        """Return the total rate supported by the node interface(s)."""
+        return sum(self.rate(i, j, device_id) for j in self.neighbors(i)
+                                for device_id in self.interfaces_ids(i, j))
+
     def interfaces_ids(self, i, j):
         """Return the network interfaces identifiers for a link (i,j)."""
         return self._g[i][j]
@@ -59,7 +65,7 @@ class PhysicalNetwork(object):
     def associated_nw_interfaces(self, i, j):
         """Return the real interfaces associated with the link."""
         if not self.grouped_interfaces:
-            raise ValueError("Defined only when interfaces are grouped")
+            raise ValueError("Defined only when interfaces are grouped.")
         return self._g[i][j]['dummy']['associated_devices']
 
     def rate_associated_nw_interface(self, i, j, device_id):
@@ -77,41 +83,42 @@ class PhysicalNetwork(object):
     def number_of_nodes(self):
         return self._g.number_of_nodes()
 
-    def find_path(self, source, target):
+    def find_path(self, source, target, req_rate=0, used_rate={}):
         """Given the physical network, return the path between the source and the target nodes."""
 
-        if not hasattr(self, '_computed_paths'):
-            self._computed_paths = {}
-
-        # if the path has already been computed
-        if (source, target) in self._computed_paths:
-            return self._computed_paths[(source, target)]
-        # check if the path from the destination to the source already exists
-        elif (target, source) in self._computed_paths:
-            res = self._computed_paths[(source, target)] = self._computed_paths[(target, source)][::-1]
-            return res
-        # otherwise compute a path and cache it
         path = [source]
+        interfaces_used = [None]
+
         stack = [(u for u in self.neighbors(source))]
+
         while stack:
-            children = stack[-1]
-            child = next(children, None)
-            if child is None:
+            prev = path[-1]
+            curr = next(stack[-1], None)
+            # if generator has not been exhausted
+            # take the first device which can support the requested rate
+            if curr is None:
                 stack.pop()
                 path.pop()
+                interfaces_used.pop()
             else:
-                if child == target:
-                    path.append(target)
-                    # return a path as a list of edges
-                    res = self._computed_paths[(source, target)] = [
-                        (path[i], path[i + 1]) if path[i] < path[i + 1] else (path[i + 1], path[i]) for i in
-                        range(len(path) - 1)]
-                    return res
-                elif child not in path:
-                    path.append(child)
-                    stack.append((u for u in self.neighbors(child)))
+                device_id = next((device_id for device_id in self.interfaces_ids(prev, curr) if
+                                  self.rate(prev, curr, device_id) >= req_rate +
+                                  used_rate.get((prev, curr, device_id), 0) +
+                                  used_rate.get((curr, prev, device_id), 0)), None)
+
+                if device_id is not None:
+                    if curr == target:
+                        interfaces_used.append(device_id)
+                        path.append(target)
+                        # return a path as a list (i, j, device_id)
+                        res = [(path[i],path[i+1], device_id) for (i, device_id) in zip(range(len(path) - 1), interfaces_used[1:])]
+                        return res
+                    elif curr not in path:
+                        interfaces_used.append(device_id)
+                        path.append(curr)
+                        stack.append((u for u in self.neighbors(curr)))
         else:
-            raise ValueError("No path exists")
+            raise NoPathFoundError
 
     @classmethod
     def from_mininet(cls, mininet_topo, n_interfaces_to_consider=float('inf'), group_interfaces=False):
@@ -193,39 +200,35 @@ class PhysicalNetwork(object):
 
         return cls(nx.freeze(g), group_interfaces)
 
+
+
     @classmethod
-    def crete_test_nw(cls):
+    def create_test_nw(cls, cores=4, memory=4000, rate=10000, group_interfaces=False):
         """Create a test physical network to run tests.
 
-                         s3
+                         s1
                        /    \
-                      s1     s2
-                     /  \   /  \
-                    h1  h2 h3  h4
+                      h1     h2
 
         """
+
         # Nodes
-
         g = nx.MultiGraph()
-        g.add_node("h1", cores=10, memory=64000)
-        g.add_node("h2", cores=10, memory=64000)
-        g.add_node("h3", cores=10, memory=64000)
-        g.add_node("h4", cores=10, memory=64000)
-
+        g.add_node("h1", cores=cores, memory=memory)
+        g.add_node("h2", cores=cores, memory=memory)
         g.add_node("s1", cores=0, memory=0)
-        g.add_node("s2", cores=0, memory=0)
-        g.add_node("s3", cores=0, memory=0)
 
         # Links
-        g.add_edge("h1", "s1", devices={"h1": "eth0", "s1": "eth1"}, rate=10000)
-        g.add_edge("h1", "s1", devices={"h1": "eth66", "s1": "eth67"}, rate=10000)
 
-        g.add_edge("h2", "s1", devices={"h2": "eth2", "s1": "eth3"}, rate=10000)
+        if not group_interfaces:
+            g.add_edge("h1", "s1", devices={"h1": "eth0", "s1": "eth0"}, rate=rate)
+            g.add_edge("h1", "s1", devices={"h1": "eth1", "s1": "eth1"}, rate=rate)
+            g.add_edge("h2", "s1", devices={"h2": "eth0", "s1": "eth2"}, rate=rate)
+            g.add_edge("h2", "s1", devices={"h2": "eth1", "s1": "eth3"}, rate=rate)
 
-        g.add_edge("h3", "s2", devices={"h3": "eth4", "s2": "eth5"}, rate=10000)
-        g.add_edge("h4", "s2", devices={"h4": "eth6", "s2": "eth7"}, rate=10000)
+        else:
+            g.add_edge("h1", "s1", key='dummy', associated_devices={0:{"h1":"eth0","s1":"eth0",'rate': rate},1:{"h1":"eth1","s1":"eth1",'rate': rate}}, rate=rate*2)
+            g.add_edge("h2", "s1", key='dummy', associated_devices={0:{"h2":"eth0","s1":"eth2",'rate': rate},1:{"h2":"eth1","s1":"eth2",'rate': rate}}, rate=rate*2)
 
-        g.add_edge("s1", "s3", devices={"s1": "eth8", "s3": "eth9"}, rate=10000)
-        g.add_edge("s2", "s3", devices={"s2": "eth10", "s3": "eth11"}, rate=10000)
 
-        return cls(nx.freeze(g))
+        return cls(nx.freeze(g), grouped_interfaces=group_interfaces)

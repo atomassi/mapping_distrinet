@@ -138,6 +138,17 @@ class VirtualNetwork(object):
             g.nodes[u]['memory'] = req_memory
         return cls(nx.freeze(g))
 
+
+    @classmethod
+    def create_test_nw(cls, req_cores=3, req_memory=3000, req_rate=15000):
+        """create a random network."""
+        g = nx.Graph()
+        g.add_node('Node_0',cores=req_cores,memory=req_memory)
+        g.add_node('Node_1',cores=req_cores,memory=req_memory)
+        g.add_edge('Node_0','Node_1',rate=req_rate)
+
+        return cls(nx.freeze(g))
+
     @classmethod
     def from_file(cls, filename):
         """Read the graph from a file."""

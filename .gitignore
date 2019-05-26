@@ -1,4 +1,7 @@
-
+venv/
+run/
+docs/html
+docs/latex
 *.pyc
 *.log
 log/.DS_Store
@@ -7,3 +10,5 @@ log/.DS_Store
 *.iml
 *.pdf
 *.pickle
+*.conf
+

@@ -51,13 +51,13 @@ class EmbedPartition(EmbeddingSolver):
         """Heuristic based on computing a k-balanced partitions of virtual nodes for then mapping the partition
            on a subset of the physical nodes.
         """
+        sorted_compute_nodes = sorted(self.physical.compute_nodes,key=lambda x: self.physical.cores(x) * 1000 + self.physical.memory(x),reverse=True)
 
         for n_partitions_to_try in range(self._get_lb(), len(self.physical.compute_nodes) + 1):
             # partitioning of virtual nodes in n_partitions_to_try partitions
             k_partition = get_partitions(self.virtual, n_partitions=n_partitions_to_try)
             # random subset of hosts of size n_partitions_to_try
-            chosen_physical = random.sample(self.physical.compute_nodes, k=n_partitions_to_try)
-
+            chosen_physical = sorted_compute_nodes[:n_partitions_to_try]
             #
             # check if the partitioning is a feasible solution
             #
@@ -97,29 +97,17 @@ class EmbedPartition(EmbeddingSolver):
                     # physical nodes on which u and v have been placed
                     phy_u, phy_v = res_node_mapping[u], res_node_mapping[v]
 
-                    next_node = phy_u
                     # for each link in the physical path
-                    for (i, j) in self.physical.find_path(phy_u, phy_v):
-                        # get an interface_name with enough available rate
-                        chosen_interface_id = next((interface for interface in self.physical.interfaces_ids(i, j) if
-                                                    self.physical.rate(i, j, interface) - rate_used[
-                                                     (i, j, interface)] >= self.virtual.req_rate(u, v)), None)
-                        # if such an interface_name does not exist raise an Exception
-                        if chosen_interface_id is None:
-                            raise LinkCapacityError(f"Capacity exceeded on ({i},{j})")
-                        # else update the rate
-                        rate_used[(i, j, chosen_interface_id)] += self.virtual.req_rate(u, v)
-
-                        res_link_mapping[(u, v)].append(
-                            (i, chosen_interface_id, j) if i == next_node else (j, chosen_interface_id, i))
-                        next_node = j if i == next_node else i
+                    for (i, j, device_id) in self.physical.find_path(phy_u, phy_v,req_rate=self.virtual.req_rate(u,v), used_rate=rate_used):
+                        rate_used[(i, j, device_id)] += self.virtual.req_rate(u, v)
+                        res_link_mapping[(u, v)].append((i, device_id, j))
 
                 # build solution from the output
-                self.solution =  Solution.build_solution(self.virtual, self.physical, res_node_mapping, res_link_mapping)
+                self.solution = Solution.build_solution(self.virtual, self.physical, res_node_mapping, res_link_mapping)
                 self.status = Solved
                 return Solved
 
-            except (NodeResourceError, LinkCapacityError) as err:
+            except (NodeResourceError, NoPathFoundError) as err:
                 # unfeasible, increase the number of partitions to be used
                 pass
         else:
@@ -128,9 +116,30 @@ class EmbedPartition(EmbeddingSolver):
 
 
 
+
 if __name__ == "__main__":
     from distriopt.embedding import PhysicalNetwork
-    from distriopt.mapping import VirtualNetwork
+    from distriopt import VirtualNetwork
+
+    import networkx as nx
+
+    g = nx.Graph()
+    g.add_node('Node_0', cores=3, memory=3000)
+    g.add_node('Node_1', cores=3, memory=3000)
+    g.add_edge('Node_0', 'Node_1', rate=20000)
+
+    virtual_topo = VirtualNetwork(g)
+
+    # unfeasible, not enough rate
+    physical_topo = PhysicalNetwork.create_test_nw(cores=4, memory=4000, rate=10000, group_interfaces=False)
+
+    prob = EmbedPartition(virtual_topo, physical_topo)
+    time_solution, status = prob.solve()
+    print(status)
+
+    exit(1)
+
+
 
     physical_topo = PhysicalNetwork.from_files("grisou", group_interfaces=False)
     virtual_topo = VirtualNetwork.create_random_nw(n_nodes=66)

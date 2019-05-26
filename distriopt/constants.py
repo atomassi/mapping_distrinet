@@ -27,6 +27,10 @@ class AssignmentError(Exception):
     """Raised if some resource has not been assigned."""
 
 
+class NoPathFoundError(Exception):
+    """Raised a path has not been found."""
+
+
 # solution status
 NotSolved = 0
 Solved = 1

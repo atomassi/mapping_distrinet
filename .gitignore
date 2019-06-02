@@ -1,5 +1,6 @@
 venv/
 run/
+build/
 docs/html
 docs/latex
 *.pyc

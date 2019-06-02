@@ -4,16 +4,16 @@ import numpy as np
 from networkx.algorithms.community.kernighan_lin import kernighan_lin_bisection
 
 from distriopt.constants import *
-from distriopt.embedding import EmbeddingSolver
+from distriopt.embedding import EmbedSolver
 from distriopt.embedding.solution import Solution
-from distriopt.utils import timeit
+from distriopt.decorators import timeit
 
 
 class Node(object):
     """Model a Node.
 
     Each node represents a partition.
-    The left and right child, if not None, partition the nodes in 2 sets.
+    The left and right child, if not None, partition the nodes into 2 sets.
     Each node also contains a reference to the father.
     """
 
@@ -160,8 +160,6 @@ def partition(virtual, algo="min_cut"):
             partitions.append(p)
         else:
             if algo == 'min_cut':
-                # p1, p2 = kernighan_lin_bisection(virtual.g.subgraph(p), weight='rate')
-
                 p1, p2 = min_cut(virtual.g.subgraph(p))
             elif algo == 'bisection':
                 p1, p2 = kernighan_lin_bisection(virtual.g.subgraph(p), weight='rate')
@@ -190,7 +188,7 @@ def partition(virtual, algo="min_cut"):
     return t
 
 
-class EmbedGreedy(EmbeddingSolver):
+class EmbedGreedy(EmbedSolver):
 
     @timeit
     def solve(self, **kwargs):
@@ -206,7 +204,7 @@ class EmbedGreedy(EmbeddingSolver):
                                           x) + self.physical.rate_out(x),
                                       reverse=True)
 
-        for n_nodes_to_consider in range(self._get_lb(), len(sorted_compute_nodes) + 1):
+        for n_nodes_to_consider in range(self.lower_bound(), len(sorted_compute_nodes) + 1):
 
             nodes_to_consider = sorted_compute_nodes[:n_nodes_to_consider]
 

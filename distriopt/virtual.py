@@ -1,3 +1,7 @@
+"""
+Model a virtual network based on the networkx module.
+"""
+
 import itertools
 import logging
 import random

@@ -36,7 +36,20 @@ NotSolved = 0
 Solved = 1
 Infeasible = -1
 
-SolutionStatus = {NotSolved: "Not Solved",
-                  Solved: "Solved",
-                  Infeasible: "Infeasible"
-                  }
+SolutionStatus = {
+    NotSolved: "Not Solved",
+    Solved: "Solved",
+    Infeasible: "Infeasible"
+    }
+
+""" 
+from enum import Enum
+
+class SolutionStatus(Enum):
+    infeasible = -1
+    not_solved = 0
+    solved = 1
+    
+    def __str__(self):
+        return self.name
+"""

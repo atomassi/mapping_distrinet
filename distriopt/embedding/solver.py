@@ -1,5 +1,5 @@
 """
-Base class
+Base class.
 """
 import logging
 import math
@@ -7,23 +7,23 @@ from abc import abstractmethod, ABCMeta
 
 from mininet.topo import Topo
 
-from distriopt.constants import *
 from distriopt import VirtualNetwork
+from distriopt.constants import *
 from distriopt.embedding import PhysicalNetwork
 
-class EmbeddingSolver(object, metaclass=ABCMeta):
+
+class EmbedSolver(object, metaclass=ABCMeta):
 
     def __init__(self, virtual, physical):
         """"""
         self.virtual = VirtualNetwork.from_mininet(virtual) if isinstance(virtual, Topo) else virtual
-        self.physical = PhysicalNetwork.from_mininet(physical) if isinstance(physical,Topo) else physical
+        self.physical = PhysicalNetwork.from_mininet(physical) if isinstance(physical, Topo) else physical
         self.solution = None
         self.status = NotSolved
         self._log = logging.getLogger(__name__)
 
-    def _get_lb(self):
+    def lower_bound(self):
         """Return a lower bound on the minimum number of physical machines needed to map all the virtual nodes."""
-
         tot_req_cores = tot_req_memory = 0
         for virtual_node in self.virtual.nodes():
             # the total number of cores to be mapped
@@ -45,4 +45,4 @@ class EmbeddingSolver(object, metaclass=ABCMeta):
 
     @abstractmethod
     def solve(self, **kwargs):
-        """This method must be implemented"""
+        """This method must be implemented."""

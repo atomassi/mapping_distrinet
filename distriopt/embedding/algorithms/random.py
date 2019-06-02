@@ -2,12 +2,12 @@ import random
 from collections import defaultdict
 
 from distriopt.constants import *
-from distriopt.embedding import EmbeddingSolver
+from distriopt.embedding import EmbedSolver
 from distriopt.embedding.solution import Solution
-from distriopt.utils import timeit
+from distriopt.decorators import timeit
 
 
-class RandomSelection(EmbeddingSolver):
+class RandomSelection(EmbedSolver):
 
     @timeit
     def solve(self, **kwargs):

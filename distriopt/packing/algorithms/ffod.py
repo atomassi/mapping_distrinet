@@ -8,7 +8,7 @@ First Fit Ordered Deviation heuristic from [2]
 from distriopt.constants import *
 from distriopt.packing import PackingSolver
 from distriopt.packing.solution import Solution
-from distriopt.utils import timeit
+from distriopt.decorators import timeit
 
 
 class Bin(object):

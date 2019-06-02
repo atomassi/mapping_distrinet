@@ -3,8 +3,8 @@ from collections import defaultdict
 
 from distriopt.constants import *
 from distriopt.embedding.solution import Solution
-from distriopt.embedding import EmbeddingSolver
-from distriopt.utils import timeit
+from distriopt.embedding import EmbedSolver
+from distriopt.decorators import timeit
 
 
 def get_partitions(virtual, n_partitions, n_swaps=100):
@@ -44,7 +44,7 @@ def get_partitions(virtual, n_partitions, n_swaps=100):
     return partitions.values()
 
 
-class EmbedPartition(EmbeddingSolver):
+class EmbedPartition(EmbedSolver):
 
     @timeit
     def solve(self, **kwargs):
@@ -53,7 +53,7 @@ class EmbedPartition(EmbeddingSolver):
         """
         sorted_compute_nodes = sorted(self.physical.compute_nodes,key=lambda x: self.physical.cores(x) * 1000 + self.physical.memory(x),reverse=True)
 
-        for n_partitions_to_try in range(self._get_lb(), len(self.physical.compute_nodes) + 1):
+        for n_partitions_to_try in range(self.lower_bound(), len(self.physical.compute_nodes) + 1):
             # partitioning of virtual nodes in n_partitions_to_try partitions
             k_partition = get_partitions(self.virtual, n_partitions=n_partitions_to_try)
             # random subset of hosts of size n_partitions_to_try

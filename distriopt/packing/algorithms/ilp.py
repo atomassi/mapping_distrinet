@@ -4,7 +4,7 @@ import pulp
 
 from distriopt.packing import PackingSolver
 from distriopt.constants import *
-from distriopt.utils import timeit
+from distriopt.decorators import timeit
 from distriopt.packing.solution import Solution
 
 class PackILP(PackingSolver):

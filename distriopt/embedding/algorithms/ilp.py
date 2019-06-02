@@ -2,13 +2,13 @@ import itertools
 
 import pulp
 
-from distriopt.embedding import EmbeddingSolver
+from distriopt.embedding import EmbedSolver
 from distriopt.constants import *
 from distriopt.embedding.solution import Solution
-from distriopt.utils import timeit
+from distriopt.decorators import timeit
 
 
-class EmbedILP(EmbeddingSolver):
+class EmbedILP(EmbedSolver):
 
     @staticmethod
     def _get_solver(solver_name, timelimit):
@@ -22,8 +22,8 @@ class EmbedILP(EmbeddingSolver):
             return pulp.COIN(msg=0, maxSeconds=timelimit)
         elif solver_name == 'scip':
             return pulp.SCIP(msg=0, options=['-c', f'set limits time {timelimit}'])
-        else:
-            raise ValueError("Invalid Solver Name")
+
+        raise ValueError("Invalid Solver Name")
 
     @timeit
     def solve(self, **kwargs):
@@ -69,10 +69,10 @@ class EmbedILP(EmbeddingSolver):
                     mapping_ILP += usage_phy_machine[i] >= node_mapping[(u, i)]
         # Case 3: minimize used bandwidth
         elif obj == 'min_bw':
-            mapping_ILP += pulp.lpSum(virtual.req_rate(u, v) * (
+            mapping_ILP += pulp.lpSum(self.virtual.req_rate(u, v) * (
                     link_mapping[(u, v, i, j, device_id)] + link_mapping[(u, v, j, i, device_id)])
-                                      for (u, v) in virtual.sorted_edges() for (i, j, device_id) in
-                                      physical.edges(keys=True))
+                                      for (u, v) in self.virtual.sorted_edges() for (i, j, device_id) in
+                                      self.physical.edges(keys=True))
 
         # Assignment of virtual nodes to physical nodes
         for u in self.virtual.nodes():
@@ -190,18 +190,3 @@ class EmbedILP(EmbeddingSolver):
 
                 res_link_mapping[(u, v)] = [source] + inter + [dest]
         return res_node_mapping, res_link_mapping
-
-
-
-if __name__ == "__main__":
-    from distriopt.embedding import PhysicalNetwork
-    from distriopt.mapping import VirtualNetwork
-
-    physical_topo = PhysicalNetwork.grid5000("grisou", group_interfaces=True)
-    virtual_topo = VirtualNetwork.create_random_nw(n_nodes=6)
-    # virtual_topo = VirtualNetwork.create_fat_tree(k=4)
-
-    embed = EmbedILP(virtual_topo, physical_topo)
-    time_solution = embed.solve()
-    print(time_solution, embed.status)
-    print(embed.solution)

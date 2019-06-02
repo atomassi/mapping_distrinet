@@ -1,0 +1,11 @@
+graft distriopt
+graft docs
+graft tests
+include AUTHORS.rst
+include INSTALL.rst
+include CONTRIBUTING.rst
+include CHANGELOG.rst
+include LICENSE
+include MANIFEST.in
+global-exclude __pycache__
+global-exclude *.py[co]

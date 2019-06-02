@@ -1,2 +1,2 @@
 from .physical import PhysicalNetwork
-from .solver import EmbeddingSolver
+from .solver import EmbedSolver

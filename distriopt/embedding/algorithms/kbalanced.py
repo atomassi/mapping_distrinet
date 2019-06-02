@@ -6,8 +6,8 @@ from networkx.algorithms.community.kernighan_lin import kernighan_lin_bisection
 
 from distriopt.constants import *
 from distriopt.embedding.solution import Solution
-from distriopt.embedding import EmbeddingSolver
-from distriopt.utils import timeit
+from distriopt.embedding import EmbedSolver
+from distriopt.decorators import timeit
 
 class GetPartitions(object):
     """Callable object."""
@@ -73,7 +73,7 @@ class GetPartitions(object):
 get_partitions = GetPartitions()
 
 
-class EmbedBalanced(EmbeddingSolver):
+class EmbedBalanced(EmbedSolver):
 
     @timeit
     def solve(self, **kwargs):
@@ -83,7 +83,7 @@ class EmbedBalanced(EmbeddingSolver):
 
         sorted_compute_nodes = sorted(self.physical.compute_nodes,key=lambda x: self.physical.cores(x) * 1000 + self.physical.memory(x),reverse=True)
 
-        for n_partitions_to_try in range(self._get_lb(), len(sorted_compute_nodes) + 1):
+        for n_partitions_to_try in range(self.lower_bound(), len(sorted_compute_nodes) + 1):
 
             # partitioning of virtual nodes in n_partitions_to_try partitions
             k_partition = get_partitions(self.virtual.g, n_partitions=n_partitions_to_try)

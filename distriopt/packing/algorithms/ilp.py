@@ -13,7 +13,7 @@ class PackILP(PackingSolver):
     @staticmethod
     def _get_solver(solver_name, timelimit):
         if solver_name == 'cplex':
-            return pulp.CPLEX(msg=0, timeLimit=timelimit)
+            return pulp.CPLEX_PY(msg=0, timeLimit=timelimit)
         elif solver_name == 'gurobi':
             return pulp.GUROBI(msg=0, timeLimit=timelimit)
         elif solver_name == "glpk":
@@ -28,7 +28,7 @@ class PackILP(PackingSolver):
     @timeit
     def solve(self, **kwargs):
 
-        solver_name = kwargs.get('solver', 'cplex').lower()
+        solver_name = kwargs.get('solver', 'glpk').lower()
         timelimit = int(kwargs.get('timelimit', '3600'))
         self._log.info(f"called solve with the following parameters: {kwargs}")
         # UB on the number of instances of a certain type

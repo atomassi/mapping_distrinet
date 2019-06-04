@@ -38,7 +38,7 @@ setup(
     author='atomassi',
     author_email='andrea.tomassilli@inria.fr',
     description='Various algorithms for the problem of mapping a virtual network onto the substrate network or onto a cloud network.',
-    long_description=read('README.rst'),
+    long_description=read('README.md'),
     classifiers=[
         "Programming Language :: Python",
         'Programming Language :: Python :: 3.6',
@@ -49,5 +49,10 @@ setup(
         'networkx',
         'mininet @ git+https://git@github.com/mininet/mininet@master'
     ],
+    package_data={
+        'distriopt.embedding.instances': ['*.json'],
+        'distriopt.packing.instances': ['*.json']
+   },
+    include_package_data=True,
     zip_safe=True
 )

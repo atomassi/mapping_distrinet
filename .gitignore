@@ -1,8 +1,10 @@
 venv/
 run/
 build/
+.tox/
 docs/html
 docs/latex
+*.egg-info
 *.pyc
 *.log
 log/.DS_Store

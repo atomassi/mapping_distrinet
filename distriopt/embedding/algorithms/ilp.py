@@ -13,7 +13,7 @@ class EmbedILP(EmbedSolver):
     @staticmethod
     def _get_solver(solver_name, timelimit):
         if solver_name == 'cplex':
-            return pulp.CPLEX(msg=0, timeLimit=timelimit)
+            return pulp.CPLEX_PY(msg=0, timeLimit=timelimit)
         elif solver_name == 'gurobi':
             return pulp.GUROBI(msg=0, timeLimit=timelimit)
         elif solver_name == "glpk":
@@ -29,7 +29,7 @@ class EmbedILP(EmbedSolver):
     def solve(self, **kwargs):
 
         obj = kwargs.get('obj', 'min_n_machines')
-        solver_name = kwargs.get('_get_solver', 'cplex').lower()
+        solver_name = kwargs.get('_get_solver', 'glpk').lower()
         timelimit = int(kwargs.get('timelimit', '3600'))
 
         if __debug__: self._log.debug(f"called ILP _get_solver with the following parameters: {kwargs}")

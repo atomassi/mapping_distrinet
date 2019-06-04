@@ -4,3 +4,10 @@ this command from the command prompt:
 .. code:: python
 
   python setup.py install
+
+or
+
+.. code:: python
+
+  pip install git+https://github.com/atomassi/mapping_distrinet
+

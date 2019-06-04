@@ -10,4 +10,3 @@ or
 .. code:: python
 
   pip install git+https://github.com/atomassi/mapping_distrinet
-

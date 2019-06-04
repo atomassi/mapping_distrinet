@@ -1,12 +1,10 @@
+dist: xenial
 language: python
-
-matrix:
-  include:
-    - python: pypy3.6
-    - python: 3.6
-    - python: 3.7
-      dist: xenial
-      sudo: true
+python:
+    - 3.6
+    - 3.7
+    - pypy3.5
+    - pypy3.6
 
 branches:
   only:
@@ -25,3 +23,10 @@ before_script:
 
 script:
   - pytest -v tests
+
+notifications:
+  email:
+    recipients:
+      - andrea.tomassilli@inria.fr
+    on_success: always
+    on_failure: always

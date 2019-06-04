@@ -7,9 +7,9 @@ Best Fit Dop Product heuristic from [1]
 
 """
 from distriopt.constants import *
+from distriopt.decorators import timeit
 from distriopt.packing import PackingSolver
 from distriopt.packing.solution import Solution
-from distriopt.decorators import timeit
 
 
 class Bin(object):

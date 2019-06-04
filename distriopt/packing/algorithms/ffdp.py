@@ -6,9 +6,9 @@ First Fit Decreasing heuristic from [1]
      2016 16th IEEE/ACM International Symposium on Cluster, Cloud and Grid Computing (CCGrid). IEEE, 2016.
 """
 from distriopt.constants import *
+from distriopt.decorators import timeit
 from distriopt.packing import PackingSolver
 from distriopt.packing.solution import Solution
-from distriopt.decorators import timeit
 
 
 class Bin(object):

@@ -2,9 +2,9 @@ import random
 from collections import defaultdict
 
 from distriopt.constants import *
-from distriopt.embedding.solution import Solution
-from distriopt.embedding import EmbedSolver
 from distriopt.decorators import timeit
+from distriopt.embedding import EmbedSolver
+from distriopt.embedding.solution import Solution
 
 
 def get_partitions(virtual, n_partitions, n_swaps=100):
@@ -51,7 +51,9 @@ class EmbedPartition(EmbedSolver):
         """Heuristic based on computing a k-balanced partitions of virtual nodes for then mapping the partition
            on a subset of the physical nodes.
         """
-        sorted_compute_nodes = sorted(self.physical.compute_nodes,key=lambda x: self.physical.cores(x) * 1000 + self.physical.memory(x),reverse=True)
+        sorted_compute_nodes = sorted(self.physical.compute_nodes,
+                                      key=lambda x: self.physical.cores(x) * 1000 + self.physical.memory(x),
+                                      reverse=True)
 
         for n_partitions_to_try in range(self.lower_bound(), len(self.physical.compute_nodes) + 1):
             # partitioning of virtual nodes in n_partitions_to_try partitions
@@ -98,7 +100,8 @@ class EmbedPartition(EmbedSolver):
                     phy_u, phy_v = res_node_mapping[u], res_node_mapping[v]
 
                     # for each link in the physical path
-                    for (i, j, device_id) in self.physical.find_path(phy_u, phy_v,req_rate=self.virtual.req_rate(u,v), used_rate=rate_used):
+                    for (i, j, device_id) in self.physical.find_path(phy_u, phy_v, req_rate=self.virtual.req_rate(u, v),
+                                                                     used_rate=rate_used):
                         rate_used[(i, j, device_id)] += self.virtual.req_rate(u, v)
                         res_link_mapping[(u, v)].append((i, device_id, j))
 
@@ -113,8 +116,6 @@ class EmbedPartition(EmbedSolver):
         else:
             self.status = Infeasible
             return Infeasible
-
-
 
 
 if __name__ == "__main__":
@@ -138,8 +139,6 @@ if __name__ == "__main__":
     print(status)
 
     exit(1)
-
-
 
     physical_topo = PhysicalNetwork.from_files("grisou", group_interfaces=False)
     virtual_topo = VirtualNetwork.create_random_nw(n_nodes=66)

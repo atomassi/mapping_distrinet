@@ -1,262 +1,262 @@
 {
-    "nodes": [
+  "nodes": [
+    {
+      "id": "graoully-1",
+      "cores": 32,
+      "memory": 131072.0
+    },
+    {
+      "id": "graoully-10",
+      "cores": 32,
+      "memory": 131072.0
+    },
+    {
+      "id": "graoully-11",
+      "cores": 32,
+      "memory": 131072.0
+    },
+    {
+      "id": "graoully-12",
+      "cores": 32,
+      "memory": 131072.0
+    },
+    {
+      "id": "graoully-13",
+      "cores": 32,
+      "memory": 131072.0
+    },
+    {
+      "id": "graoully-14",
+      "cores": 32,
+      "memory": 131072.0
+    },
+    {
+      "id": "graoully-15",
+      "cores": 32,
+      "memory": 131072.0
+    },
+    {
+      "id": "graoully-16",
+      "cores": 32,
+      "memory": 131072.0
+    },
+    {
+      "id": "graoully-2",
+      "cores": 32,
+      "memory": 131072.0
+    },
+    {
+      "id": "graoully-3",
+      "cores": 32,
+      "memory": 131072.0
+    },
+    {
+      "id": "graoully-4",
+      "cores": 32,
+      "memory": 131072.0
+    },
+    {
+      "id": "graoully-5",
+      "cores": 32,
+      "memory": 131072.0
+    },
+    {
+      "id": "graoully-6",
+      "cores": 32,
+      "memory": 131072.0
+    },
+    {
+      "id": "graoully-7",
+      "cores": 32,
+      "memory": 131072.0
+    },
+    {
+      "id": "graoully-8",
+      "cores": 32,
+      "memory": 131072.0
+    },
+    {
+      "id": "graoully-9",
+      "cores": 32,
+      "memory": 131072.0
+    }
+  ],
+  "links": [
+    {
+      "source": "graoully-1",
+      "target": "gw-nancy",
+      "devices": [
         {
-            "id": "graoully-1",
-            "cores": 32,
-            "memory": 131072.0
-        },
-        {
-            "id": "graoully-10",
-            "cores": 32,
-            "memory": 131072.0
-        },
-        {
-            "id": "graoully-11",
-            "cores": 32,
-            "memory": 131072.0
-        },
-        {
-            "id": "graoully-12",
-            "cores": 32,
-            "memory": 131072.0
-        },
-        {
-            "id": "graoully-13",
-            "cores": 32,
-            "memory": 131072.0
-        },
-        {
-            "id": "graoully-14",
-            "cores": 32,
-            "memory": 131072.0
-        },
-        {
-            "id": "graoully-15",
-            "cores": 32,
-            "memory": 131072.0
-        },
-        {
-            "id": "graoully-16",
-            "cores": 32,
-            "memory": 131072.0
-        },
-        {
-            "id": "graoully-2",
-            "cores": 32,
-            "memory": 131072.0
-        },
-        {
-            "id": "graoully-3",
-            "cores": 32,
-            "memory": 131072.0
-        },
-        {
-            "id": "graoully-4",
-            "cores": 32,
-            "memory": 131072.0
-        },
-        {
-            "id": "graoully-5",
-            "cores": 32,
-            "memory": 131072.0
-        },
-        {
-            "id": "graoully-6",
-            "cores": 32,
-            "memory": 131072.0
-        },
-        {
-            "id": "graoully-7",
-            "cores": 32,
-            "memory": 131072.0
-        },
-        {
-            "id": "graoully-8",
-            "cores": 32,
-            "memory": 131072.0
-        },
-        {
-            "id": "graoully-9",
-            "cores": 32,
-            "memory": 131072.0
+          "source_device": "eth0",
+          "target_device": "Ethernet1/1",
+          "rate": 10000.0
         }
-    ],
-    "links": [
+      ]
+    },
+    {
+      "source": "graoully-10",
+      "target": "gw-nancy",
+      "devices": [
         {
-            "source": "graoully-1",
-            "target": "gw-nancy",
-            "devices": [
-                {
-                    "source_device": "eth0",
-                    "target_device": "Ethernet1/1",
-                    "rate": 10000.0
-                }
-            ]
-        },
-        {
-            "source": "graoully-10",
-            "target": "gw-nancy",
-            "devices": [
-                {
-                    "source_device": "eth0",
-                    "target_device": "Ethernet1/10",
-                    "rate": 10000.0
-                }
-            ]
-        },
-        {
-            "source": "graoully-11",
-            "target": "gw-nancy",
-            "devices": [
-                {
-                    "source_device": "eth0",
-                    "target_device": "Ethernet1/11",
-                    "rate": 10000.0
-                }
-            ]
-        },
-        {
-            "source": "graoully-12",
-            "target": "gw-nancy",
-            "devices": [
-                {
-                    "source_device": "eth0",
-                    "target_device": "Ethernet1/12",
-                    "rate": 10000.0
-                }
-            ]
-        },
-        {
-            "source": "graoully-13",
-            "target": "gw-nancy",
-            "devices": [
-                {
-                    "source_device": "eth0",
-                    "target_device": "Ethernet1/13",
-                    "rate": 10000.0
-                }
-            ]
-        },
-        {
-            "source": "graoully-14",
-            "target": "gw-nancy",
-            "devices": [
-                {
-                    "source_device": "eth0",
-                    "target_device": "Ethernet1/14",
-                    "rate": 10000.0
-                }
-            ]
-        },
-        {
-            "source": "graoully-15",
-            "target": "gw-nancy",
-            "devices": [
-                {
-                    "source_device": "eth0",
-                    "target_device": "Ethernet1/15",
-                    "rate": 10000.0
-                }
-            ]
-        },
-        {
-            "source": "graoully-16",
-            "target": "gw-nancy",
-            "devices": [
-                {
-                    "source_device": "eth0",
-                    "target_device": "Ethernet1/16",
-                    "rate": 10000.0
-                }
-            ]
-        },
-        {
-            "source": "graoully-2",
-            "target": "gw-nancy",
-            "devices": [
-                {
-                    "source_device": "eth0",
-                    "target_device": "Ethernet1/2",
-                    "rate": 10000.0
-                }
-            ]
-        },
-        {
-            "source": "graoully-3",
-            "target": "gw-nancy",
-            "devices": [
-                {
-                    "source_device": "eth0",
-                    "target_device": "Ethernet1/3",
-                    "rate": 10000.0
-                }
-            ]
-        },
-        {
-            "source": "graoully-4",
-            "target": "gw-nancy",
-            "devices": [
-                {
-                    "source_device": "eth0",
-                    "target_device": "Ethernet1/4",
-                    "rate": 10000.0
-                }
-            ]
-        },
-        {
-            "source": "graoully-5",
-            "target": "gw-nancy",
-            "devices": [
-                {
-                    "source_device": "eth0",
-                    "target_device": "Ethernet1/5",
-                    "rate": 10000.0
-                }
-            ]
-        },
-        {
-            "source": "graoully-6",
-            "target": "gw-nancy",
-            "devices": [
-                {
-                    "source_device": "eth0",
-                    "target_device": "Ethernet1/6",
-                    "rate": 10000.0
-                }
-            ]
-        },
-        {
-            "source": "graoully-7",
-            "target": "gw-nancy",
-            "devices": [
-                {
-                    "source_device": "eth0",
-                    "target_device": "Ethernet1/7",
-                    "rate": 10000.0
-                }
-            ]
-        },
-        {
-            "source": "graoully-8",
-            "target": "gw-nancy",
-            "devices": [
-                {
-                    "source_device": "eth0",
-                    "target_device": "Ethernet1/8",
-                    "rate": 10000.0
-                }
-            ]
-        },
-        {
-            "source": "graoully-9",
-            "target": "gw-nancy",
-            "devices": [
-                {
-                    "source_device": "eth0",
-                    "target_device": "Ethernet1/9",
-                    "rate": 10000.0
-                }
-            ]
+          "source_device": "eth0",
+          "target_device": "Ethernet1/10",
+          "rate": 10000.0
         }
-    ]
+      ]
+    },
+    {
+      "source": "graoully-11",
+      "target": "gw-nancy",
+      "devices": [
+        {
+          "source_device": "eth0",
+          "target_device": "Ethernet1/11",
+          "rate": 10000.0
+        }
+      ]
+    },
+    {
+      "source": "graoully-12",
+      "target": "gw-nancy",
+      "devices": [
+        {
+          "source_device": "eth0",
+          "target_device": "Ethernet1/12",
+          "rate": 10000.0
+        }
+      ]
+    },
+    {
+      "source": "graoully-13",
+      "target": "gw-nancy",
+      "devices": [
+        {
+          "source_device": "eth0",
+          "target_device": "Ethernet1/13",
+          "rate": 10000.0
+        }
+      ]
+    },
+    {
+      "source": "graoully-14",
+      "target": "gw-nancy",
+      "devices": [
+        {
+          "source_device": "eth0",
+          "target_device": "Ethernet1/14",
+          "rate": 10000.0
+        }
+      ]
+    },
+    {
+      "source": "graoully-15",
+      "target": "gw-nancy",
+      "devices": [
+        {
+          "source_device": "eth0",
+          "target_device": "Ethernet1/15",
+          "rate": 10000.0
+        }
+      ]
+    },
+    {
+      "source": "graoully-16",
+      "target": "gw-nancy",
+      "devices": [
+        {
+          "source_device": "eth0",
+          "target_device": "Ethernet1/16",
+          "rate": 10000.0
+        }
+      ]
+    },
+    {
+      "source": "graoully-2",
+      "target": "gw-nancy",
+      "devices": [
+        {
+          "source_device": "eth0",
+          "target_device": "Ethernet1/2",
+          "rate": 10000.0
+        }
+      ]
+    },
+    {
+      "source": "graoully-3",
+      "target": "gw-nancy",
+      "devices": [
+        {
+          "source_device": "eth0",
+          "target_device": "Ethernet1/3",
+          "rate": 10000.0
+        }
+      ]
+    },
+    {
+      "source": "graoully-4",
+      "target": "gw-nancy",
+      "devices": [
+        {
+          "source_device": "eth0",
+          "target_device": "Ethernet1/4",
+          "rate": 10000.0
+        }
+      ]
+    },
+    {
+      "source": "graoully-5",
+      "target": "gw-nancy",
+      "devices": [
+        {
+          "source_device": "eth0",
+          "target_device": "Ethernet1/5",
+          "rate": 10000.0
+        }
+      ]
+    },
+    {
+      "source": "graoully-6",
+      "target": "gw-nancy",
+      "devices": [
+        {
+          "source_device": "eth0",
+          "target_device": "Ethernet1/6",
+          "rate": 10000.0
+        }
+      ]
+    },
+    {
+      "source": "graoully-7",
+      "target": "gw-nancy",
+      "devices": [
+        {
+          "source_device": "eth0",
+          "target_device": "Ethernet1/7",
+          "rate": 10000.0
+        }
+      ]
+    },
+    {
+      "source": "graoully-8",
+      "target": "gw-nancy",
+      "devices": [
+        {
+          "source_device": "eth0",
+          "target_device": "Ethernet1/8",
+          "rate": 10000.0
+        }
+      ]
+    },
+    {
+      "source": "graoully-9",
+      "target": "gw-nancy",
+      "devices": [
+        {
+          "source_device": "eth0",
+          "target_device": "Ethernet1/9",
+          "rate": 10000.0
+        }
+      ]
+    }
+  ]
 }

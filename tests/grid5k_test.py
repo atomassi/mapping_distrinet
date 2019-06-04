@@ -1,10 +1,10 @@
+import pytest
+
 from distriopt import VirtualNetwork
 from distriopt.constants import *
 from distriopt.embedding import PhysicalNetwork
-from distriopt.embedding.algorithms import RandomSelection, EmbedBalanced, EmbedILP, EmbedPartition, \
+from distriopt.embedding.algorithms import EmbedBalanced, EmbedILP, EmbedPartition, \
     EmbedGreedy
-
-import pytest
 
 
 @pytest.fixture(params=[EmbedGreedy, EmbedBalanced, EmbedILP, EmbedPartition])

@@ -7,8 +7,8 @@ from functools import lru_cache
 
 from mininet.topo import Topo
 
-from distriopt.constants import *
 from distriopt import VirtualNetwork
+from distriopt.constants import *
 
 
 class PackingSolver(object, metaclass=ABCMeta):
@@ -49,7 +49,7 @@ class PackingSolver(object, metaclass=ABCMeta):
     def _get_cheapest_feasible(self, cores, memory):
         """Given a demand in terms of number of cores and memory return the cheapest EC2 instance with enough resources.
         """
-        #if (cores > self.physical.cores(self.vm_max_cores) or memory > self.physical.memory(self.vm_max_cores)) \
+        # if (cores > self.physical.cores(self.vm_max_cores) or memory > self.physical.memory(self.vm_max_cores)) \
         #        and (
         #        cores > self.physical.cores(self.vm_max_memory) or memory > self.physical.memory(self.vm_max_memory)):
         #    return None

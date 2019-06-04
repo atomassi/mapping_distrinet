@@ -2,10 +2,11 @@ from collections import defaultdict
 
 import pulp
 
-from distriopt.packing import PackingSolver
 from distriopt.constants import *
 from distriopt.decorators import timeit
+from distriopt.packing import PackingSolver
 from distriopt.packing.solution import Solution
+
 
 class PackILP(PackingSolver):
 
@@ -23,8 +24,6 @@ class PackILP(PackingSolver):
             return pulp.SCIP(msg=0, options=['-c', f'set limits time {timelimit}'])
         else:
             raise ValueError("Invalid _get_solver name")
-
-
 
     @timeit
     def solve(self, **kwargs):
@@ -80,18 +79,17 @@ class PackILP(PackingSolver):
             self.status = Infeasible
             return Infeasible
         elif (status == 'Not Solved' or status == "Undefined") and \
-             (not obj_value or sum( round(node_mapping[(u, vm_type, vm_id)].varValue)
-                                            for (u, vm_type, vm_id) in node_mapping) != self.virtual.number_of_nodes()):
+                (not obj_value or sum(round(node_mapping[(u, vm_type, vm_id)].varValue)
+                                      for (u, vm_type, vm_id) in node_mapping) != self.virtual.number_of_nodes()):
             self.status = NotSolved
             return NotSolved
 
         if solver_name == "cplex":
-            self.lb = round(solver.solverModel.solution.MIP.get_best_objective(),2)
+            self.lb = round(solver.solverModel.solution.MIP.get_best_objective(), 2)
         elif solver_name == "gurobi":
-            self.lb = round(mapping_ILP.solverModel.ObjBound,2)
+            self.lb = round(mapping_ILP.solverModel.ObjBound, 2)
         else:
             self.lb = 0
-
 
         assignment_ec2_instances = self.build_ILP_solution(node_mapping)
         self.solution = Solution.build_solution(self.virtual, self.physical, assignment_ec2_instances)

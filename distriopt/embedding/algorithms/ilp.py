@@ -2,10 +2,10 @@ import itertools
 
 import pulp
 
-from distriopt.embedding import EmbedSolver
 from distriopt.constants import *
-from distriopt.embedding.solution import Solution
 from distriopt.decorators import timeit
+from distriopt.embedding import EmbedSolver
+from distriopt.embedding.solution import Solution
 
 
 class EmbedILP(EmbedSolver):
@@ -38,7 +38,8 @@ class EmbedILP(EmbedSolver):
         link_mapping = pulp.LpVariable.dicts("link_mapping",
                                              itertools.chain(*(((u, v, i, j, device_id), (u, v, j, i, device_id))
                                                                for (u, v) in self.virtual.sorted_edges()
-                                                               for (i, j, device_id) in self.physical.edges(keys=True))),
+                                                               for (i, j, device_id) in
+                                                               self.physical.edges(keys=True))),
                                              lowBound=0, upBound=1,
                                              cat=pulp.LpContinuous if self.physical.grouped_interfaces else pulp.LpBinary)
 
@@ -148,14 +149,13 @@ class EmbedILP(EmbedSolver):
         else:
             self.lb = 0
 
-
         # build solution from variables values
-        res_node_mapping, res_link_mapping = self._build_ILP_solution(self.virtual, self.physical, node_mapping, link_mapping)
+        res_node_mapping, res_link_mapping = self._build_ILP_solution(self.virtual, self.physical, node_mapping,
+                                                                      link_mapping)
         # if interfaces have been grouped, map to solution to the original network
         self.solution = Solution.build_solution(self.virtual, self.physical, res_node_mapping, res_link_mapping)
         self.status = Solved
         return Solved
-
 
     @staticmethod
     def _build_ILP_solution(virtual, physical, node_mapping, link_mapping):

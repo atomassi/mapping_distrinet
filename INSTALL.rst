@@ -4,7 +4,3 @@ this command from the command prompt:
 ```python
 python setup.py install
 ```
-
-If you're upgrading from a previous version, you need to remove it first.
-
-For more detailed instructions, see docs/intro/install.txt.

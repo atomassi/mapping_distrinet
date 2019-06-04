@@ -173,14 +173,12 @@ class Solution(object):
                 phy_u, phy_v = node_mapping[u], node_mapping[v]
                 path = link_path[(u, v)]
 
-
                 # if virtual nodes are mapped on two different physical nodes
                 if phy_u != phy_v:
                     link_mapping[(u, v)] = []
                     link_mapping[(v, u)] = []
                     paths[(u, v)] = []
                     paths[(v, u)] = []
-
 
                     u_source, _, u_dest = path[0]
                     v_source, _, v_dest = path[-1]

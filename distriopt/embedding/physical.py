@@ -2,8 +2,9 @@ import json
 import logging
 import os
 
-from distriopt.constants import NoPathFoundError
 import networkx as nx
+
+from distriopt.constants import NoPathFoundError
 
 
 class PhysicalNetwork(object):
@@ -48,7 +49,7 @@ class PhysicalNetwork(object):
     def rate_out(self, i):
         """Return the total rate supported by the node interface(s)."""
         return sum(self.rate(i, j, device_id) for j in self.neighbors(i)
-                                for device_id in self.interfaces_ids(i, j))
+                   for device_id in self.interfaces_ids(i, j))
 
     def interfaces_ids(self, i, j):
         """Return the network interfaces identifiers for a link (i,j)."""
@@ -111,7 +112,8 @@ class PhysicalNetwork(object):
                         interfaces_used.append(device_id)
                         path.append(target)
                         # return a path as a list (i, j, device_id)
-                        res = [(path[i],path[i+1], device_id) for (i, device_id) in zip(range(len(path) - 1), interfaces_used[1:])]
+                        res = [(path[i], path[i + 1], device_id) for (i, device_id) in
+                               zip(range(len(path) - 1), interfaces_used[1:])]
                         return res
                     elif curr not in path:
                         interfaces_used.append(device_id)
@@ -200,8 +202,6 @@ class PhysicalNetwork(object):
 
         return cls(nx.freeze(g), group_interfaces)
 
-
-
     @classmethod
     def create_test_nw(cls, cores=4, memory=4000, rate=10000, group_interfaces=False):
         """Create a test physical network to run tests.
@@ -227,8 +227,11 @@ class PhysicalNetwork(object):
             g.add_edge("h2", "s1", devices={"h2": "eth1", "s1": "eth3"}, rate=rate)
 
         else:
-            g.add_edge("h1", "s1", key='dummy', associated_devices={0:{"h1":"eth0","s1":"eth0",'rate': rate},1:{"h1":"eth1","s1":"eth1",'rate': rate}}, rate=rate*2)
-            g.add_edge("h2", "s1", key='dummy', associated_devices={0:{"h2":"eth0","s1":"eth2",'rate': rate},1:{"h2":"eth1","s1":"eth2",'rate': rate}}, rate=rate*2)
-
+            g.add_edge("h1", "s1", key='dummy', associated_devices={0: {"h1": "eth0", "s1": "eth0", 'rate': rate},
+                                                                    1: {"h1": "eth1", "s1": "eth1", 'rate': rate}},
+                       rate=rate * 2)
+            g.add_edge("h2", "s1", key='dummy', associated_devices={0: {"h2": "eth0", "s1": "eth2", 'rate': rate},
+                                                                    1: {"h2": "eth1", "s1": "eth2", 'rate': rate}},
+                       rate=rate * 2)
 
         return cls(nx.freeze(g), grouped_interfaces=group_interfaces)

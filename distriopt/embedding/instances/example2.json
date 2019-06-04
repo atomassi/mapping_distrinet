@@ -1,38 +1,38 @@
 {
-    "nodes": [
+  "nodes": [
+    {
+      "id": "Master2",
+      "cores": 16,
+      "memory": 64000
+    },
+    {
+      "id": "Node2",
+      "cores": 16,
+      "memory": 64000
+    }
+  ],
+  "links": [
+    {
+      "source": "Master2",
+      "target": "SW",
+      "devices": [
         {
-            "id": "Master2",
-            "cores": 16,
-            "memory": 64000
-        },
-        {
-            "id": "Node2",
-            "cores": 16,
-            "memory": 64000
+          "source_device": "eth0",
+          "target_device": "eth0",
+          "rate": 1000
         }
-    ],
-    "links": [
+      ]
+    },
+    {
+      "source": "Node2",
+      "target": "SW",
+      "devices": [
         {
-            "source": "Master2",
-            "target": "SW",
-            "devices": [
-                {
-                    "source_device": "eth0",
-                    "target_device": "eth0",
-                    "rate": 1000
-                }
-            ]
-        },
-        {
-            "source": "Node2",
-            "target": "SW",
-            "devices": [
-                {
-                    "source_device": "eth0",
-                    "target_device": "eth1",
-                    "rate": 1000
-                }
-            ]
+          "source_device": "eth0",
+          "target_device": "eth1",
+          "rate": 1000
         }
-    ]
+      ]
+    }
+  ]
 }

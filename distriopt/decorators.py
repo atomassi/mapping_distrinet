@@ -34,5 +34,3 @@ def cached(func):
         return func.cache[key]
 
     return wrapper
-
-

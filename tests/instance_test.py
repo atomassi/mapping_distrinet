@@ -55,8 +55,6 @@ def test_logical_fat_tree():
         assert virtual.req_rate(i, j) == 200
 
 
-
-
 def test_logical_random():
     """Test the creation of a logical random network topology."""
     from distriopt import VirtualNetwork
@@ -83,7 +81,6 @@ def test_mininet_conversion_to_logical():
     """Test the conversion from a mininet logical network to a logical one."""
     import networkx as nx
     from distriopt import VirtualNetwork
-    from distriopt.embedding import PhysicalNetwork
     from mininet.topo import Topo
     virt_topo_mn = Topo()
 

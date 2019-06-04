@@ -4,9 +4,9 @@ import numpy as np
 from networkx.algorithms.community.kernighan_lin import kernighan_lin_bisection
 
 from distriopt.constants import *
+from distriopt.decorators import timeit
 from distriopt.embedding import EmbedSolver
 from distriopt.embedding.solution import Solution
-from distriopt.decorators import timeit
 
 
 class Node(object):

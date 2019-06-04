@@ -40,7 +40,7 @@ SolutionStatus = {
     NotSolved: "Not Solved",
     Solved: "Solved",
     Infeasible: "Infeasible"
-    }
+}
 
 """ 
 from enum import Enum

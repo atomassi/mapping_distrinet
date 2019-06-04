@@ -40,7 +40,9 @@ setup(
     description='Various algorithms for the problem of mapping a virtual network onto the substrate network or onto a cloud network.',
     long_description=read('README.rst'),
     classifiers=[
-        "Programming Language :: Python"
+        "Programming Language :: Python",
+        'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
     ],
     install_requires=[
         'PuLP',

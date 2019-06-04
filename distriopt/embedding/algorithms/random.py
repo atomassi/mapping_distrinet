@@ -2,9 +2,9 @@ import random
 from collections import defaultdict
 
 from distriopt.constants import *
+from distriopt.decorators import timeit
 from distriopt.embedding import EmbedSolver
 from distriopt.embedding.solution import Solution
-from distriopt.decorators import timeit
 
 
 class RandomSelection(EmbedSolver):

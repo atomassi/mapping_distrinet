@@ -6,9 +6,9 @@ First Fit Ordered Deviation heuristic from [2]
     Annals of Operations Research 50.1 (1994): 239-261.
 """
 from distriopt.constants import *
+from distriopt.decorators import timeit
 from distriopt.packing import PackingSolver
 from distriopt.packing.solution import Solution
-from distriopt.decorators import timeit
 
 
 class Bin(object):

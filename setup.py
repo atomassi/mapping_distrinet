@@ -25,7 +25,7 @@ def read(fname):
 
 
 EXCLUDE_FROM_PACKAGES = []
-REQUIREMENTS = [i.strip() for i in open("requirements.txt").readlines()]
+REQUIREMENTS = [i.strip() for i in open(os.path.join(os.path.dirname(__file__), "requirements.txt")).readlines()]
 
 setup(
     name='mapping_distrinet',

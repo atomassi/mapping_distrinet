@@ -3,7 +3,7 @@ language: python
 python:
     - 3.6
     - 3.7
-    - pypy3.6-7.1.1
+    #- pypy3.6-7.1.1
 
 branches:
   only:
@@ -29,5 +29,5 @@ notifications:
   email:
     recipients:
       - andrea.tomassilli@inria.fr
-    on_success: always
-    on_failure: always
+    on_success: never
+    on_failure: never

@@ -7,5 +7,6 @@ include CONTRIBUTING.rst
 include CHANGELOG.rst
 include LICENSE
 include MANIFEST.in
+include requirements.txt
 global-exclude __pycache__
 global-exclude *.py[co]

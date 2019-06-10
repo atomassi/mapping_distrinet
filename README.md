@@ -1,10 +1,20 @@
-## Installing requirements ##
-```sh
-pip install -r requirements.txt
+![version](https://img.shields.io/badge/version-0.1-blue.svg?cacheSeconds=2592000)
+[![Build Status](https://travis-ci.com/atomassi/mapping_distrinet.svg?token=hrhTT4pN2zzCVx7pvXNv&branch=master)](https://travis-ci.com/atomassi/mapping_distrinet)
+
+
+## Installation ##
+To install it, make sure you have Python 3.6 or greater installed. Then run
+this command from the command prompt:
+```python
+python setup.py install
+```
+or
+```python
+pip install git+https://github.com/atomassi/mapping_distrinet
 ```
 
 
-## Solvers for the ILP approach ##
+## Supported solvers for the ILP approach ##
 * [Cplex] - free for academic use 
 * [Gurobi] - free for academic use
 * [GLPK] - open-source linear programming _get_solver

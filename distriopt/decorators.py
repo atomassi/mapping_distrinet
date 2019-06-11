@@ -34,3 +34,32 @@ def cached(func):
         return func.cache[key]
 
     return wrapper
+
+
+def cachedproperty(func):
+    """Decorator to cache property values."""
+    values = {}
+
+    @property
+    @functools.wraps(func)
+    def wrapper(self):
+        if self not in values:
+            values[self] = func(self)
+        return values[self]
+
+    return wrapper
+
+
+def implemented_if_true(name):
+    """Raise a ValueError exception if called when self.name is set to False."""
+
+    def decorator(func):
+        @functools.wraps(func)
+        def wrapper(self, *args, **kwargs):
+            if not self.__dict__[name]:
+                raise ValueError(f"{name} is not set to True.")
+            return func(self, *args, **kwargs)
+
+        return wrapper
+
+    return decorator

@@ -40,17 +40,21 @@ class Tree(object):
         self.root = root
         self.placed = set([])
 
-    def print_tree(self, node=None):
-        if node is None:
-            node = self.root
-        if node.l is not None:
-            self.print_tree(node.l)
-        print(node.partition)
-        if node.r is not None:
-            self.print_tree(node.r)
+    def print_tree(self):
+        """Perform a BFS visit and print the tree."""
+        to_visit = deque([(self.root, 0)])
+
+        while to_visit:
+            (current, level) = to_visit.popleft()
+            print(current.partition, level)
+            if current.l:
+                to_visit.append((current.l, level + 1))
+            if current.r:
+                to_visit.append((current.r, level + 1))
 
     def bfs_visit(self):
-        """Perform a BFS visit of the partitions tree."""
+        """Perform a BFS visit of the partitions tree ignoring the already placed partitions."""
+
         self.placed = set([])
         to_visit = deque()
 

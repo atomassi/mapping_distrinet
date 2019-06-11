@@ -5,6 +5,7 @@ import os
 import networkx as nx
 
 from distriopt.constants import NoPathFoundError
+from distriopt.decorators import cached, cachedproperty, implemented_if_true
 
 
 class PhysicalNetwork(object):
@@ -19,12 +20,10 @@ class PhysicalNetwork(object):
     def g(self):
         return self._g
 
-    @property
+    @cachedproperty
     def compute_nodes(self):
         """Physical nodes able to run virtual nodes."""
-        if not hasattr(self, '_compute'):
-            self._compute_nodes = set(u for u in self.nodes() if self.cores(u) > 0 and self.memory(u) > 0)
-        return self._compute_nodes
+        return set(u for u in self.nodes() if self.cores(u) > 0 and self.memory(u) > 0)
 
     def edges(self, keys=False):
         """Return the edges of the graph."""
@@ -43,9 +42,10 @@ class PhysicalNetwork(object):
         return self._g.node[node].get('memory', 0)
 
     def rate(self, i, j, device_id='dummy'):
-        """Return the maximum allowed rate for a physical link."""
+        """Return the rate associated to a physical link and interface id."""
         return self._g[i][j][device_id]['rate']
 
+    @cached
     def rate_out(self, i):
         """Return the total rate supported by the node interface(s)."""
         return sum(self.rate(i, j, device_id) for j in self.neighbors(i)
@@ -63,16 +63,14 @@ class PhysicalNetwork(object):
         """Return the neighbor nodes for a node i."""
         return self._g[i]
 
+    @implemented_if_true('grouped_interfaces')
     def associated_nw_interfaces(self, i, j):
         """Return the real interfaces associated with the link."""
-        if not self.grouped_interfaces:
-            raise ValueError("Defined only when interfaces are grouped.")
         return self._g[i][j]['dummy']['associated_devices']
 
+    @implemented_if_true('grouped_interfaces')
     def rate_associated_nw_interface(self, i, j, device_id):
         """Return the rate associated to a real link interface."""
-        if not self.grouped_interfaces:
-            raise ValueError("Defined only when interfaces are grouped")
         return self._g[i][j]['dummy']['associated_devices'][device_id]['rate']
 
     def name_associated_nw_interface(self, i, j, device_id):

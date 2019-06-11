@@ -9,6 +9,8 @@ import warnings
 
 import networkx as nx
 
+from distriopt.decorators import cached
+
 
 class VirtualNetwork(object):
     "Utility class to model the virtual network. Uses networkx.Graph."
@@ -30,21 +32,15 @@ class VirtualNetwork(object):
         """Return the edges of the graph."""
         return self._g.edges()
 
+    @cached
     def sorted_edges(self):
         """Return the edges of the graph sorted in lexicographic way."""
-        if not hasattr(self, '_sorted_edges'):
-            self._sorted_edges = set((u, v) if u < v else (v, u) for (u, v) in self.edges())
-        return self._sorted_edges
+        return set((u, v) if u < v else (v, u) for (u, v) in self.edges())
 
+    @cached
     def sorted_edges_from(self, i):
         """Return the edges starting at node i with each edge sorted in lexicographic way."""
-        if not hasattr(self, '_links_from'):
-            self._sorted_edges_from = {}
-        try:
-            return self._sorted_edges_from[i]
-        except KeyError:
-            res = self._sorted_edges_from[i] = set((i, j) if i < j else (j, i) for j in self._g[i])
-        return res
+        return set((i, j) if i < j else (j, i) for j in self._g[i])
 
     def nodes(self):
         """Return the nodes of the graph."""

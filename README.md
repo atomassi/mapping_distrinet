@@ -17,10 +17,17 @@ pip install git+https://github.com/atomassi/mapping_distrinet
 
 
 ## Supported solvers for the ILP approach ##
+* [GLPK] - open-source linear programming.  It can be installed using brew: 
+    ```sh 
+    brew install glpk
+    ```
+* [CBC] - COIN-OR CBC: open-source linear programming. It can be installed using brew: 
+    ```sh
+    brew tap coin-or-tools/coinor
+    brew install cbc
+    ```
 * [Cplex] - free for academic use 
 * [Gurobi] - free for academic use
-* [GLPK] - open-source linear programming _get_solver
-* [CBC] - COIN-OR CBC: open-source linear programming _get_solver
 * [SCIP] - free for noncommercial and academic institutes
 
 
@@ -31,3 +38,18 @@ pip install git+https://github.com/atomassi/mapping_distrinet
    [CBC]: <https://projects.coin-or.org/Cbc>
    [SCIP]: <https://scip.zib.de/>
    [embedding/solver.py]: https://github.com/atomassi/mapping_distrinet/blob/897abd1a84017b75bb8fd89b65a4619d5f4c7c69/embedding/solve.py#L12
+
+Code Documentation
+---
+Documentation is based on [Doxygen](http://www.doxygen.nl/). To generate the documentation files (in both HTML and LaTex formats):
+```sh
+doxygen docs/doxygen.cfg
+make -C docs/latex
+```
+
+Test
+---
+Tests are based on pytests which can be invoked by running
+```sh
+pytest
+```

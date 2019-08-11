@@ -30,6 +30,10 @@ pip install git+https://github.com/atomassi/mapping_distrinet
 * [Gurobi] - free for academic use
 * [SCIP] - free for noncommercial and academic institutes
 
+Installed ILP solvers can be checked by running:
+```sh
+    pytest check_installed_solvers.py
+```
 
 
    [Cplex]: <https://www.ibm.com/products/ilog-cplex-optimization-studio>

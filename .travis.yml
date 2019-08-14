@@ -18,12 +18,17 @@ cache: pip
 install:
   - pip install -r requirements.txt
   - pip install pytest
+  - pip install codecov
+  - pip install pytest-cov
 
 before_script:
   - export PYTHONPATH=$PYTHONPATH:$(pwd)
 
 script:
-  - pytest -v tests
+  - py.test --cov-report=xml --cov=distriopt
+
+after_success:
+  - codecov
 
 notifications:
   email:

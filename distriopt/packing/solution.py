@@ -4,6 +4,8 @@ from collections import Counter
 
 from distriopt.constants import AssignmentError, NodeResourceError
 
+_log = logging.getLogger(__name__)
+
 
 class Solution(object):
     """Represent the output of the placement mapping.
@@ -24,7 +26,6 @@ class Solution(object):
         self.nodes_assignment = nodes_assignment
         self.vm_used = vm_used
         self.cost = cost
-        self._log = logging.getLogger(__name__)
 
     def node_info(self, node):
         """Return the physical node where the virtual node has been placed."""
@@ -41,12 +42,19 @@ class Solution(object):
         nodes_assigned = set(itertools.chain(*assignment_ec2_instances.values()))
         if len(nodes_assigned) != len(virtual.nodes()):
             not_assigned_nodes = virtual.nodes() - nodes_assigned
-            raise AssignmentError(f"{not_assigned_nodes} have not been assigned to any physical node")
+            raise AssignmentError(
+                f"{not_assigned_nodes} have not been assigned to any physical node"
+            )
         # EC2 instance resources are not exceeded
         for vm_type, vm_id in assignment_ec2_instances:
-            used_cores = sum(virtual.req_cores(u) for u in assignment_ec2_instances[(vm_type, vm_id)])
+            used_cores = sum(
+                virtual.req_cores(u) for u in assignment_ec2_instances[(vm_type, vm_id)]
+            )
             vm_cores = physical.cores(vm_type)
-            used_memory = sum(virtual.req_memory(u) for u in assignment_ec2_instances[(vm_type, vm_id)])
+            used_memory = sum(
+                virtual.req_memory(u)
+                for u in assignment_ec2_instances[(vm_type, vm_id)]
+            )
             vm_memory = physical.memory(vm_type)
             # cpu cores
             if used_cores > vm_cores:
@@ -56,14 +64,24 @@ class Solution(object):
                 raise NodeResourceError("memory exceeded")
 
     @classmethod
-    def build_solution(cls, virtual, physical, assignment_ec2_instances, check_solution=True):
+    def build_solution(
+        cls, virtual, physical, assignment_ec2_instances, check_solution=True
+    ):
         if check_solution:
             Solution.verify_solution(virtual, physical, assignment_ec2_instances)
 
-        nodes_assignment = {node: instance_id for instance_id in assignment_ec2_instances for node in
-                            assignment_ec2_instances[instance_id]}
+        nodes_assignment = {
+            node: instance_id
+            for instance_id in assignment_ec2_instances
+            for node in assignment_ec2_instances[instance_id]
+        }
         vm_used = Counter(vm_type for vm_type, _ in set(nodes_assignment.values()))
-        cost = round(sum(physical.hourly_cost(vm_type) for vm_type, _ in assignment_ec2_instances), 2)
+        cost = round(
+            sum(
+                physical.hourly_cost(vm_type) for vm_type, _ in assignment_ec2_instances
+            ),
+            2,
+        )
         return cls(nodes_assignment, vm_used, cost)
 
     def __str__(self):

@@ -36,11 +36,7 @@ NotSolved = 0
 Solved = 1
 Infeasible = -1
 
-SolutionStatus = {
-    NotSolved: "Not Solved",
-    Solved: "Solved",
-    Infeasible: "Infeasible"
-}
+SolutionStatus = {NotSolved: "Not Solved", Solved: "Solved", Infeasible: "Infeasible"}
 
 """ 
 from enum import Enum

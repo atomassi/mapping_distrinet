@@ -1,3 +1,4 @@
+import logging
 import math
 from collections import defaultdict
 
@@ -7,6 +8,8 @@ from distriopt.constants import *
 from distriopt.decorators import timeit
 from distriopt.embedding import EmbedSolver
 from distriopt.embedding.solution import Solution
+
+_log = logging.getLogger(__name__)
 
 
 class GetPartitions(object):
@@ -29,7 +32,7 @@ class GetPartitions(object):
             while len(to_be_processed) > 0:
 
                 g = to_be_processed.pop()
-                g_l, g_r = kernighan_lin_bisection(g, weight='rate')
+                g_l, g_r = kernighan_lin_bisection(g, weight="rate")
 
                 for partition in g_l, g_r:
                     if len(partition) > K:
@@ -41,7 +44,7 @@ class GetPartitions(object):
         def _recursive_cutting(g, p, res=[]):
             """helper function (recursive version)"""
             k = math.ceil(len(g.nodes()) / p)
-            g_l, g_r = kernighan_lin_bisection(g, weight='rate')
+            g_l, g_r = kernighan_lin_bisection(g, weight="rate")
 
             for partition in g_l, g_r:
                 if len(partition) > k:
@@ -74,21 +77,26 @@ get_partitions = GetPartitions()
 
 
 class EmbedBalanced(EmbedSolver):
-
     @timeit
     def solve(self, **kwargs):
         """Heuristic based on computing a k-balanced partitions of virtual nodes for then mapping the partition
            on a subset of the physical nodes.
         """
 
-        sorted_compute_nodes = sorted(self.physical.compute_nodes,
-                                      key=lambda x: self.physical.cores(x) * 1000 + self.physical.memory(x),
-                                      reverse=True)
+        sorted_compute_nodes = sorted(
+            self.physical.compute_nodes,
+            key=lambda x: self.physical.cores(x) * 1000 + self.physical.memory(x),
+            reverse=True,
+        )
 
-        for n_partitions_to_try in range(self.lower_bound(), len(sorted_compute_nodes) + 1):
+        for n_partitions_to_try in range(
+            self.lower_bound(), len(sorted_compute_nodes) + 1
+        ):
 
             # partitioning of virtual nodes in n_partitions_to_try partitions
-            k_partition = get_partitions(self.virtual.g, n_partitions=n_partitions_to_try)
+            k_partition = get_partitions(
+                self.virtual.g, n_partitions=n_partitions_to_try
+            )
 
             # subset of hosts of size n_partitions_to_try
             chosen_physical = sorted_compute_nodes[:n_partitions_to_try]
@@ -101,7 +109,9 @@ class EmbedBalanced(EmbedSolver):
                 res_node_mapping = {}
 
                 # iterate over each pair (physical_node i, virtual nodes assigned to i)
-                for physical_node, assigned_virtual_nodes in zip(chosen_physical, k_partition):
+                for physical_node, assigned_virtual_nodes in zip(
+                    chosen_physical, k_partition
+                ):
                     # keep track of the node physical resources used
                     cores_used = memory_used = 0
                     # check if node resources are not exceeded:
@@ -124,8 +134,11 @@ class EmbedBalanced(EmbedSolver):
                 rate_used = defaultdict(int)
 
                 # iterate over each virtual link between two virtual nodes not mapped on the same physical machine
-                for (u, v) in ((u, v) for (u, v) in self.virtual.sorted_edges() if
-                               res_node_mapping[u] != res_node_mapping[v]):
+                for (u, v) in (
+                    (u, v)
+                    for (u, v) in self.virtual.sorted_edges()
+                    if res_node_mapping[u] != res_node_mapping[v]
+                ):
 
                     res_link_mapping[(u, v)] = []
 
@@ -133,15 +146,21 @@ class EmbedBalanced(EmbedSolver):
                     phy_u, phy_v = res_node_mapping[u], res_node_mapping[v]
 
                     # for each link in the physical path
-                    for (i, j, device_id) in self.physical.find_path(phy_u, phy_v, req_rate=self.virtual.req_rate(u, v),
-                                                                     used_rate=rate_used):
+                    for (i, j, device_id) in self.physical.find_path(
+                        phy_u,
+                        phy_v,
+                        req_rate=self.virtual.req_rate(u, v),
+                        used_rate=rate_used,
+                    ):
                         # else update the rate
                         rate_used[(i, j, device_id)] += self.virtual.req_rate(u, v)
 
                         res_link_mapping[(u, v)].append((i, device_id, j))
 
                 # build solution from the output
-                self.solution = Solution.build_solution(self.virtual, self.physical, res_node_mapping, res_link_mapping)
+                self.solution = Solution.build_solution(
+                    self.virtual, self.physical, res_node_mapping, res_link_mapping
+                )
                 self.status = Solved
                 return Solved
 
@@ -158,10 +177,11 @@ if __name__ == "__main__":
     from distriopt import VirtualNetwork
 
     physical_topo = PhysicalNetwork.from_files("grisou", group_interfaces=True)
-    virtual_topo = VirtualNetwork.create_random_nw(n_nodes=66)
+    virtual_topo = VirtualNetwork.create_random_nw(n_nodes=120, seed=1)
     # virtual_topo = VirtualNetwork.create_fat_tree(k=4)
 
     embed = EmbedBalanced(virtual_topo, physical_topo)
     time_solution = embed.solve()
-    print(time_solution, embed.status)
+    print(time_solution, embed.status, embed.solution.n_machines_used)
+    exit(1)
     print(embed.solution)

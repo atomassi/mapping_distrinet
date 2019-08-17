@@ -1,5 +1,4 @@
-PuLP>=1.6.9
-networkx>=2.2
-numpy>=1.15
-pytest
-git+https://github.com/mininet/mininet.git
+numpy==1.15.1
+git+git://github.com/mininet/mininet.git
+PuLP==1.6.9
+networkx==2.2

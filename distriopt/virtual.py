@@ -11,13 +11,14 @@ import networkx as nx
 
 from distriopt.decorators import cached
 
+_log = logging.getLogger(__name__)
+
 
 class VirtualNetwork(object):
     "Utility class to model the virtual network. Uses networkx.Graph."
 
     def __init__(self, g):
         self._g = g
-        self._logger = logging.getLogger(__name__)
 
     @property
     def g(self):
@@ -52,22 +53,24 @@ class VirtualNetwork(object):
 
     def req_cores(self, node):
         """Return the required cores for a virtual node."""
-        return self._g.node[node]['cores']
+        return self._g.node[node]["cores"]
 
     def req_memory(self, node):
         """Return the required amount of memory for a virtual node."""
-        return self._g.node[node]['memory']
+        return self._g.node[node]["memory"]
 
     def req_rate(self, i, j):
         """Return the required link rate for a virtual link"""
-        return self._g[i][j]['rate']
+        return self._g[i][j]["rate"]
 
     def neighbors(self, i):
         """Return the neighbors of a node."""
         return self._g[i]
 
     @classmethod
-    def create_fat_tree(cls, k=2, density=2, req_cores=2, req_memory=8000, req_rate=200):
+    def create_fat_tree(
+        cls, k=2, density=2, req_cores=2, req_memory=4000, req_rate=200
+    ):
         """create a K-ary FatTree with host density set to density.
 
            Each node is assigned to a request of *node_req_cores* CPU cores
@@ -76,7 +79,9 @@ class VirtualNetwork(object):
         """
         assert k > 1, "k should be greater than 1"
         assert not k % 2, "k should be divisible by 2"
-        assert float(req_cores).is_integer(), "the number of requested cores should be integer"
+        assert float(
+            req_cores
+        ).is_integer(), "the number of requested cores should be integer"
         assert req_cores >= 0, "node CPU cores cannot be negative"
         assert req_memory >= 0, "node memory cannot be negative"
         assert req_rate >= 0, "link rate cannot be negative"
@@ -86,27 +91,34 @@ class VirtualNetwork(object):
         n_aggr_switches = n_edge_switches = int(k * k / 2)
         n_hosts = n_edge_switches * density
 
-        hosts = [f'host_{i}' for i in range(1, n_hosts + 1)]
-        core_switches = [f'core_{i}' for i in range(1, n_core_switches + 1)]
-        aggr_switches = [f'aggr_{i}' for i in range(1, n_aggr_switches + 1)]
-        edge_switches = [f'edge_{i}' for i in range(1, n_edge_switches + 1)]
+        hosts = [f"host_{i}" for i in range(1, n_hosts + 1)]
+        core_switches = [f"core_{i}" for i in range(1, n_core_switches + 1)]
+        aggr_switches = [f"aggr_{i}" for i in range(1, n_aggr_switches + 1)]
+        edge_switches = [f"edge_{i}" for i in range(1, n_edge_switches + 1)]
 
         g = nx.Graph()
-        g.add_nodes_from(itertools.chain(hosts, core_switches, aggr_switches, edge_switches), cores=req_cores,
-                         memory=req_memory)
+        g.add_nodes_from(
+            itertools.chain(hosts, core_switches, aggr_switches, edge_switches),
+            cores=req_cores,
+            memory=req_memory,
+        )
 
         # Core to Aggr
         end = int(n_pods / 2)
         for x in range(0, n_aggr_switches, end):
             for i in range(0, end):
                 for j in range(0, end):
-                    g.add_edge(core_switches[i * end + j], aggr_switches[x + i], rate=req_rate)
+                    g.add_edge(
+                        core_switches[i * end + j], aggr_switches[x + i], rate=req_rate
+                    )
 
         # Aggr to Edge
         for x in range(0, n_aggr_switches, end):
             for i in range(0, end):
                 for j in range(0, end):
-                    g.add_edge(aggr_switches[x + i], edge_switches[x + j], rate=req_rate)
+                    g.add_edge(
+                        aggr_switches[x + i], edge_switches[x + j], rate=req_rate
+                    )
 
         # Edge to Host
         for x in range(0, n_edge_switches):
@@ -124,27 +136,39 @@ class VirtualNetwork(object):
 
         g = nx.Graph()
         g.add_nodes_from(
-            ((n, dict(cores=random.choice(range_cores), memory=random.choice(range_memory))) for n in range(n_nodes)))
+            (
+                (
+                    n,
+                    dict(
+                        cores=random.choice(range_cores),
+                        memory=random.choice(range_memory),
+                    ),
+                )
+                for n in range(n_nodes)
+            )
+        )
         return cls(nx.freeze(g))
 
     @classmethod
-    def create_random_nw(cls, n_nodes=10, p=0.15, req_cores=2, req_memory=8000, req_rate=200, seed=99):
+    def create_random_nw(
+        cls, n_nodes=10, p=0.2, req_cores=2, req_memory=4000, req_rate=200, seed=99
+    ):
         """create a random network."""
         g = nx.gnp_random_graph(n_nodes, p=p, seed=seed, directed=False)
         for (u, v) in g.edges():
-            g[u][v]['rate'] = req_rate
+            g[u][v]["rate"] = req_rate
         for u in g.nodes():
-            g.nodes[u]['cores'] = req_cores
-            g.nodes[u]['memory'] = req_memory
+            g.nodes[u]["cores"] = req_cores
+            g.nodes[u]["memory"] = req_memory
         return cls(nx.freeze(g))
 
     @classmethod
     def create_test_nw(cls, req_cores=3, req_memory=3000, req_rate=15000):
         """create a random network."""
         g = nx.Graph()
-        g.add_node('Node_0', cores=req_cores, memory=req_memory)
-        g.add_node('Node_1', cores=req_cores, memory=req_memory)
-        g.add_edge('Node_0', 'Node_1', rate=req_rate)
+        g.add_node("Node_0", cores=req_cores, memory=req_memory)
+        g.add_node("Node_1", cores=req_cores, memory=req_memory)
+        g.add_edge("Node_0", "Node_1", rate=req_rate)
 
         return cls(nx.freeze(g))
 
@@ -164,10 +188,13 @@ class VirtualNetwork(object):
         g = nx.Graph()
 
         for u in mininet_topo.nodes():
-            g.add_node(u, cores=mininet_topo.nodeInfo(u).get('cores', 0),
-                       memory=mininet_topo.nodeInfo(u).get('memory', 0))
+            g.add_node(
+                u,
+                cores=mininet_topo.nodeInfo(u).get("cores", 0),
+                memory=mininet_topo.nodeInfo(u).get("memory", 0),
+            )
 
         for (u, v) in mininet_topo.iterLinks(withInfo=False):
-            g.add_edge(u, v, rate=mininet_topo.linkInfo(u, v).get('rate', 0))
+            g.add_edge(u, v, rate=mininet_topo.linkInfo(u, v).get("rate", 0))
 
         return cls(nx.freeze(g))

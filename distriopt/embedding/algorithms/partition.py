@@ -1,3 +1,4 @@
+import logging
 import random
 from collections import defaultdict
 
@@ -6,6 +7,8 @@ from distriopt.decorators import timeit
 from distriopt.embedding import EmbedSolver
 from distriopt.embedding.solution import Solution
 
+_log = logging.getLogger(__name__)
+
 
 def get_partitions(virtual, n_partitions, n_swaps=100):
     """ Divide the nodes in n_partitions bins and then tries to swap nodes to reduce the cut weight."""
@@ -13,10 +16,16 @@ def get_partitions(virtual, n_partitions, n_swaps=100):
     nodes = list(virtual.nodes())
     random.shuffle(nodes)
     # node -> id of the partition in which it is contained
-    nodes_partition = {node: id_node % n_partitions for id_node, node in enumerate(nodes)}
+    nodes_partition = {
+        node: id_node % n_partitions for id_node, node in enumerate(nodes)
+    }
 
     # current cost for the partition
-    old_cost = sum(virtual.req_rate(u, v) for (u, v) in virtual.edges() if nodes_partition[u] != nodes_partition[v])
+    old_cost = sum(
+        virtual.req_rate(u, v)
+        for (u, v) in virtual.edges()
+        if nodes_partition[u] != nodes_partition[v]
+    )
 
     for _ in range(n_swaps):
         # take two random nodes
@@ -27,9 +36,16 @@ def get_partitions(virtual, n_partitions, n_swaps=100):
         # store the old partition ids of u1 and u2
         old_u1, old_u2 = nodes_partition[u1], nodes_partition[u2]
         # swap the partitions
-        nodes_partition[u1], nodes_partition[u2] = nodes_partition[u2], nodes_partition[u1]
+        nodes_partition[u1], nodes_partition[u2] = (
+            nodes_partition[u2],
+            nodes_partition[u1],
+        )
         # compute the new cost
-        new_cost = sum(virtual.req_rate(u, v) for (u, v) in virtual.edges() if nodes_partition[u] != nodes_partition[v])
+        new_cost = sum(
+            virtual.req_rate(u, v)
+            for (u, v) in virtual.edges()
+            if nodes_partition[u] != nodes_partition[v]
+        )
 
         if new_cost < old_cost:
             # update the current cost
@@ -45,17 +61,20 @@ def get_partitions(virtual, n_partitions, n_swaps=100):
 
 
 class EmbedPartition(EmbedSolver):
-
     @timeit
     def solve(self, **kwargs):
         """Heuristic based on computing a k-balanced partitions of virtual nodes for then mapping the partition
            on a subset of the physical nodes.
         """
-        sorted_compute_nodes = sorted(self.physical.compute_nodes,
-                                      key=lambda x: self.physical.cores(x) * 1000 + self.physical.memory(x),
-                                      reverse=True)
+        sorted_compute_nodes = sorted(
+            self.physical.compute_nodes,
+            key=lambda x: self.physical.cores(x) * 1000 + self.physical.memory(x),
+            reverse=True,
+        )
 
-        for n_partitions_to_try in range(self.lower_bound(), len(self.physical.compute_nodes) + 1):
+        for n_partitions_to_try in range(
+            self.lower_bound(), len(self.physical.compute_nodes) + 1
+        ):
             # partitioning of virtual nodes in n_partitions_to_try partitions
             k_partition = get_partitions(self.virtual, n_partitions=n_partitions_to_try)
             # random subset of hosts of size n_partitions_to_try
@@ -68,7 +87,9 @@ class EmbedPartition(EmbedSolver):
                 res_node_mapping = {}
 
                 # iterate over each pair (physical_node i, virtual nodes assigned to i)
-                for physical_node, assigned_virtual_nodes in zip(chosen_physical, k_partition):
+                for physical_node, assigned_virtual_nodes in zip(
+                    chosen_physical, k_partition
+                ):
                     # keep track of the node physical resources used
                     cores_used = memory_used = 0
                     # check if node resources are not exceeded:
@@ -91,8 +112,11 @@ class EmbedPartition(EmbedSolver):
                 rate_used = defaultdict(int)
 
                 # iterate over each virtual link between two virtual nodes not mapped on the same physical machine
-                for (u, v) in ((u, v) for (u, v) in self.virtual.sorted_edges() if
-                               res_node_mapping[u] != res_node_mapping[v]):
+                for (u, v) in (
+                    (u, v)
+                    for (u, v) in self.virtual.sorted_edges()
+                    if res_node_mapping[u] != res_node_mapping[v]
+                ):
 
                     res_link_mapping[(u, v)] = []
 
@@ -100,13 +124,19 @@ class EmbedPartition(EmbedSolver):
                     phy_u, phy_v = res_node_mapping[u], res_node_mapping[v]
 
                     # for each link in the physical path
-                    for (i, j, device_id) in self.physical.find_path(phy_u, phy_v, req_rate=self.virtual.req_rate(u, v),
-                                                                     used_rate=rate_used):
+                    for (i, j, device_id) in self.physical.find_path(
+                        phy_u,
+                        phy_v,
+                        req_rate=self.virtual.req_rate(u, v),
+                        used_rate=rate_used,
+                    ):
                         rate_used[(i, j, device_id)] += self.virtual.req_rate(u, v)
                         res_link_mapping[(u, v)].append((i, device_id, j))
 
                 # build solution from the output
-                self.solution = Solution.build_solution(self.virtual, self.physical, res_node_mapping, res_link_mapping)
+                self.solution = Solution.build_solution(
+                    self.virtual, self.physical, res_node_mapping, res_link_mapping
+                )
                 self.status = Solved
                 return Solved
 
@@ -125,14 +155,16 @@ if __name__ == "__main__":
     import networkx as nx
 
     g = nx.Graph()
-    g.add_node('Node_0', cores=3, memory=3000)
-    g.add_node('Node_1', cores=3, memory=3000)
-    g.add_edge('Node_0', 'Node_1', rate=20000)
+    g.add_node("Node_0", cores=3, memory=3000)
+    g.add_node("Node_1", cores=3, memory=3000)
+    g.add_edge("Node_0", "Node_1", rate=20000)
 
     virtual_topo = VirtualNetwork(g)
 
     # unfeasible, not enough rate
-    physical_topo = PhysicalNetwork.create_test_nw(cores=4, memory=4000, rate=10000, group_interfaces=False)
+    physical_topo = PhysicalNetwork.create_test_nw(
+        cores=4, memory=4000, rate=10000, group_interfaces=False
+    )
 
     prob = EmbedPartition(virtual_topo, physical_topo)
     time_solution, status = prob.solve()

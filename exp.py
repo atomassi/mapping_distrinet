@@ -3,6 +3,7 @@ Experiments
 """
 import logging.config
 import os
+import sys
 import pickle
 import pprint
 
@@ -14,13 +15,9 @@ from distriopt.packing import CloudInstance
 from distriopt.packing.algorithms import PackGreedy, PackILP, BestFitDopProduct, FirstFitDecreasingPriority, \
     FirstFitOrderedDeviation
 
-try:
-    os.remove("log.log")
-except:
-    pass
+logging.basicConfig(stream=sys.stdout, level=logging.DEBUG,
+                    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
-logging.config.fileConfig(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'logging.conf'),
-                          disable_existing_loggers=False)
 log = logging.getLogger(__name__)
 
 

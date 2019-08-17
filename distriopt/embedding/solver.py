@@ -11,16 +11,24 @@ from distriopt import VirtualNetwork
 from distriopt.constants import *
 from distriopt.embedding import PhysicalNetwork
 
+_log = logging.getLogger(__name__)
+
 
 class EmbedSolver(object, metaclass=ABCMeta):
-
     def __init__(self, virtual, physical):
         """"""
-        self.virtual = VirtualNetwork.from_mininet(virtual) if isinstance(virtual, Topo) else virtual
-        self.physical = PhysicalNetwork.from_mininet(physical) if isinstance(physical, Topo) else physical
+        self.virtual = (
+            VirtualNetwork.from_mininet(virtual)
+            if isinstance(virtual, Topo)
+            else virtual
+        )
+        self.physical = (
+            PhysicalNetwork.from_mininet(physical)
+            if isinstance(physical, Topo)
+            else physical
+        )
         self.solution = None
         self.status = NotSolved
-        self._log = logging.getLogger(__name__)
 
     def lower_bound(self):
         """Return a lower bound on the minimum number of physical machines needed to map all the virtual nodes."""
@@ -34,14 +42,22 @@ class EmbedSolver(object, metaclass=ABCMeta):
         max_phy_memory = max_phy_cores = 0
         for phy_node in self.physical.compute_nodes:
             # the maximum capacity in terms of cores for a physical machine
-            max_phy_cores = self.physical.cores(phy_node) if self.physical.cores(
-                phy_node) > max_phy_cores else max_phy_cores
+            max_phy_cores = (
+                self.physical.cores(phy_node)
+                if self.physical.cores(phy_node) > max_phy_cores
+                else max_phy_cores
+            )
             # the maximum capacity in terms of memory for a physical machine
-            max_phy_memory = self.physical.memory(phy_node) if self.physical.memory(
-                phy_node) > max_phy_memory else max_phy_memory
+            max_phy_memory = (
+                self.physical.memory(phy_node)
+                if self.physical.memory(phy_node) > max_phy_memory
+                else max_phy_memory
+            )
 
         # lower bound, any feasible mapping requires at least this number of physical machines
-        return math.ceil(max(tot_req_cores / max_phy_cores, tot_req_memory / max_phy_memory))
+        return math.ceil(
+            max(tot_req_cores / max_phy_cores, tot_req_memory / max_phy_memory)
+        )
 
     @abstractmethod
     def solve(self, **kwargs):

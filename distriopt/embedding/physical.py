@@ -7,6 +7,8 @@ import networkx as nx
 from distriopt.constants import NoPathFoundError
 from distriopt.decorators import cached, cachedproperty, implemented_if_true
 
+_log = logging.getLogger(__name__)
+
 
 class PhysicalNetwork(object):
     "Utility class to model the physical network. Uses networkx.MultiGraph."
@@ -14,7 +16,6 @@ class PhysicalNetwork(object):
     def __init__(self, g, grouped_interfaces=False):
         self._g = g
         self.grouped_interfaces = grouped_interfaces
-        self._logger = logging.getLogger(__name__)
 
     @property
     def g(self):
@@ -35,21 +36,24 @@ class PhysicalNetwork(object):
 
     def cores(self, node):
         """Return the number of physical cores for a physical node."""
-        return self._g.node[node].get('cores', 0)
+        return self._g.node[node].get("cores", 0)
 
     def memory(self, node):
         """Return the amount of memory for a physical node."""
-        return self._g.node[node].get('memory', 0)
+        return self._g.node[node].get("memory", 0)
 
-    def rate(self, i, j, device_id='dummy'):
+    def rate(self, i, j, device_id="dummy"):
         """Return the rate associated to a physical link and interface id."""
-        return self._g[i][j][device_id]['rate']
+        return self._g[i][j][device_id]["rate"]
 
     @cached
     def rate_out(self, i):
         """Return the total rate supported by the node interface(s)."""
-        return sum(self.rate(i, j, device_id) for j in self.neighbors(i)
-                   for device_id in self.interfaces_ids(i, j))
+        return sum(
+            self.rate(i, j, device_id)
+            for j in self.neighbors(i)
+            for device_id in self.interfaces_ids(i, j)
+        )
 
     def interfaces_ids(self, i, j):
         """Return the network interfaces identifiers for a link (i,j)."""
@@ -57,27 +61,27 @@ class PhysicalNetwork(object):
 
     def interface_name(self, i, j, device_id):
         """Return the network interfaces *from i to j* (order matters) corresponding to a device id."""
-        return self._g[i][j][device_id]['devices'][i]
+        return self._g[i][j][device_id]["devices"][i]
 
     def neighbors(self, i):
         """Return the neighbor nodes for a node i."""
         return self._g[i]
 
-    @implemented_if_true('grouped_interfaces')
+    @implemented_if_true("grouped_interfaces")
     def associated_nw_interfaces(self, i, j):
         """Return the real interfaces associated with the link."""
-        return self._g[i][j]['dummy']['associated_devices']
+        return self._g[i][j]["dummy"]["associated_devices"]
 
-    @implemented_if_true('grouped_interfaces')
+    @implemented_if_true("grouped_interfaces")
     def rate_associated_nw_interface(self, i, j, device_id):
         """Return the rate associated to a real link interface."""
-        return self._g[i][j]['dummy']['associated_devices'][device_id]['rate']
+        return self._g[i][j]["dummy"]["associated_devices"][device_id]["rate"]
 
     def name_associated_nw_interface(self, i, j, device_id):
         """Return the name associated to a real link interface."""
         if not self.grouped_interfaces:
             raise ValueError("Defined only when interfaces are grouped")
-        return self._g[i][j]['dummy']['associated_devices'][device_id][i]
+        return self._g[i][j]["dummy"]["associated_devices"][device_id][i]
 
     def number_of_nodes(self):
         return self._g.number_of_nodes()
@@ -100,18 +104,29 @@ class PhysicalNetwork(object):
                 path.pop()
                 interfaces_used.pop()
             else:
-                device_id = next((device_id for device_id in self.interfaces_ids(prev, curr) if
-                                  self.rate(prev, curr, device_id) >= req_rate +
-                                  used_rate.get((prev, curr, device_id), 0) +
-                                  used_rate.get((curr, prev, device_id), 0)), None)
+                device_id = next(
+                    (
+                        device_id
+                        for device_id in self.interfaces_ids(prev, curr)
+                        if self.rate(prev, curr, device_id)
+                        >= req_rate
+                        + used_rate.get((prev, curr, device_id), 0)
+                        + used_rate.get((curr, prev, device_id), 0)
+                    ),
+                    None,
+                )
 
                 if device_id is not None:
                     if curr == target:
                         interfaces_used.append(device_id)
                         path.append(target)
                         # return a path as a list (i, j, device_id)
-                        res = [(path[i], path[i + 1], device_id) for (i, device_id) in
-                               zip(range(len(path) - 1), interfaces_used[1:])]
+                        res = [
+                            (path[i], path[i + 1], device_id)
+                            for (i, device_id) in zip(
+                                range(len(path) - 1), interfaces_used[1:]
+                            )
+                        ]
                         return res
                     elif curr not in path:
                         interfaces_used.append(device_id)
@@ -121,7 +136,9 @@ class PhysicalNetwork(object):
             raise NoPathFoundError
 
     @classmethod
-    def from_mininet(cls, mininet_topo, n_interfaces_to_consider=float('inf'), group_interfaces=False):
+    def from_mininet(
+        cls, mininet_topo, n_interfaces_to_consider=float("inf"), group_interfaces=False
+    ):
         """Create a PhysicalNetwork from a mininet Topo network."""
 
         from mininet.topo import Topo
@@ -131,23 +148,37 @@ class PhysicalNetwork(object):
         g = nx.MultiGraph()
 
         for u in mininet_topo.nodes():
-            g.add_node(u, cores=mininet_topo.nodeInfo(u).get('cores', 0),
-                       memory=mininet_topo.nodeInfo(u).get('memory', 0))
+            g.add_node(
+                u,
+                cores=mininet_topo.nodeInfo(u).get("cores", 0),
+                memory=mininet_topo.nodeInfo(u).get("memory", 0),
+            )
 
         for (u, v, attrs) in mininet_topo.iterLinks(withInfo=True):
             n_added_interfaces = 0
 
-            u_port, v_port, rate = attrs['port1'], attrs['port2'], attrs['rate']
+            u_port, v_port, rate = attrs["port1"], attrs["port2"], attrs["rate"]
 
             if not group_interfaces:
                 g.add_edge(u, v, rate=rate, devices={u: u_port, v: v_port})
             else:
                 if not g.has_edge(u, v):
-                    g.add_edge(u, v, key='dummy', rate=rate,
-                               associated_devices={n_added_interfaces: {u: u_port, v: v_port, 'rate': rate}})
+                    g.add_edge(
+                        u,
+                        v,
+                        key="dummy",
+                        rate=rate,
+                        associated_devices={
+                            n_added_interfaces: {u: u_port, v: v_port, "rate": rate}
+                        },
+                    )
                 else:
-                    g[u][v]['dummy']['rate'] += rate
-                    g[u][v]['dummy']['associated_devices'][n_added_interfaces] = {u: u_port, v: v_port, 'rate': rate}
+                    g[u][v]["dummy"]["rate"] += rate
+                    g[u][v]["dummy"]["associated_devices"][n_added_interfaces] = {
+                        u: u_port,
+                        v: v_port,
+                        "rate": rate,
+                    }
 
             n_added_interfaces += 1
             if n_added_interfaces == n_interfaces_to_consider:
@@ -156,39 +187,73 @@ class PhysicalNetwork(object):
         return cls(nx.freeze(g), group_interfaces)
 
     @classmethod
-    def from_files(cls, *filenames, n_interfaces_to_consider=float('inf'), group_interfaces=False):
+    def from_files(
+        cls, *filenames, n_interfaces_to_consider=float("inf"), group_interfaces=False
+    ):
         """Create a PhysicalNetwork from json files."""
 
         g = nx.MultiGraph()
 
         for filename in filenames:
-            with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "instances", filename + ".json")) as f:
+            with open(
+                os.path.join(
+                    os.path.dirname(os.path.abspath(__file__)),
+                    "instances",
+                    filename + ".json",
+                )
+            ) as f:
 
                 data = json.load(f)
 
-                for node_info in data['nodes']:
-                    g.add_node(node_info['id'], cores=node_info.get('cores', 0), memory=node_info.get('memory', 0))
+                for node_info in data["nodes"]:
+                    g.add_node(
+                        node_info["id"],
+                        cores=node_info.get("cores", 0),
+                        memory=node_info.get("memory", 0),
+                    )
 
-                for link_info in data['links']:
-                    u, v, devices = link_info['source'], link_info['target'], link_info['devices']
+                for link_info in data["links"]:
+                    u, v, devices = (
+                        link_info["source"],
+                        link_info["target"],
+                        link_info["devices"],
+                    )
 
                     n_added_interfaces = 0
                     for device in devices:
-                        source_device, target_device, rate = device['source_device'], device['target_device'], device[
-                            'rate']
+                        source_device, target_device, rate = (
+                            device["source_device"],
+                            device["target_device"],
+                            device["rate"],
+                        )
 
                         if not group_interfaces:
-                            g.add_edge(u, v, rate=rate, devices={u: source_device, v: target_device})
+                            g.add_edge(
+                                u,
+                                v,
+                                rate=rate,
+                                devices={u: source_device, v: target_device},
+                            )
                         else:
                             if not g.has_edge(u, v):
-                                g.add_edge(u, v, key='dummy', rate=rate,
-                                           associated_devices={
-                                               n_added_interfaces: {u: source_device, v: target_device, 'rate': rate}})
+                                g.add_edge(
+                                    u,
+                                    v,
+                                    key="dummy",
+                                    rate=rate,
+                                    associated_devices={
+                                        n_added_interfaces: {
+                                            u: source_device,
+                                            v: target_device,
+                                            "rate": rate,
+                                        }
+                                    },
+                                )
                             else:
-                                g[u][v]['dummy']['rate'] += rate
-                                g[u][v]['dummy']['associated_devices'][n_added_interfaces] = {u: source_device,
-                                                                                              v: target_device,
-                                                                                              'rate': rate}
+                                g[u][v]["dummy"]["rate"] += rate
+                                g[u][v]["dummy"]["associated_devices"][
+                                    n_added_interfaces
+                                ] = {u: source_device, v: target_device, "rate": rate}
 
                         n_added_interfaces += 1
                         if n_added_interfaces == n_interfaces_to_consider:
@@ -225,11 +290,25 @@ class PhysicalNetwork(object):
             g.add_edge("h2", "s1", devices={"h2": "eth1", "s1": "eth3"}, rate=rate)
 
         else:
-            g.add_edge("h1", "s1", key='dummy', associated_devices={0: {"h1": "eth0", "s1": "eth0", 'rate': rate},
-                                                                    1: {"h1": "eth1", "s1": "eth1", 'rate': rate}},
-                       rate=rate * 2)
-            g.add_edge("h2", "s1", key='dummy', associated_devices={0: {"h2": "eth0", "s1": "eth2", 'rate': rate},
-                                                                    1: {"h2": "eth1", "s1": "eth2", 'rate': rate}},
-                       rate=rate * 2)
+            g.add_edge(
+                "h1",
+                "s1",
+                key="dummy",
+                associated_devices={
+                    0: {"h1": "eth0", "s1": "eth0", "rate": rate},
+                    1: {"h1": "eth1", "s1": "eth1", "rate": rate},
+                },
+                rate=rate * 2,
+            )
+            g.add_edge(
+                "h2",
+                "s1",
+                key="dummy",
+                associated_devices={
+                    0: {"h2": "eth0", "s1": "eth2", "rate": rate},
+                    1: {"h2": "eth1", "s1": "eth2", "rate": rate},
+                },
+                rate=rate * 2,
+            )
 
         return cls(nx.freeze(g), grouped_interfaces=group_interfaces)

@@ -1,3 +1,4 @@
+import logging
 from collections import defaultdict, Counter, deque
 
 import numpy as np
@@ -7,6 +8,8 @@ from distriopt.constants import *
 from distriopt.decorators import timeit
 from distriopt.embedding import EmbedSolver
 from distriopt.embedding.solution import Solution
+
+_log = logging.getLogger(__name__)
 
 
 class Node(object):
@@ -27,14 +30,7 @@ class Node(object):
 
 
 class Tree(object):
-    """Represent a partitions tree.
-
-        (1,2,3,4) -> Each node is an instance of the Node class.
-         /     \
-       (1,2)  (3,4)
-       /  \    / \
-      1    2  3   4
-    """
+    """Represent a partitions tree. Each node is an instance of the Node class."""
 
     def __init__(self, root):
         self.root = root
@@ -126,7 +122,7 @@ def partition(virtual, algo="min_cut"):
 
         for (u, v) in g.edges():
             edges.append((u, v))
-            rate = g[u][v]['rate']
+            rate = g[u][v]["rate"]
             weights.append(rate)
             sum_rate += rate
 
@@ -135,7 +131,13 @@ def partition(virtual, algo="min_cut"):
         uf = UnionFind(g.nodes())
 
         sorted_edges = iter(
-            np.random.choice(np.arange(len(edges)), size=len(edges), replace=False, p=np.array(weights) / sum_rate))
+            np.random.choice(
+                np.arange(len(edges)),
+                size=len(edges),
+                replace=False,
+                p=np.array(weights) / sum_rate,
+            )
+        )
 
         while n_nodes > 2:
             u, v = edges[next(sorted_edges)]
@@ -149,9 +151,11 @@ def partition(virtual, algo="min_cut"):
     to_be_processed = [set(virtual.nodes())]
     partitions = []
 
-    root = Node(frozenset(virtual.nodes()),
-                cores=sum(virtual.req_cores(u) for u in virtual.nodes()),
-                memory=sum(virtual.req_memory(u) for u in virtual.nodes()))
+    root = Node(
+        frozenset(virtual.nodes()),
+        cores=sum(virtual.req_cores(u) for u in virtual.nodes()),
+        memory=sum(virtual.req_memory(u) for u in virtual.nodes()),
+    )
 
     t = Tree(root)
 
@@ -163,25 +167,29 @@ def partition(virtual, algo="min_cut"):
         if len(p) <= 1:
             partitions.append(p)
         else:
-            if algo == 'min_cut':
+            if algo == "min_cut":
                 p1, p2 = min_cut(virtual.g.subgraph(p))
-            elif algo == 'bisection':
-                p1, p2 = kernighan_lin_bisection(virtual.g.subgraph(p), weight='rate')
+            elif algo == "bisection":
+                p1, p2 = kernighan_lin_bisection(virtual.g.subgraph(p), weight="rate")
             else:
                 raise ValueError("undefined")
 
             # update tree
             parent = partitions_nodes[frozenset(p)]
 
-            p1_node = Node(frozenset(p1),
-                           cores=sum(virtual.req_cores(u) for u in p1),
-                           memory=sum(virtual.req_memory(u) for u in p1),
-                           parent=parent)
+            p1_node = Node(
+                frozenset(p1),
+                cores=sum(virtual.req_cores(u) for u in p1),
+                memory=sum(virtual.req_memory(u) for u in p1),
+                parent=parent,
+            )
 
-            p2_node = Node(frozenset(p2),
-                           cores=sum(virtual.req_cores(u) for u in p2),
-                           memory=sum(virtual.req_memory(u) for u in p2),
-                           parent=parent)
+            p2_node = Node(
+                frozenset(p2),
+                cores=sum(virtual.req_cores(u) for u in p2),
+                memory=sum(virtual.req_memory(u) for u in p2),
+                parent=parent,
+            )
 
             partitions_nodes[frozenset(p)].l = partitions_nodes[frozenset(p1)] = p1_node
             partitions_nodes[frozenset(p)].r = partitions_nodes[frozenset(p2)] = p2_node
@@ -193,22 +201,26 @@ def partition(virtual, algo="min_cut"):
 
 
 class EmbedGreedy(EmbedSolver):
-
     @timeit
     def solve(self, **kwargs):
 
-        algo = kwargs.get('algo', 'bisection')
+        algo = kwargs.get("algo", "bisection")
 
         partitions_tree = partition(self.virtual, algo=algo)
 
         # nodes are sorted in non increasing order according to the amount of resources (cpu, memory)
         # the formula used is : n_cores * 1000 + memory + outgoing_rate
-        sorted_compute_nodes = sorted(self.physical.compute_nodes,
-                                      key=lambda x: self.physical.cores(x) * 1000 + self.physical.memory(
-                                          x) + self.physical.rate_out(x),
-                                      reverse=True)
+        sorted_compute_nodes = sorted(
+            self.physical.compute_nodes,
+            key=lambda x: self.physical.cores(x) * 1000
+            + self.physical.memory(x)
+            + self.physical.rate_out(x),
+            reverse=True,
+        )
 
-        for n_nodes_to_consider in range(self.lower_bound(), len(sorted_compute_nodes) + 1):
+        for n_nodes_to_consider in range(
+            self.lower_bound(), len(sorted_compute_nodes) + 1
+        ):
 
             nodes_to_consider = sorted_compute_nodes[:n_nodes_to_consider]
 
@@ -226,31 +238,49 @@ class EmbedGreedy(EmbedSolver):
                 for phy_node in nodes_to_consider:
                     try:
                         # check if the node resources are enough
-                        if node.cores + cores_used[phy_node] > self.physical.cores(phy_node) or \
-                                node.memory + memory_used[phy_node] > self.physical.memory(phy_node):
+                        if node.cores + cores_used[phy_node] > self.physical.cores(
+                            phy_node
+                        ) or node.memory + memory_used[phy_node] > self.physical.memory(
+                            phy_node
+                        ):
                             raise NodeResourceError
 
                         # check if outgoing communications can be performed and find a path
-                        if sum(self.virtual.req_rate(u, v) for u in node.partition | set(assigned[phy_node]) for v in
-                               self.virtual.neighbors(u) if
-                               v not in node.partition | set(assigned[phy_node])) > self.physical.rate_out(phy_node):
+                        if sum(
+                            self.virtual.req_rate(u, v)
+                            for u in node.partition | set(assigned[phy_node])
+                            for v in self.virtual.neighbors(u)
+                            if v not in node.partition | set(assigned[phy_node])
+                        ) > self.physical.rate_out(phy_node):
                             raise LinkCapacityError
 
                         temp_rate = defaultdict(int)
                         temp_paths = defaultdict(list)
                         # check if virtual links can be mapped
-                        for (u, v) in [(u, v) for u in node.partition for v in self.virtual.neighbors(u) if
-                                       v not in node.partition]:
-                            if v in res_node_mapping and res_node_mapping[v] != phy_node:
+                        for (u, v) in [
+                            (u, v)
+                            for u in node.partition
+                            for v in self.virtual.neighbors(u)
+                            if v not in node.partition
+                        ]:
+                            if (
+                                v in res_node_mapping
+                                and res_node_mapping[v] != phy_node
+                            ):
 
                                 # find a path for the virtual link
-                                path = self.physical.find_path(phy_node, res_node_mapping[v],
-                                                               req_rate=self.virtual.req_rate(u, v),
-                                                               used_rate=Counter(rate_used) + Counter(temp_rate))
+                                path = self.physical.find_path(
+                                    phy_node,
+                                    res_node_mapping[v],
+                                    req_rate=self.virtual.req_rate(u, v),
+                                    used_rate=Counter(rate_used) + Counter(temp_rate),
+                                )
 
                                 # for each link in the path
                                 for (i, j, device_id) in path:
-                                    temp_rate[(i, j, device_id)] += self.virtual.req_rate(u, v)
+                                    temp_rate[
+                                        (i, j, device_id)
+                                    ] += self.virtual.req_rate(u, v)
                                     temp_paths[(u, v)].append((i, device_id, j))
 
                         # update the partitions placed
@@ -274,8 +304,13 @@ class EmbedGreedy(EmbedSolver):
 
             # if all virtual nodes have been mapped return the solution
             if set(res_node_mapping) == set(self.virtual.nodes()):
-                self.solution = Solution.build_solution(self.virtual, self.physical, res_node_mapping, res_link_mapping,
-                                                        check_solution=False)
+                self.solution = Solution.build_solution(
+                    self.virtual,
+                    self.physical,
+                    res_node_mapping,
+                    res_link_mapping,
+                    check_solution=False,
+                )
                 self.status = Solved
                 return Solved
 

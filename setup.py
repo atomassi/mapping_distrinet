@@ -31,7 +31,7 @@ setup(
     name='mapping_distrinet',
     version='0.1',
     python_requires='>={}.{}'.format(*REQUIRED_PYTHON),
-    packages=find_packages(),
+    packages=find_packages(exclude=[]),
     url='https://github.com/atomassi/mapping_distrinet',
     download_url='https://github.com/atomassi/mapping_distrinet',
     license='MIT',
@@ -44,15 +44,17 @@ setup(
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
     ],
+    dependency_links=['http://github.com/mininet/mininet/tarball/master#egg=mininet'],
     install_requires=[
         'PuLP',
         'networkx',
-        'mininet @ git+https://git@github.com/mininet/mininet@master'
+        'mininet',
+        'numpy'
     ],
     package_data={
         'distriopt.embedding.instances': ['*.json'],
         'distriopt.packing.instances': ['*.json']
-   },
+    },
     include_package_data=True,
     zip_safe=True
 )

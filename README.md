@@ -2,8 +2,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 ![python](https://img.shields.io/badge/python-3.6%20%7C%203.7-blue.svg?cacheSeconds=2592000)
 [![Build Status](https://travis-ci.com/atomassi/mapping_distrinet.svg?token=hrhTT4pN2zzCVx7pvXNv&branch=master)](https://travis-ci.com/atomassi/mapping_distrinet)
-[![codecov](https://codecov.io/gh/atomassi/mapping_distrinet/branch/master/graph/badge.svg?token=vkSu7Fw4cq)](https://codecov.io/gh/atomassi/mapping_distrinet)    
-[![black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+[![codecov](https://codecov.io/gh/atomassi/mapping_distrinet/branch/master/graph/badge.svg?token=vkSu7Fw4cq)](https://codecov.io/gh/atomassi/mapping_distrinet) [![black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
 ## Installation ##
 To install it, make sure you have Python 3.6 or greater installed. Then run

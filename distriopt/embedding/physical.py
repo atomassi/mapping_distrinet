@@ -188,20 +188,23 @@ class PhysicalNetwork(object):
 
     @classmethod
     def from_files(
-        cls, *filenames, n_interfaces_to_consider=float("inf"), group_interfaces=False
+        cls, *files, n_interfaces_to_consider=float("inf"), group_interfaces=False
     ):
         """Create a PhysicalNetwork from json files."""
 
         g = nx.MultiGraph()
 
-        for filename in filenames:
-            with open(
-                os.path.join(
-                    os.path.dirname(os.path.abspath(__file__)),
-                    "instances",
-                    filename + ".json",
+        for file in files:
+            # filename can be the path to a file or the name of a local topology
+            filepath = (
+                file
+                if os.path.isabs(file)
+                else os.path.join(
+                    os.path.dirname(__file__), "instances", file + ".json"
                 )
-            ) as f:
+            )
+
+            with open(filepath) as f:
 
                 data = json.load(f)
 

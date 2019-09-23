@@ -16,4 +16,5 @@ Submodules
    distriopt.packing.algorithms.ffod
    distriopt.packing.algorithms.greedy
    distriopt.packing.algorithms.ilp
+   distriopt.packing.algorithms.utils
 

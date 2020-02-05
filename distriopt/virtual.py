@@ -188,13 +188,15 @@ class VirtualNetwork(object):
         g = nx.Graph()
 
         for u in mininet_topo.nodes():
-        cpu = mininet_topo.nodeInfo(u).get("cpu", 0)
-        memory = mininet_topo.nodeInfo(u).get("memory", 0)
-        if type(memory)==str:
-            if memory.endswith("MB"):
-                memory=int(float(memory[:-2]))
-            elif memory.endswith("GB"):
-                memory=int(float(memory[:-2]) * 1000)
+            cpu = mininet_topo.nodeInfo(u).get("cpu", 0)
+            memory = mininet_topo.nodeInfo(u).get("memory", 0)
+            if type(memory)==str:
+                if memory.endswith("MB"):
+                    memory=int(float(memory[:-2]))
+                elif memory.endswith("GB"):
+                    memory=int(float(memory[:-2]) * 1000)
+                else:
+                    memory=int(float(memory))
             g.add_node(
                 u,
                 cores=cpu,

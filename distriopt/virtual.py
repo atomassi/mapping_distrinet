@@ -6,6 +6,8 @@ import itertools
 import logging
 import random
 import warnings
+import json
+import os
 
 import networkx as nx
 
@@ -174,9 +176,41 @@ class VirtualNetwork(object):
 
     @classmethod
     def from_file(cls, filename):
-        """Read the graph from a file."""
-        # TODO: implement from file
-        raise NotImplementedError
+        """Create a VirtualNetwork from json files."""
+
+        g = nx.MultiGraph()
+
+        # filename can be the path to a file or the name of a local topology
+        if os.path.isfile(filename):
+            filepath=filename
+        else:
+            raise ValueError("Wrong file path")
+
+        with open(filepath) as f:
+
+            data = json.load(f)
+
+            for node in data["nodes"]:
+                g.add_node(
+                    node,
+                    cores=data["nodes"][node].get("cores", 0),
+                    memory=data["nodes"][node].get("memory", 0),
+                )
+
+            for link in data["links"]:
+                u,v = link
+                devices = data["links"][link]["devices"]
+                rate = data["links"][link]["rate"]
+
+                g.add_edge(
+                    u,
+                    v,
+                    rate=rate,
+                    devices={u: devices[u], v: devices[v]},
+                )
+
+        return cls(nx.freeze(g))
+
 
     @classmethod
     def from_mininet(cls, mininet_topo):

@@ -175,6 +175,7 @@ class VirtualNetwork(object):
     @classmethod
     def from_file(cls, filename):
         """Read the graph from a file."""
+        # TODO: implement from file
         raise NotImplementedError
 
     @classmethod

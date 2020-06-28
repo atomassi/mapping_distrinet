@@ -44,11 +44,9 @@ setup(
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
     ],
-    dependency_links=['http://github.com/mininet/mininet/tarball/master#egg=mininet'],
     install_requires=[
         'PuLP',
         'networkx',
-        'mininet',
         'numpy'
     ],
     package_data={

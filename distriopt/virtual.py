@@ -6,6 +6,8 @@ import itertools
 import logging
 import random
 import warnings
+import json
+import os
 
 import networkx as nx
 
@@ -174,8 +176,41 @@ class VirtualNetwork(object):
 
     @classmethod
     def from_file(cls, filename):
-        """Read the graph from a file."""
-        raise NotImplementedError
+        """Create a VirtualNetwork from json files."""
+
+        g = nx.MultiGraph()
+
+        # filename can be the path to a file or the name of a local topology
+        if os.path.isfile(filename):
+            filepath=filename
+        else:
+            raise ValueError("Wrong file path")
+
+        with open(filepath) as f:
+
+            data = json.load(f)
+
+            for node in data["nodes"]:
+                g.add_node(
+                    node,
+                    cores=data["nodes"][node].get("cores", 0),
+                    memory=data["nodes"][node].get("memory", 0),
+                )
+
+            for link in data["links"]:
+                u,v = link
+                devices = data["links"][link]["devices"]
+                rate = data["links"][link]["rate"]
+
+                g.add_edge(
+                    u,
+                    v,
+                    rate=rate,
+                    devices={u: devices[u], v: devices[v]},
+                )
+
+        return cls(nx.freeze(g))
+
 
     @classmethod
     def from_mininet(cls, mininet_topo):
@@ -188,13 +223,22 @@ class VirtualNetwork(object):
         g = nx.Graph()
 
         for u in mininet_topo.nodes():
+            cpu = mininet_topo.nodeInfo(u).get("cpu", 0)
+            memory = mininet_topo.nodeInfo(u).get("memory", 0)
+            if type(memory)==str:
+                if memory.endswith("MB"):
+                    memory=int(float(memory[:-2]))
+                elif memory.endswith("GB"):
+                    memory=int(float(memory[:-2]) * 1000)
+                else:
+                    memory=int(float(memory))
             g.add_node(
                 u,
-                cores=mininet_topo.nodeInfo(u).get("cores", 0),
-                memory=mininet_topo.nodeInfo(u).get("memory", 0),
+                cores=cpu,
+                memory=memory,
             )
 
         for (u, v) in mininet_topo.iterLinks(withInfo=False):
-            g.add_edge(u, v, rate=mininet_topo.linkInfo(u, v).get("rate", 0))
+            g.add_edge(u, v, rate=mininet_topo.linkInfo(u, v).get("bw", 0))
 
         return cls(nx.freeze(g))

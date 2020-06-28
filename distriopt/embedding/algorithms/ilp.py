@@ -31,7 +31,7 @@ class EmbedILP(EmbedSolver):
     def solve(self, **kwargs):
 
         obj = kwargs.get("obj", "min_n_machines")
-        solver_name = kwargs.get("_get_solver", "glpk").lower()
+        solver_name = kwargs.get("solver_name", "glpk").lower()
         timelimit = int(kwargs.get("timelimit", "3600"))
 
         _log.debug(f"called ILP _get_solver with the following parameters: {kwargs}")
@@ -191,7 +191,7 @@ class EmbedILP(EmbedSolver):
                     f"{u, v} can be mapped to a single direction of physical node {i, j, device_id}",
                 )
 
-        # solve the ILqP
+        # solve the ILP
         status = pulp.LpStatus[mapping_ILP.solve()]
 
         if solver_name == "cplex":
